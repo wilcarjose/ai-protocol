@@ -9,7 +9,7 @@
 
 | Fase | Objetivo | Depende de | Estado | PR |
 |---|---|---|---|---|
-| 1 | Base de verificación e inconsistencias | — | pendiente | — |
+| 1 | Base de verificación e inconsistencias | — | en revisión | #1 |
 | 2 | Núcleo, stacks e instalador | 1 | pendiente | — |
 | 3 | Menos tokens | 2 | pendiente | — |
 | 4 | Planificador, revisor y tipos de tarea | 3 | pendiente | — |
@@ -63,7 +63,7 @@ Prompt: «Ejecuta la fase N de docs/plan-1a.md».
 Entregables:
 
 - `.github/workflows/kit.yml`: en cada PR corre `shellcheck -s sh` sobre todos los scripts, `sh check-kits.sh` y `sh tests/run.sh`.
-- `tests/run.sh` y `tests/fixtures/`: instala cada kit en un directorio temporal (rellena los `{{RELLENAR}}`, crea `composer.json` o `package.json` con las versiones del §1 de `RULES.md` y una épica de prueba desde las plantillas), comprueba que el guardián pasa y luego provoca cada uno de los 13 fallos de la cabecera de `bin/check-docs.sh`, comprobando que falla.
+- `tests/run.sh` y `tests/fixtures/`: instala cada kit en un directorio temporal (rellena los `{{RELLENAR}}`, crea `composer.json` o `package.json` con las versiones del §1 de `RULES.md` y una épica de prueba desde las plantillas), comprueba que el guardián pasa y luego provoca cada uno de los 13 fallos de la cabecera de `bin/check-docs.sh`, comprobando que falla. El fallo 5 (migraciones) no aplica en un kit cuya plantilla de fase no declara «Migraciones:» (Next.js): ahí se comprueba que el guardián acepta fases sin ese campo.
 - `bin/measure-context.sh`: imprime los caracteres de cada sesión de la tabla «Línea base» sobre una instalación. Copia su salida en «Registro».
 - Correcciones, idénticas en los archivos comunes de ambos kits:
   1. Reglas repetidas: cada una queda en un solo archivo y los demás la citan (sin exenciones a gates, no arreglar de paso, dependencias nuevas, «git push»).
@@ -77,7 +77,7 @@ Las otras cuatro inconsistencias del análisis se resuelven en su fase: reporte 
 
 Criterios de aceptación:
 
-- [ ] `sh tests/run.sh` termina en 0 y reporta los 13 fallos provocados y detectados.
+- [ ] `sh tests/run.sh` termina en 0 y reporta los fallos provocados y detectados: 13 en Laravel; 12 en Next.js, con el 5 como no aplicable.
 - [ ] `tests/run.sh` incluye una cita entre archivos que usa solo el número, y el guardián la rechaza.
 - [ ] `shellcheck -s sh check-kits.sh laravel/bin/*.sh nextjs/bin/*.sh tests/*.sh` no da avisos (si falta, `pip install shellcheck-py`).
 - [ ] La CI del PR está en verde.
@@ -221,7 +221,27 @@ Criterios de aceptación:
 
 ## Registro
 
-- **Línea base medida en la fase 1:** —
+- **Línea base medida en la fase 1:** `sh laravel/bin/measure-context.sh` sobre `7d25562` (el kit antes de la fase 1) reproduce la tabla «Línea base»:
+
+  ```
+  Sesión         Caracteres  Archivos
+  cualquiera         20812  1
+  ejecutor           76196  8
+  planificador       89300  10
+  rescate            47906  5
+  ```
+
+  Después de la fase 1, las citas por nombre son más largas que las numéricas: cualquiera 21 189, ejecutor 76 911, planificador 90 170 y rescate 48 424. El objetivo de la fase 3 (53 300 para el ejecutor) sigue calculado sobre la línea base.
 - **Fases divididas:** —
-- **Decisiones tomadas durante el plan:** —
-- **Lo que la siguiente fase necesita saber:** —
+- **Decisiones tomadas durante el plan:**
+  - 2026-10-04 (fase 1): el fallo 5 del guardián (migraciones) solo se provoca en kits cuya plantilla de fase declara «Migraciones:». En Next.js no aplica, y `tests/run.sh` comprueba en su lugar que el guardián acepta fases sin ese campo. El criterio de la fase 1 pasa a «13 fallos en Laravel; 12 en Next.js, con el 5 como no aplicable».
+  - 2026-10-04 (fase 1): la rama `plan-1a/fase-1` sale de `plan-1a/fase-0`, que tiene el plan y aún no está en `main`, y su PR va contra `main`.
+  - 2026-10-04 (fase 1): dónde vive cada regla que estaba repetida. Exenciones a un gate: `WORKFLOW.md §Obediencia arquitectónica`. No arreglar de paso: `CLAUDE.md §Alcance`. Dependencias nuevas: `WORKFLOW.md §Dependencia nueva`. `git push`: `CLAUDE.md §Commits durante la fase`. Las listas negras de `RULES.md` quedan solo con lo propio del stack.
+- **Lo que la siguiente fase necesita saber:**
+  - **Rutas fijas que la fase 2 tiene que mover a `core/` y `stacks/`.** `.github/workflows/kit.yml` llama a `sh check-kits.sh` (que la fase 2 sustituye por `tests/structure.sh`) y pasa shellcheck sobre `check-kits.sh laravel/bin/*.sh nextjs/bin/*.sh tests/*.sh`. `tests/run.sh` instala con `cp -R $ROOT/<kit>/.` y superpone `tests/fixtures/<kit>/`; con el instalador, debería llamar a `install.sh --stack <kit> --target <dir>`.
+  - **Archivos comunes.** `bin/measure-context.sh` es nuevo y está en la lista COMMON de `check-kits.sh`. Su lista de archivos por sesión está escrita en el script: la fase 3 la cambia al mover `/phase` y `/close` a skills.
+  - **El guardián.** Busca las secciones de la fase con `phase_section` (por nombre, con o sin número). El chequeo 12 rechaza toda cita `archivo.md §<dígito…>`. Las referencias internas a secciones de la fase («el §5 de la fase», «§9») siguen con número porque no son citas entre archivos.
+  - **Cómo se añade un caso a `tests/run.sh`.** Es una rama en `estropea()` y una línea `provoke` con el texto exacto que el guardián imprime. Las variantes `2n` y `12n` no cuentan entre los 13 de la cabecera.
+  - **Duplicado pendiente.** «No modificar `CLAUDE.md`, `RULES.md` ni `WORKFLOW.md` desde una fase» sigue en `CLAUDE.md §Cosas que no se hacen`, `WORKFLOW.md §Documentación`, la cabecera de `RULES.md` y `PROTOCOL.md`. Le toca a la fase 5 (protección del protocolo).
+  - **Versiones del fixture.** Salen de los ejemplos de `RULES.md §Stack y versiones exactas`. `laravel/pint` no tiene ejemplo y se fijó en `^1.24`.
+  - **Shellcheck.** La CI usa `shellcheck-py==0.11.0.1`, la versión con la que se dejaron los scripts sin avisos; una versión más nueva puede traer avisos nuevos.
