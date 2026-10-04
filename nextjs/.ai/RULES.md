@@ -5,7 +5,7 @@
 >
 > Tres reglas que aplican a todo lo demás:
 >
-> 1. Si crees que una regla está mal o desactualizada: **STOP & ASK** (`.ai/WORKFLOW.md §3`). Nadie edita este
+> 1. Si crees que una regla está mal o desactualizada: **STOP & ASK** (`.ai/WORKFLOW.md §STOP & ASK`). Nadie edita este
 >    archivo sin el visto bueno del Tech Lead, y nunca desde una fase.
 > 2. Las reglas de **cómo se trabaja** (qué reportar, cuándo parar, cómo verificar) viven en `.ai/WORKFLOW.md` y en
 >    `CLAUDE.md`. Jerarquía si chocan: este archivo > `.ai/WORKFLOW.md` > `CLAUDE.md`.
@@ -98,8 +98,8 @@ Por este orden:
 
 ### 3.3 La forma de una respuesta NO se adivina
 
-Se lee de los esquemas o de los snapshots. Si ninguno la fija: **detente y pregunta** (`.ai/WORKFLOW.md §2.1`). No la
-infieras del código del frontend, que puede llevar formas equivocadas.
+Se lee de los esquemas o de los snapshots. Si ninguno la fija: **detente y pregunta**
+(`.ai/WORKFLOW.md §Contrato`). No la infieras del código del frontend, que puede llevar formas equivocadas.
 
 ### 3.4 Los errores son datos
 
@@ -242,7 +242,7 @@ El frontend **nunca** maneja datos de tarjeta ni secretos de la pasarela de pago
 ## 10. Zonas sensibles
 
 Tocar estas zonas de una forma que la fase no describe con precisión es motivo de parada
-(`.ai/WORKFLOW.md §2.9`):
+(`.ai/WORKFLOW.md §Zona sensible`):
 
 - Autenticación, sesión, cookies y tokens.
 - Pagos y planes.
@@ -259,8 +259,8 @@ Tocar estas zonas de una forma que la fase no describe con precisión es motivo 
   por tiempo (`waitForTimeout`), aserciones con reintento automático. Necesitan el backend levantado: sólo cuentan
   si la fase lo pide, y su §5 dice quién provee el backend.
 - **No se modifica un test existente para que pase un cambio**: si falla, el cambio está mal o es una decisión del
-  Tech Lead (`.ai/WORKFLOW.md §2.7`). Nunca `test.skip()` condicional; para retirar cobertura, `test.fixme()` con el
-  motivo, y se nombra en el reporte.
+  Tech Lead (`.ai/WORKFLOW.md §Un test existente tendría que cambiar`). Nunca `test.skip()` condicional; para
+  retirar cobertura, `test.fixme()` con el motivo, y se nombra en el reporte.
 
 ---
 

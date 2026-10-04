@@ -4,7 +4,7 @@
      la conversación, la decisión termina aquí o se pierde.
 
      Este archivo describe DECISIONES, no el estado del código: antes de citar una línea de aquí como evidencia
-     de que algo «vive en tal sitio», compruébalo en el código (.ai/WORKFLOW.md §1).
+     de que algo «vive en tal sitio», compruébalo en el código (.ai/WORKFLOW.md §El ciclo obligatorio).
 
      Lo anterior no se reescribe: una decisión que cambia se escribe como enmienda nueva que cita la anterior. -->
 
@@ -49,7 +49,7 @@ Ninguna todavía.
 
 ## Decisiones pendientes
 
-<!-- Toda pregunta que sobrevive a una fase (.ai/WORKFLOW.md §3, regla de traza). bin/check-docs.sh lee esta
+<!-- Toda pregunta que sobrevive a una fase (.ai/WORKFLOW.md §STOP & ASK, regla de traza). bin/check-docs.sh lee esta
      tabla: no cambies sus columnas.
 
      · #: D1, D2… correlativo, nunca se reutiliza.

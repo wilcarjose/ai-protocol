@@ -73,7 +73,7 @@ Archivo `.ai/epics/<NN-slug>/phase-<FF>.md`, a partir de `.ai/templates/phase.te
 - **Archivos.** Todo archivo que toque un entregable está en «Crear», «Modificar» o «Borrar». Si una regla de
   arquitectura prohíbe algo que otros archivos hacen hoy, esos archivos entran en la fase o la regla sale de ella.
 - **Tests donde puedan ejecutarse.** Cada test va en la suite que puede ejecutarlo (`.ai/RULES.md §Tests`). Nunca
-  expresiones regulares sobre el código fuente (`.ai/WORKFLOW.md §5`).
+  expresiones regulares sobre el código fuente (`.ai/WORKFLOW.md §Obediencia arquitectónica`).
 - **Criterios de éxito (§5).** Cada uno es un comando, y todos pueden cumplirse a la vez: no pidas «sin modificar el
   archivo» y «añadirle un caso» en la misma fase. Mídelos al escribirlos (§5 de esta guía).
 - **Todo entregable que ningún gate ve tiene su propio criterio en §5.** `bin/verify.sh` comprueba lo que comprueba;
@@ -85,7 +85,7 @@ Archivo `.ai/epics/<NN-slug>/phase-<FF>.md`, a partir de `.ai/templates/phase.te
   entregables relacionados; los que no cambian archivos no llevan fila. **Excepción:** un entregable que ningún
   gate ve va en su fila propia; agrupado, no tiene dónde aterrizar y se pierde sin que falle nada. Los commits de
   arranque y de cierre no van en §9 (`CLAUDE.md §Commits durante la fase`).
-- **Referencias** a clases, métodos o secciones, nunca a números de línea (`.ai/WORKFLOW.md §7`).
+- **Referencias** a clases, métodos o secciones, nunca a números de línea (`.ai/WORKFLOW.md §Documentación`).
 - **Contexto que debes leer antes (§2).** Rutas concretas, y siempre el «Lo que la siguiente fase necesita saber» de
   la anterior. `.ai/RULES.md` y `.ai/WORKFLOW.md` se leen siempre; no los listes.
 - **No tocar (§4).** Sólo exclusiones específicas de esta fase. Los mínimos del proyecto viven en
@@ -141,7 +141,7 @@ referencia `NN/FF` o «fase FF» no existe en la tabla de su épica.
      entregable lo dice.
    - **Un criterio que necesita algo que la fase no levanta** (un servicio, otro repo, un motor de base de datos
      concreto, unos datos) lo nombra, con el motor si importa, y el §2 dice quién lo provee: quien ejecuta no puede
-     sustituirlo por otra prueba (`.ai/WORKFLOW.md §2.10`).
+     sustituirlo por otra prueba (`.ai/WORKFLOW.md §Un criterio de éxito no se puede cumplir`).
 2. `sh bin/check-docs.sh --strict` en verde.
 3. La fila de la fase en `.ai/STATE.md §Mapa de fases` pasa a `LISTA_PARA_EJECUTAR`, y el puntero de `STATE.md`
    queda donde dice `CLAUDE.md §Estado de una fase`: es la fase que ejecutará `/phase` sin argumentos.

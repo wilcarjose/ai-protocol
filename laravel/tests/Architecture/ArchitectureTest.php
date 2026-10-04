@@ -10,7 +10,7 @@ declare(strict_types=1);
 | Las reglas de `.ai/RULES.md` (§Patrón Action, §Tipado estricto y Value
 | Objects) que se pueden comprobar sobre el código, con el plugin de
 | arquitectura de Pest, que lee el código como código. Nunca con expresiones
-| regulares sobre el fuente (`.ai/WORKFLOW.md §5`).
+| regulares sobre el fuente (`.ai/WORKFLOW.md §Obediencia arquitectónica`).
 |
 | Corre en su propio gate de `bin/verify.sh` («arquitectura») y sin base de
 | datos. Un namespace que todavía no existe pasa sin comprobar nada: la regla

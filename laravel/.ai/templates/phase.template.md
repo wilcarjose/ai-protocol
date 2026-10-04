@@ -5,7 +5,7 @@
 > **Contrato HTTP:** SIN CAMBIOS
 > **Migraciones:** ninguna
 
-<!-- Cómo se rellena cada sección: .ai/PLANNING.md §3.
+<!-- Cómo se rellena cada sección: .ai/PLANNING.md §Fase.
 
      Cabecera:
      · «Estado:» va solo en su línea y se escribe a la vez aquí y en .ai/STATE.md §Mapa de fases
@@ -31,7 +31,7 @@
 
 <!-- 3 a 7, observables. Un entregable por número: nunca «A y B» en la misma línea, y nunca «X si Y».
      Si un entregable no lo ve ningún gate de bin/verify.sh, dale su criterio en §5 y su fila propia en §9,
-     o no se hará (.ai/PLANNING.md §3.2). -->
+     o no se hará (.ai/PLANNING.md §Coherencia interna). -->
 
 1.
 2.
@@ -62,8 +62,9 @@
 ## 5. Criterios de éxito
 
 <!-- Cada uno es un comando, y todos se pueden cumplir a la vez. Ejecútalos contra el árbol de hoy al
-     escribirlos (.ai/PLANNING.md §5). Al cerrar, cada casilla se ejecuta tal como está escrita, su salida se
-     pega en «Verificación» y se marca (.ai/WORKFLOW.md §2.10). -->
+     escribirlos (.ai/PLANNING.md §Antes de dar el plan por listo). Al cerrar, cada casilla se ejecuta tal como
+     está escrita, su salida se pega en «Verificación» y se marca (.ai/WORKFLOW.md §Un criterio de éxito no se
+     puede cumplir). -->
 
 - [ ] `bash bin/verify.sh` en verde
 - [ ] `./vendor/bin/pest --filter=<Test>` cubre <comportamiento concreto>
@@ -85,7 +86,7 @@ Sólo las generales.
 
 ## 8. Preguntas abiertas
 
-<!-- Vacío al empezar. Si te bloqueas, aquí va el bloque STOP & ASK completo (.ai/WORKFLOW.md §3).
+<!-- Vacío al empezar. Si te bloqueas, aquí va el bloque STOP & ASK completo (.ai/WORKFLOW.md §STOP & ASK).
      Formato de cada pregunta: **Pn · AAAA-MM-DD · Paso A|B** — qué pasa · opciones · recomendación ·
      Estado: pendiente | respondida (respuesta, quién y cuándo).
      No se borran al resolverse: son el porqué de las decisiones de la fase. Si cruzan su alcance, también van
@@ -130,7 +131,7 @@ Ninguna.
 
 ### Divergencias documentación ↔ código
 
-<!-- .ai/WORKFLOW.md §1: lo que un documento decía y el código no cumple. -->
+<!-- .ai/WORKFLOW.md §El ciclo obligatorio: lo que un documento decía y el código no cumple. -->
 
 ### Decisiones tomadas durante la ejecución
 
@@ -145,8 +146,8 @@ Ninguna.
 
 ### Calibración
 
-<!-- Para afinar las reglas de corte de .ai/PLANNING.md §3.1: entregables y archivos previstos frente a reales,
-     cuánto costó, y si la fase estaba partida por donde tocaba. -->
+<!-- Para afinar .ai/PLANNING.md §Reglas de corte: entregables y archivos previstos frente a reales, cuánto
+     costó, y si la fase estaba partida por donde tocaba. -->
 
 ### Qué mejorarías del protocolo
 

@@ -18,4 +18,4 @@
 2. Un detalle de producto con semántica no obvia va a `features/<tema>.md`, no a un docblock.
 3. Un procedimiento operativo va a `runbooks/<procedimiento>.md`.
 4. Las referencias se verifican con `grep`: nombre de clase, método o sección, nunca número de línea
-   (`.ai/WORKFLOW.md §7`).
+   (`.ai/WORKFLOW.md §Documentación`).

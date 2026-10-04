@@ -28,10 +28,10 @@ cada paso y cuándo parar.
 
 Lo que pide `CLAUDE.md §Protocolo de fases` (el ciclo, paso 2): lectura en frío, revalidación de la fase y
 sincronización de `.ai/STATE.md` (`CLAUDE.md §Sincronización post-lectura`). Aplica la regla del `grep`
-(`.ai/WORKFLOW.md §1`): antes de citar un documento como justificación, verifícalo contra el código.
+(`.ai/WORKFLOW.md §El ciclo obligatorio`): antes de citar un documento como justificación, verifícalo contra el código.
 
-Responde con las cuatro cosas de ese paso y **para**. Si hay preguntas abiertas, STOP & ASK (`.ai/WORKFLOW.md §3`),
-escritas también en el §8 de la fase. No sigas hasta tener respuesta.
+Responde con las cuatro cosas de ese paso y **para**. Si hay preguntas abiertas, STOP & ASK
+(`.ai/WORKFLOW.md §STOP & ASK`), escritas también en el §8 de la fase. No sigas hasta tener respuesta.
 
 Si la fase se **reanuda**, el Paso A es el abreviado de `CLAUDE.md §Qué fase se ejecuta`.
 
@@ -50,4 +50,4 @@ commit) y repite. Máximo tres intentos; al tercero, para y ve al Paso C con `VE
 `CLAUDE.md §Cierre de épica`. Pon especial cuidado en «Lo que la siguiente fase necesita saber»: es lo único que la
 próxima sesión leerá de ésta.
 
-Termina con el reporte de `.ai/WORKFLOW.md §9`.
+Termina con el reporte de `.ai/WORKFLOW.md §Plantilla del reporte final`.

@@ -51,7 +51,7 @@ Además, propios de cada stack:
 ### 1. El proyecto y sus herramientas
 
 El kit da por hecho el stack de su `RULES.md`. Instálalo o, si el proyecto no lo usa, quita la fila de
-`.ai/RULES.md §1` y lo que dependa de ella.
+`.ai/RULES.md §Stack y versiones exactas` y lo que dependa de ella.
 
 **Laravel**
 
@@ -62,7 +62,7 @@ composer require --dev larastan/larastan
 php artisan install:api               # si expone una API
 ```
 
-En `tests/TestCase.php`, que ningún test llame a la red real (`.ai/RULES.md §7`):
+En `tests/TestCase.php`, que ningún test llame a la red real (`.ai/RULES.md §Tests`):
 
 ```php
 protected function setUp(): void
@@ -82,8 +82,8 @@ npm i zod @tanstack/react-query zustand
 npm i -D vitest eslint-plugin-boundaries
 ```
 
-La regla de capas de `.ai/RULES.md §5` (`app → features → entities → shared`) se configura en `eslint.config.mjs`
-con `eslint-plugin-boundaries`, y `tsconfig.json` lleva `"strict": true`.
+La regla de capas de `.ai/RULES.md §Estructura y regla de dependencias` (`app → features → entities → shared`) se
+configura en `eslint.config.mjs` con `eslint-plugin-boundaries`, y `tsconfig.json` lleva `"strict": true`.
 
 ### 2. Copiar el kit
 
@@ -188,7 +188,7 @@ Para quien venga de esos repos:
 - **`BACKLOG.md`** con `Impacto`, `Destino` y `Cerrado por`, y la regla de triaje en `PLANNING.md`.
 - **`DOMAIN.md §Decisiones pendientes`** con ids `D<n>` y las columnas `Categoría`, `Bloquea`, `Propuesto por`.
 - **Commits de fase** `chore(phase-<NN>-<FF>): start | resume | close`, con épica y fase en el ámbito.
-- **Criterios de parada** unificados (`WORKFLOW.md §2.1`–`§2.10`); los propios del dominio se declaran en
+- **Criterios de parada** unificados (`WORKFLOW.md §Contrato`–`§2.10`); los propios del dominio se declaran en
   `RULES.md §Zonas sensibles`.
 - **Sin listas de deuda congelada** (`handoff-allowlist.txt`, `crossrepo-allowlist.txt`): un proyecto nuevo empieza
   limpio y los chequeos no toleran excepciones.

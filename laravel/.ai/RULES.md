@@ -5,7 +5,7 @@
 >
 > Tres reglas que aplican a todo lo demás:
 >
-> 1. Si crees que una regla está mal o desactualizada: **STOP & ASK** (`.ai/WORKFLOW.md §3`). Nadie edita este
+> 1. Si crees que una regla está mal o desactualizada: **STOP & ASK** (`.ai/WORKFLOW.md §STOP & ASK`). Nadie edita este
 >    archivo sin el visto bueno del Tech Lead, y nunca desde una fase.
 > 2. Las reglas de **cómo se trabaja** (qué reportar, cuándo parar, cómo verificar) viven en `.ai/WORKFLOW.md` y en
 >    `CLAUDE.md`. Jerarquía si chocan: este archivo > `.ai/WORKFLOW.md` > `CLAUDE.md`.
@@ -85,7 +85,7 @@ El contrato HTTP es todo lo que un cliente ve: URLs, verbos, status, claves de e
 orden, cabeceras y el texto de los mensajes de error. **No cambia por defecto.** Cualquier cambio, aunque sea para
 cerrar un agujero, requiere:
 
-1. **STOP & ASK** (`.ai/WORKFLOW.md §2.1`), salvo que la fase ya lo traiga autorizado.
+1. **STOP & ASK** (`.ai/WORKFLOW.md §Contrato`), salvo que la fase ya lo traiga autorizado.
 2. La autorización del Tech Lead escrita en la fase: su cabecera dice `Contrato HTTP: CAMBIO AUTORIZADO`, con el
    cambio campo por campo y la decisión de `.ai/DOMAIN.md` que lo respalda.
 3. El traspaso al repo hermano que lo consume (`CLAUDE.md §El otro repositorio`).
@@ -386,7 +386,7 @@ el resto. Una característica del lenguaje se aplica sólo si **elimina líneas*
 ## 13. Zonas sensibles
 
 Tocar estas zonas de una forma que la fase no describe con precisión es motivo de parada
-(`.ai/WORKFLOW.md §2.9`):
+(`.ai/WORKFLOW.md §Zona sensible`):
 
 - Autenticación, sesiones, tokens y permisos.
 - Pagos, planes y facturación.

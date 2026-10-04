@@ -26,7 +26,7 @@
 5. Este archivo.
 6. El archivo de la fase activa (`.ai/epics/<NN-slug>/phase-<FF>.md`) y lo que cite en su §2.
 7. **El código real**, antes de citar un documento como evidencia de algo: si discrepan, gana el código y lo
-   reportas (`.ai/WORKFLOW.md §1`, la regla del `grep`).
+   reportas (`.ai/WORKFLOW.md §El ciclo obligatorio`, la regla del `grep`).
 
 ## Sincronización post-lectura
 
@@ -78,7 +78,7 @@ leer, un status, un mensaje) o cuando necesita que el otro repo cambie algo. El 
 la fase, no un bloqueo:
 
 1. Si el cambio **rompe el contrato** y la cabecera de la fase no lo autorizaba (`Contrato HTTP: SIN CAMBIOS`):
-   STOP & ASK (`.ai/WORKFLOW.md §2.1`). Si ya venía planificado (`CAMBIO AUTORIZADO`), empiezas en el paso 2.
+   STOP & ASK (`.ai/WORKFLOW.md §Contrato`). Si ya venía planificado (`CAMBIO AUTORIZADO`), empiezas en el paso 2.
 2. Escribe en «Lo que la siguiente fase necesita saber» qué afecta al otro repo y por qué.
 3. Crea su fila en `.ai/BACKLOG.md`, con Área = el repo hermano y, en el texto: `**Cambio:**` (qué hay que hacer
    allí), `**Origen:**` (`fase NN/FF` y el commit que lo exige) y, si un repo no puede desplegarse sin el otro,
@@ -122,7 +122,7 @@ En herramientas sin comandos, «ejecuta la siguiente fase» equivale a `/phase` 
    - las preguntas abiertas, si las hay.
 
    **Para y espera el visto bueno.** Lo que está en `.ai/DOMAIN.md` ya está decidido. Lo que no determinan ni el
-   código ni `DOMAIN.md` **no se inventa**: STOP & ASK (`.ai/WORKFLOW.md §3`). En el Paso A una pregunta no
+   código ni `DOMAIN.md` **no se inventa**: STOP & ASK (`.ai/WORKFLOW.md §STOP & ASK`). En el Paso A una pregunta no
    cambia el estado: la fase sigue `LISTA_PARA_EJECUTAR`, con la pregunta en su §8.
 3. **Paso B — ejecución (sólo con visto bueno explícito).** Pon la fase en `EN_CURSO` (§Estado de una fase) y haz
    el commit de arranque. Después, **una fila de §9 «Plan de commits» a la vez**, un commit por fila en cuanto pasa
@@ -154,8 +154,8 @@ de la fase y su fila en `.ai/STATE.md §Mapa de fases`. Transiciones (las ejecut
   sólo por §Cierre de épica. Es lo único del epic-plan que mantiene el ejecutor.
 
 Si el estado de la fase no coincide en los dos sitios, el guardián falla en el Paso 0: no toques nada y pregunta
-(`.ai/WORKFLOW.md §2.2`). La inconsistencia es un bug del cierre anterior; la recomendación por defecto es que
-gane el archivo de la fase, que es el que lleva el RESULTADO.
+(`.ai/WORKFLOW.md §Sin sentido lógico`). La inconsistencia es un bug del cierre anterior; la recomendación por
+defecto es que gane el archivo de la fase, que es el que lleva el RESULTADO.
 
 ### Alcance
 
@@ -170,8 +170,8 @@ gane el archivo de la fase, que es el que lleva el RESULTADO.
 
 `/phase` sin argumentos ejecuta la **fase activa**: la de la cabecera de `.ai/STATE.md`. Antes de fiarte de ella,
 `sh bin/check-docs.sh --strict`: comprueba que es la primera fila sin terminar del mapa y que su estado coincide en
-el archivo y en el mapa. Si falla, el puntero no es fiable: STOP & ASK (`.ai/WORKFLOW.md §2.2`). Con argumentos,
-la fase pedida tiene que ser la activa; si no, dilo y para.
+el archivo y en el mapa. Si falla, el puntero no es fiable: STOP & ASK (`.ai/WORKFLOW.md §Sin sentido lógico`).
+Con argumentos, la fase pedida tiene que ser la activa; si no, dilo y para.
 
 | Estado de la fase activa | Qué haces |
 |---|---|
@@ -193,10 +193,10 @@ del Paso A, porque la revalidación lee el código y tiene que ser el de la rama
 - **Ya estás en ella:** sigue.
 - **Existe y estás en otra:** pregunta si cambias a ella.
 - **No existe:** pregunta desde qué rama se crea. Candidatas, en este orden: la rama base de la épica
-  (`epic/<NN-slug>`) si su epic-plan la declara (`.ai/PLANNING.md §6`); `main`; la rama de la fase anterior (la
-  fila anterior del mapa); la rama actual. **Sólo se ofrecen ramas cuyo `git show <rama>:.ai/STATE.md` apunte ya a
-  esta fase**: eso prueba que la anterior está cerrada en esa base. Si descartas alguna, di por qué; si no vale
-  ninguna, dilo y para.
+  (`epic/<NN-slug>`) si su epic-plan la declara (`.ai/PLANNING.md §Rama base de la épica`); `main`; la rama de la
+  fase anterior (la fila anterior del mapa); la rama actual. **Sólo se ofrecen ramas cuyo
+  `git show <rama>:.ai/STATE.md` apunte ya a esta fase**: eso prueba que la anterior está cerrada en esa base. Si
+  descartas alguna, di por qué; si no vale ninguna, dilo y para.
 
 Para crear la rama o cambiar a ella, el árbol de trabajo tiene que estar limpio; si no, dilo y para. Ya en la rama,
 vuelve a leer `.ai/STATE.md` (manda el de esa rama) y a resolver la fase: si sale otra, dilo y para. Sólo ramas
@@ -224,7 +224,7 @@ Esta es la **única** regla sobre commits del repositorio; los demás archivos r
   algo, `git reset --soft HEAD~1` y rehazlo.
 - **Retoques.** Lo que no encaja en ninguna fila pero es parte necesaria de un entregable (o una corrección tras un
   `verify` rojo, que es un `fix(...)` por corrección) va en su propio commit y se lista en el RESULTADO. Lo que es
-  alcance nuevo no se commitea: STOP & ASK (`.ai/WORKFLOW.md §2.2`).
+  alcance nuevo no se commitea: STOP & ASK (`.ai/WORKFLOW.md §Sin sentido lógico`).
 - **Pruebas en rojo** («el test falla si quito X»): sobre trabajo ya commiteado o sobre una copia fuera del repo.
   `git restore` sobre un archivo con cambios sin commitear se los lleva.
 - **Cierre.** `chore(phase-<NN>-<FF>): close`, con el RESULTADO, `STATE.md`, `DOMAIN.md`, `BACKLOG.md`,
@@ -241,8 +241,8 @@ Siempre, también si la fase se bloqueó o la verificación quedó roja:
 1. Rellena `RESULTADO DE LA EJECUCIÓN` en el archivo de la fase, sin borrar encabezados. El campo más importante es
    **«Lo que la siguiente fase necesita saber»**: la próxima sesión empieza sin memoria y es lo único que leerá de
    esta.
-2. Marca las casillas del §5 como dice `.ai/WORKFLOW.md §2.10`: ejecutadas tal como están escritas y con su salida
-   pegada en «Verificación».
+2. Marca las casillas del §5 como dice `.ai/WORKFLOW.md §Un criterio de éxito no se puede cumplir`: ejecutadas tal
+   como están escritas y con su salida pegada en «Verificación».
 3. Estado final en la fase y en el mapa, con la fecha en `Cerrada`, y el puntero de `.ai/STATE.md` según §Estado de
    una fase. Regenera las zonas de §Sincronización post-lectura y añade el cierre a `§Últimos movimientos`.
 4. Decisiones de negocio nuevas a `.ai/DOMAIN.md §Decisiones tomadas`, con fecha y fase.
@@ -267,7 +267,8 @@ la última fase queda `BLOQUEADA` o `VERIFICACION_ROJA`, no hay cierre de épica
 queda en esa fase.
 
 1. **Comprueba cada casilla del «Criterio de cierre»** del epic-plan igual que las del §5 de una fase
-   (`.ai/WORKFLOW.md §2.10`), con su salida en «Verificación» del RESULTADO de esta última fase.
+   (`.ai/WORKFLOW.md §Un criterio de éxito no se puede cumplir`), con su salida en «Verificación» del RESULTADO de
+   esta última fase.
 2. **Marca las que se cumplen.** No reescribas un criterio para que se cumpla: cambiarlo es planificar y lo decide
    el Tech Lead.
 3. **Si se cumplen todas**, la cabecera del epic-plan pasa a `Estado: CERRADA` y `.ai/STATE.md §Últimos movimientos`
@@ -291,7 +292,7 @@ el guardián de los documentos.
   el `bash bin/verify.sh` completo.**
 - Máximo **3 intentos** de ponerlo en verde dentro de la fase; cada corrección es su propio commit. Si al tercero
   sigue rojo, la fase se cierra `VERIFICACION_ROJA` con los fallos concretos pegados en el RESULTADO.
-- Si se pone rojo por algo ajeno a la fase: `.ai/WORKFLOW.md §4`.
+- Si se pone rojo por algo ajeno a la fase: `.ai/WORKFLOW.md §Cuando un gate se pone rojo por algo ajeno a la fase`.
 
 ## Cosas que no se hacen
 

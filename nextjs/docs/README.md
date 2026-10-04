@@ -16,4 +16,4 @@
    cubre; si la versión instalada cambia, la nota se revisa en la misma fase.
 3. Un procedimiento operativo va a `runbooks/<procedimiento>.md`.
 4. Las referencias se verifican con `grep`: nombre de función, componente o sección, nunca número de línea
-   (`.ai/WORKFLOW.md §7`).
+   (`.ai/WORKFLOW.md §Documentación`).
