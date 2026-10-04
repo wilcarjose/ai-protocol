@@ -81,6 +81,7 @@ run() {
 
 # El contrato HTTP no cambia sin autorización (.ai/RULES.md §Contrato HTTP): si las rutas difieren del
 # baseline, el cambio es involuntario hasta que se demuestre lo contrario.
+# shellcheck disable=SC2329  # se invoca a través de run()
 routes_gate() {
     if [ ! -f docs/contract/routes-baseline.txt ]; then
         echo 'falta docs/contract/routes-baseline.txt; genéralo con:'
@@ -96,6 +97,7 @@ routes_gate() {
 }
 
 # La deuda de análisis estático sólo mengua (.ai/RULES.md §Verificación del stack).
+# shellcheck disable=SC2329  # se invoca a través de run()
 phpstan_debt_gate() {
     n=0
     [ -f phpstan-baseline.neon ] && n=$(grep -c 'message:' phpstan-baseline.neon)
@@ -107,6 +109,7 @@ phpstan_debt_gate() {
 }
 
 # La suite completa y su baseline: el conteo sale de la línea «Tests: … N passed» de Pest.
+# shellcheck disable=SC2329  # se invoca a través de run()
 tests_gate() {
     ./vendor/bin/pest --colors=never > "$TMPD/pest.log" 2>&1
     rc=$?

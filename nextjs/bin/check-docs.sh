@@ -124,6 +124,8 @@ report() {
     : > "$PROBLEMS"
 }
 rel() { printf '%s' "${1#"$ROOT"/}"; }
+# Las líneas no vacías de $1 en una sola, separadas por espacios y cada una con el prefijo $2.
+inline() { printf '%s\n' "$1" | awk -v p="${2:-}" 'NF { printf "%s%s ", p, $0 }'; }
 
 # Líneas de la sección «## <título>» de un archivo, hasta la siguiente «## ».
 section() { awk -v t="## $2" 'index($0, t) == 1 { f = 1; next } f && /^## / { exit } f' "$1"; }
@@ -182,6 +184,7 @@ NN_ACT=''
 # Repos hermanos: los nombres entre comillas invertidas de «> **Repos hermanos:**» de CLAUDE.md.
 REPOS=$(sed -n 's/^> \*\*Repos hermanos:\*\* *//p' "$CLAUDE_MD" | head -n 1)
 case "$REPOS" in *'{{'*) REPOS='' ;; esac
+# shellcheck disable=SC2016  # las comillas invertidas son literales
 REPOS=$(printf '%s\n' "$REPOS" | grep -oE '`[^`]+`' | tr -d '`' | tr '\n' ' ')
 
 TPL_HAS_MIG=0
@@ -206,6 +209,7 @@ for key in 'Épica activa' 'Fase activa' 'Archivo de la fase' 'Decisiones abiert
 done
 grep -qE '^- \*\*(Épica activa|Fase activa):\*\* *[^ ]+ +[^ ]' "$STATE" \
     && bad 'STATE.md: «Épica activa» o «Fase activa» lleva texto detrás del valor; las notas van en §Bloqueo activo'
+# shellcheck disable=SC2016  # las comillas invertidas son literales
 grep -qE '^- \*\*Archivo de la fase:\*\* *(`[^`]+`|—) *$' "$STATE" \
     || bad 'STATE.md: «Archivo de la fase» lleva algo más que la ruta entre comillas invertidas (o «—»)'
 
@@ -234,10 +238,10 @@ awk '$3 == "EN_CURSO" { print $1 "/" $2 }' "$MAP" | while read -r r; do
     [ "$r" = "$ACT_EPIC/$ACT_PH" ] || bad "STATE.md: $r está EN_CURSO, pero la fase activa es $ACT_EPIC/$ACT_PH; sólo una sesión ejecuta"
 done
 
-for e in $(awk '!seen[$1]++ { print $1 }' "$MAP"); do
+awk '!seen[$1]++ { print $1 }' "$MAP" | while read -r e; do
     seq=$(awk -v e="$e" '$1 == e { print $2 }' "$MAP")
     [ "$seq" = "$(printf '%s\n' "$seq" | sort)" ] \
-        || bad "STATE.md §Mapa de fases: las filas de $e no están en orden de ejecución ($(printf '%s ' $seq))"
+        || bad "STATE.md §Mapa de fases: las filas de $e no están en orden de ejecución ($(inline "$seq"))"
 done
 report fail 'el puntero coincide con el mapa' 'el puntero de STATE.md no es fiable:'
 
@@ -354,16 +358,16 @@ for d in "$AI"/epics/*/; do
 
     seq=$(epic_table "$plan")
     [ "$seq" = "$(printf '%s\n' "$seq" | sort)" ] \
-        || bad "$r: la tabla «Fases» no está en orden de ejecución ($(printf '%s ' $seq))"
+        || bad "$r: la tabla «Fases» no está en orden de ejecución ($(inline "$seq"))"
     mseq=$(awk -v e="$e" '$1 == e { print $2 }' "$MAP" | sort)
     [ "$(printf '%s\n' "$seq" | sort)" = "$mseq" ] \
-        || bad "$r: la tabla «Fases» ($(printf '%s ' $seq)) y STATE.md §Mapa de fases ($(printf '%s ' $mseq)) no tienen las mismas fases"
+        || bad "$r: la tabla «Fases» ($(inline "$seq")) y STATE.md §Mapa de fases ($(inline "$mseq")) no tienen las mismas fases"
 
-    for id in $(grep -oE '(^|[^A-Za-z0-9])D[0-9]+' "$plan" | sed 's/^[^D]*//' | sort -u); do
+    grep -oE '(^|[^A-Za-z0-9])D[0-9]+' "$plan" | sed 's/^[^D]*//' | sort -u | while read -r id; do
         grep -qx "$id" "$DOM_IDS" || bad "$r: cita $id, que no existe en DOMAIN.md §Decisiones pendientes"
     done
 done
-for e in $(awk '{ print $1 }' "$MAP" | sort -u); do
+awk '{ print $1 }' "$MAP" | sort -u | while read -r e; do
     [ -d "$AI/epics/$e" ] || bad "STATE.md §Mapa de fases: la épica $e no tiene carpeta en .ai/epics/"
 done
 if [ -n "$NN_ACT" ] && [ -f "$AI/epics/$ACT_EPIC/epic-plan.md" ] && [ "$OPEN" -gt 0 ] \
@@ -379,15 +383,15 @@ check_ref() { has_phase "${2%%/*}" "${2#*/}" || bad "$(rel "$1"): cita la fase $
 
 for f in "$DOMAIN" "$STATE" "$BACKLOG" "$MANIFEST" "$AI"/epics/*/*.md; do
     [ -f "$f" ] || continue
-    for x in $(grep -oE '[Ff]ases? [0-9][0-9]/[0-9][0-9][a-z]?' "$f" | sed 's/^[Ff]ases* //' | sort -u); do
+    grep -oE '[Ff]ases? [0-9][0-9]/[0-9][0-9][a-z]?' "$f" | sed 's/^[Ff]ases* //' | sort -u | while read -r x; do
         check_ref "$f" "$x"
     done
 done
-for x in $(awk -F'|' '/^\| *D[0-9]+ *\|/ { print $(NF-4) }' "$DOMAIN" | grep -oE '[0-9][0-9]/[0-9][0-9][a-z]?' | sort -u); do
+awk -F'|' '/^\| *D[0-9]+ *\|/ { print $(NF-4) }' "$DOMAIN" | grep -oE '[0-9][0-9]/[0-9][0-9][a-z]?' | sort -u | while read -r x; do
     check_ref "$DOMAIN" "$x"
 done
 if [ -f "$MANIFEST" ]; then
-    for x in $(awk -F'|' '/^\| *[0-9][0-9]\/[0-9][0-9][a-z]? *\|/ { x = $2; gsub(/[ \t]/, "", x); print x }' "$MANIFEST" | sort -u); do
+    awk -F'|' '/^\| *[0-9][0-9]\/[0-9][0-9][a-z]? *\|/ { x = $2; gsub(/[ \t]/, "", x); print x }' "$MANIFEST" | sort -u | while read -r x; do
         check_ref "$MANIFEST" "$x"
     done
 fi
@@ -397,7 +401,7 @@ for d in "$AI"/epics/*/; do
     e=$(basename "$d")
     for f in "$d"*.md; do
         [ -f "$f" ] || continue
-        for x in $(grep -oE '[Ff]ases? [0-9][0-9][a-z]?/?' "$f" | grep -v '/$' | sed 's/^[Ff]ases* //' | sort -u); do
+        grep -oE '[Ff]ases? [0-9][0-9][a-z]?/?' "$f" | grep -v '/$' | sed 's/^[Ff]ases* //' | sort -u | while read -r x; do
             has_phase "${e%%-*}" "$x" || bad "$(rel "$f"): cita la fase $x, que no está en la tabla «Fases» de su épica"
         done
     done
@@ -478,7 +482,7 @@ blq=$(strip_comments "$STATE" | awk 'index($0, "## Bloqueo activo") == 1 { f = 1
 blq_ids=$(printf '%s\n' "$blq" | grep -oE '(^|[^A-Za-z0-9])D[0-9]+' | sed 's/^[^D]*//' | sort -u)
 want_ids=$(awk '$2 == 1 { print $1 }' "$TMPD/dpend" | sort -u)
 [ "$blq_ids" = "$want_ids" ] \
-    || bad "STATE.md §Bloqueo activo nombra «$(printf '%s ' $blq_ids)» y las decisiones pendientes que bloquean la épica activa son «$(printf '%s ' $want_ids)»"
+    || bad "STATE.md §Bloqueo activo nombra «$(inline "$blq_ids")» y las decisiones pendientes que bloquean la épica activa son «$(inline "$want_ids")»"
 [ "$d_m" -gt 0 ] || printf '%s\n' "$blq" | grep -q 'Ninguno' \
     || bad 'STATE.md §Bloqueo activo: no hay decisiones que bloqueen y la sección no dice «**Ninguno.**»'
 
@@ -507,7 +511,7 @@ fi
 tbl_ids=$(section "$STATE" 'Pendientes en otros repos' | grep -oE '^\| *#[0-9]+' | tr -dc '0-9\n' | sort -u)
 want_ids=$(awk '{ print $1 }' "$TMPD/xpend" | sort -u)
 [ "$tbl_ids" = "$want_ids" ] \
-    || bad "STATE.md §Pendientes en otros repos lista «$(printf '#%s ' $tbl_ids)» y BACKLOG.md tiene abiertas «$(printf '#%s ' $want_ids)»"
+    || bad "STATE.md §Pendientes en otros repos lista «$(inline "$tbl_ids" '#')» y BACKLOG.md tiene abiertas «$(inline "$want_ids" '#')»"
 report fail "contadores al día (decisiones: $d_n/$d_m · otros repos: $x_n/$x_m)" 'STATE.md no está sincronizado (CLAUDE.md §Sincronización post-lectura):'
 
 # ── 8. Destinos de BACKLOG.md ───────────────────────────────────────────────
@@ -588,6 +592,7 @@ NORMATIVE="$CLAUDE_MD $ROOT/AGENTS.md $RULES $AI/WORKFLOW.md $AI/PLANNING.md $DO
 printf '◆ rutas citadas en los documentos normativos (aviso; falla con --strict)\n'
 for src in $NORMATIVE; do
     [ -f "$src" ] || continue
+    # shellcheck disable=SC2016  # las comillas invertidas son literales
     for c in $(grep -oE '`[A-Za-z0-9_.][A-Za-z0-9_./@-]*/[A-Za-z0-9_.@-]+\.(php|ts|tsx|js|mjs|cjs|md|mdc|sh|json|neon|txt|xml|yml|yaml)`' "$src" \
                | tr -d '`' | sort -u); do
         case "$c" in ../*) continue ;; esac
