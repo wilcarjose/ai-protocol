@@ -10,10 +10,12 @@
 #                    activa está EN_CURSO; las filas de cada épica, en orden.
 #   2. fases       — cada phase-*.md: estado válido e igual al del mapa;
 #                    «Contrato HTTP» válido; los campos de cabecera propios del
-#                    stack que pida la plantilla; §9 con filas; «Depende de»
-#                    sólo cita fases anteriores; RESULTADO vacío si no empezó,
-#                    relleno si se cerró y con los encabezados de la plantilla;
-#                    una HECHA, con todas las casillas del §5 marcadas.
+#                    stack que pida la plantilla; «Plan de commits» con filas;
+#                    «Depende de» sólo cita fases anteriores; RESULTADO vacío si
+#                    no empezó, relleno si se cerró y con los encabezados de la
+#                    plantilla; una HECHA, con todas las casillas de «Criterios
+#                    de éxito» marcadas. Las secciones se buscan por su nombre,
+#                    con o sin número delante («## 5. Criterios de éxito»).
 #   3. épicas      — cada epic-plan: estado válido y coherente con el mapa
 #                    (CERRADA = todas HECHA y criterio de cierre marcado); su
 #                    tabla «Fases», en orden y con las mismas fases que el
@@ -129,6 +131,17 @@ inline() { printf '%s\n' "$1" | awk -v p="${2:-}" 'NF { printf "%s%s ", p, $0 }'
 
 # Líneas de la sección «## <título>» de un archivo, hasta la siguiente «## ».
 section() { awk -v t="## $2" 'index($0, t) == 1 { f = 1; next } f && /^## / { exit } f' "$1"; }
+
+# Líneas de la sección de una fase que se llama <nombre>, con o sin número delante («## 5. <nombre>»), hasta la
+# siguiente «## » o «---». Sale != 0 si la fase no la tiene. Por nombre: renumerar la plantilla no la pierde.
+phase_section() {
+    awk -v t="$2" '
+        /^## / { if (f) exit; h = substr($0, 4); sub(/^[0-9]+[a-z]?\. */, "", h); sub(/ +$/, "", h)
+                 if (h == t) { f = 1; next } }
+        f && /^---/ { exit }
+        f
+        END { exit f ? 0 : 1 }' "$1"
+}
 
 # Valor de una clave de la cabecera de STATE.md («- **Clave:** valor»).
 state_field() { sed -n "s/^- \*\*$1:\*\* *//p" "$STATE" | head -n 1; }
@@ -246,7 +259,7 @@ done
 report fail 'el puntero coincide con el mapa' 'el puntero de STATE.md no es fiable:'
 
 # ── 2. Fases ────────────────────────────────────────────────────────────────
-printf '◆ fases (estado igual al del mapa, cabecera, §9, «Depende de», RESULTADO)\n'
+printf '◆ fases (estado igual al del mapa, cabecera, «Plan de commits», «Depende de», RESULTADO)\n'
 
 TPL_HEADS="$TMPD/tpl-heads"
 awk '/^## RESULTADO DE LA EJECUCI/ { f = 1; next } f && /^### / { print }' "$TPL_PHASE" > "$TPL_HEADS"
@@ -276,8 +289,10 @@ for f in "$AI"/epics/*/phase-*.md; do
         grep -q '^> \*\*Migraciones:\*\* ' "$f" || bad "$r: la cabecera no tiene «Migraciones:» (la plantilla lo pide)"
     fi
 
-    awk '/^## 9\./ { s = 1; next } s && /^(## |---)/ { exit } s && /^\| *[0-9]+[a-z]? *\|/ { n++ }
-         END { exit (n > 0) ? 0 : 1 }' "$f" || bad "$r: §9 «Plan de commits» sin filas"
+    for sec in 'Criterios de éxito' 'Plan de commits'; do
+        phase_section "$f" "$sec" > /dev/null || bad "$r: no tiene la sección «$sec» (la de la plantilla)"
+    done
+    phase_section "$f" 'Plan de commits' | grep -qE '^\| *[0-9]+[a-z]? *\|' || bad "$r: «Plan de commits» sin filas"
 
     # «Depende de» sólo cita fases anteriores de su épica; las de otra épica («NN/FF») no se comparan.
     for dep in $(sed -n 's/.*\*\*Depende de:\*\* *//p' "$f" | head -n 1 \
@@ -308,8 +323,8 @@ for f in "$AI"/epics/*/phase-*.md; do
     esac
 
     if [ "$fs" = HECHA ]; then
-        n=$(awk '/^## 5\./ { s = 1; next } s && /^## / { exit } s && /^- \[ \]/ { c++ } END { print c + 0 }' "$f")
-        [ "$n" -eq 0 ] || bad "$r (HECHA): $n casilla(s) del §5 sin marcar (.ai/WORKFLOW.md §2.10)"
+        n=$(phase_section "$f" 'Criterios de éxito' | grep -c '^- \[ \]')
+        [ "$n" -eq 0 ] || bad "$r (HECHA): $n casilla(s) de «Criterios de éxito» sin marcar (.ai/WORKFLOW.md §2.10)"
     else
         # Una fase viva tiene los encabezados del RESULTADO de la plantilla vigente: si se escribió con una
         # plantilla vieja, salta en su Paso A y no al cerrarla. Las HECHA son historia.
