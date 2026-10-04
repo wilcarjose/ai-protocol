@@ -37,8 +37,9 @@
 #                    versión, con composer.json / package.json.
 #  10. cross-repo  — ningún archivo cita documentos de un repo hermano.
 #  11. rutas       — las rutas citadas en los documentos normativos existen.
-#  12. secciones   — toda referencia «archivo.md §Sección» apunta a una
-#                    sección que existe.
+#  12. secciones   — toda referencia «archivo.md §Sección» cita la sección por
+#                    su nombre, no por su número, y el nombre es el de una
+#                    sección que existe (un número no sobrevive a renumerar).
 #
 #   11 y 12 son heurísticos (sacan rutas y secciones de la prosa): avisan, y
 #   sólo bloquean con --strict. El resto son comparaciones exactas y bloquean
@@ -61,7 +62,8 @@
 #    9. cambia una versión de la tabla de RULES.md §Stack.
 #   10. escribe «<repo hermano>/docs/x.md» en cualquier .md.
 #   11. cita `bin/no-existe.sh` en CLAUDE.md.
-#   12. cita `.ai/RULES.md §No existe` en CLAUDE.md.
+#   12. cita `.ai/RULES.md §No existe` en CLAUDE.md, o cita una que existe
+#       por su número: `.ai/WORKFLOW.md §3`.
 #
 # ◆ PORTABILIDAD
 #   POSIX sh y awk/sed/grep sin extensiones GNU: corre igual en el host que en
@@ -324,7 +326,7 @@ for f in "$AI"/epics/*/phase-*.md; do
 
     if [ "$fs" = HECHA ]; then
         n=$(phase_section "$f" 'Criterios de éxito' | grep -c '^- \[ \]')
-        [ "$n" -eq 0 ] || bad "$r (HECHA): $n casilla(s) de «Criterios de éxito» sin marcar (.ai/WORKFLOW.md §2.10)"
+        [ "$n" -eq 0 ] || bad "$r (HECHA): $n casilla(s) de «Criterios de éxito» sin marcar (.ai/WORKFLOW.md §Un criterio de éxito no se puede cumplir)"
     else
         # Una fase viva tiene los encabezados del RESULTADO de la plantilla vigente: si se escribió con una
         # plantilla vieja, salta en su Paso A y no al cerrarla. Las HECHA son historia.
@@ -619,7 +621,7 @@ for src in $NORMATIVE; do
 done
 report warn 'todas las rutas citadas existen' 'rutas citadas que no existen:'
 
-printf '◆ referencias «archivo.md §Sección» (aviso; falla con --strict)\n'
+printf '◆ referencias «archivo.md §Sección» (por su nombre; aviso, falla con --strict)\n'
 # «archivo<TAB>sección» por cada «X.md §Sección». La sección termina en una comilla invertida, una
 # puntuación, un punto seguido de espacio, «», », «—», «-->» u otro «§»; y sin un «y»/«o» final. Escribir la
 # referencia entre comillas invertidas (`CLAUDE.md §Cierre de fase`) la delimita sin ambigüedad.
@@ -657,15 +659,13 @@ while IFS="$TAB" read -r src file sec; do
         *) continue ;;
     esac
     case "$sec" in *'<'*|*'NN'*) continue ;; esac
-    heads=$(grep -E '^#{2,4} ' "$t" | sed -E 's/^#+ +//')
-    if printf '%s' "$sec" | grep -qE '^[0-9]+$'; then
-        printf '%s\n' "$heads" | grep -qE "^$sec\\." && continue
-    else
-        printf '%s\n' "$heads" | grep -qF "$sec" && continue
-    fi
+    case "$sec" in
+        [0-9]*) bad "$src: cita «$file §$sec» por su número; cítala por su nombre"; continue ;;
+    esac
+    grep -E '^#{2,4} ' "$t" | sed -E 's/^#+ +//' | grep -qF "$sec" && continue
     bad "$src: cita «$file §$sec», que no es ninguna sección de $file"
 done < "$TMPD/refs"
-report warn 'todas las referencias a secciones existen' 'referencias a secciones que no existen:'
+report warn 'todas las referencias a secciones existen y van por su nombre' 'referencias a secciones que no existen o van por su número:'
 
 # ── Veredicto ───────────────────────────────────────────────────────────────
 printf '\n'
