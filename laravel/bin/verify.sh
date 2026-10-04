@@ -126,10 +126,12 @@ run 'estilo'        ./vendor/bin/pint --test
 run 'análisis'      ./vendor/bin/phpstan analyse --no-progress --memory-limit="$PHPSTAN_MEMORY_LIMIT"
 run 'deuda'         phpstan_debt_gate
 run 'rutas'         routes_gate
-run 'arquitectura'  ./vendor/bin/pest --colors=never tests/Architecture
+# La suite completa ya incluye tests/Architecture: con --fast es lo único que corre de Pest; sin él, no se repite.
 if [ "$FAST" -eq 0 ]; then
+    printf '\n▸ arquitectura  (dentro de la suite)\n'
     run 'suite'     tests_gate
 else
+    run 'arquitectura'  ./vendor/bin/pest --colors=never tests/Architecture
     printf '\n▸ suite  (omitida con --fast; el cierre de una fase exige el verify completo)\n'
 fi
 
