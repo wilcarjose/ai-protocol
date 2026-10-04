@@ -34,6 +34,7 @@ AGENTS.md                 Redirección a CLAUDE.md para Cursor, Codex, aider… 
   settings.json           Permisos del agente (qué puede ejecutar sin preguntar y qué nunca).        [stack]
 bin/
   check-docs.sh           El guardián: 13 chequeos sobre la coherencia de la memoria.                [común]
+  measure-context.sh      Cuántos caracteres lee cada tipo de sesión al arrancar.                    [común]
   verify.sh               El único árbitro: gates, su orden y la baseline que nunca empeora.         [stack]
 docs/
   README.md               Qué va en cada carpeta de docs/.                                           [stack]

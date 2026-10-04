@@ -27,6 +27,7 @@ AGENTS.md
 .claude/commands/phase.md
 .claude/commands/close.md
 bin/check-docs.sh
+bin/measure-context.sh
 docs/runbooks/release.md
 "
 
