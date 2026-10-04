@@ -5,7 +5,7 @@
 # El protocolo es uno solo; cada kit añade lo propio de su stack. Los archivos
 # de COMMON tienen que ser byte a byte iguales en todos los kits: una mejora se
 # hace en uno y se copia a los demás en el mismo commit. Los demás archivos de
-# cada kit son propios de su stack (README.md, «Qué es común y qué es del stack»).
+# cada kit son propios de su stack (README.md §Qué hay en cada kit).
 #
 #   sh check-kits.sh     # sale != 0 si un archivo común difiere o falta
 # ─────────────────────────────────────────────────────────────────────────────
