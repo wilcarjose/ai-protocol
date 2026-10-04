@@ -23,9 +23,8 @@
 2. `.ai/DOMAIN.md` — lo decidido. **No se vuelve a preguntar.**
 3. `.ai/RULES.md` — stack, alcance, contrato, arquitectura, lista negra.
 4. `.ai/WORKFLOW.md` — ciclo del ejecutor, criterios de parada, reporte.
-5. Este archivo.
-6. El archivo de la fase activa (`.ai/epics/<NN-slug>/phase-<FF>.md`) y lo que cite en su §2.
-7. **El código real**, antes de citar un documento como evidencia de algo: si discrepan, gana el código y lo
+5. El archivo de la fase activa (`.ai/epics/<NN-slug>/phase-<FF>.md`) y lo que cite en su §2.
+6. **El código real**, antes de citar un documento como evidencia de algo: si discrepan, gana el código y lo
    reportas (`.ai/WORKFLOW.md §El ciclo obligatorio`, la regla del `grep`).
 
 ## Sincronización post-lectura
