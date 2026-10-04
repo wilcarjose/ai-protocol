@@ -1,0 +1,33 @@
+# La CI del kit: en cada PR, los scripts pasan shellcheck, los archivos comunes son idénticos en los dos kits y
+# el guardián de cada kit pasa sobre una instalación de prueba y detecta cada fallo provocado (tests/run.sh).
+name: kit
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  kit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # La misma versión que en local, para que los avisos no cambien con la imagen del runner.
+      - name: shellcheck
+        run: |
+          pip install --quiet shellcheck-py==0.11.0.1
+          shellcheck -s sh check-kits.sh laravel/bin/*.sh nextjs/bin/*.sh tests/*.sh
+
+      - name: kits idénticos
+        run: sh check-kits.sh
+
+      - name: tests
+        run: sh tests/run.sh
+
+      # Los scripts prometen POSIX sh y busybox: la imagen habitual de PHP (php:*-alpine) no trae bash.
+      - name: tests en Alpine (busybox)
+        run: docker run --rm -v "$PWD":/k:ro -w /k alpine:3 sh tests/run.sh
