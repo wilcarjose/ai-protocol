@@ -52,7 +52,7 @@ e2e/**
 ### ⛔ Fuera de alcance salvo autorización explícita de la fase
 
 ```
-package.json, lockfile     ← ninguna dependencia nueva sin preguntar
+package.json, lockfile     ← dependencias nuevas: .ai/WORKFLOW.md §Dependencia nueva
 tsconfig.json              ← nunca se relaja
 eslint.config.*            ← nunca se bajan reglas; una regla nueva, con la fase
 next.config.*              ← sólo si la fase lo pide
@@ -279,18 +279,20 @@ el script:
 
 ## 13. Lista negra
 
+Las prohibiciones que valen para cualquier stack no se repiten aquí: no arreglar de paso (`CLAUDE.md §Alcance`),
+dependencias nuevas (`.ai/WORKFLOW.md §Dependencia nueva`) y exenciones a un gate
+(`.ai/WORKFLOW.md §Obediencia arquitectónica`). Éstas son las de Next.js:
+
 1. ⛔ **No inventes funcionalidad** ni formas de respuesta.
-2. ⛔ **No arregles bugs que encuentres de paso**: a `.ai/BACKLOG.md`.
-3. ⛔ **No uses `fetch` ni un cliente HTTP fuera de `src/shared/api/`.**
-4. ⛔ **No uses `any`**, ni casts sobre datos externos.
-5. ⛔ **No traduzcas ni reescribas los mensajes de error del backend.**
-6. ⛔ **No compares códigos de error por su texto ni en otra capitalización** que la del contrato.
-7. ⛔ **No construyas claves de caché a mano** (§3.5).
-8. ⛔ **No guardes tokens en `localStorage` ni `sessionStorage`.**
-9. ⛔ **No instales dependencias** sin que la fase lo pida.
-10. ⛔ **No escribas en el repo hermano** ni cites sus documentos (`CLAUDE.md §El otro repositorio`).
-11. ⛔ **No dejes llamadas de depuración**: `console.log`, `debugger`.
-12. ⛔ **No cites catálogos mutables** (`P<n>-<m>`, `§X` de una lista que se renumera) desde código, tests ni
+2. ⛔ **No uses `fetch` ni un cliente HTTP fuera de `src/shared/api/`.**
+3. ⛔ **No uses `any`**, ni casts sobre datos externos.
+4. ⛔ **No traduzcas ni reescribas los mensajes de error del backend.**
+5. ⛔ **No compares códigos de error por su texto ni en otra capitalización** que la del contrato.
+6. ⛔ **No construyas claves de caché a mano** (§3.5).
+7. ⛔ **No guardes tokens en `localStorage` ni `sessionStorage`.**
+8. ⛔ **No escribas en el repo hermano** ni cites sus documentos (`CLAUDE.md §El otro repositorio`).
+9. ⛔ **No dejes llamadas de depuración**: `console.log`, `debugger`.
+10. ⛔ **No cites catálogos mutables** (`P<n>-<m>`, `§X` de una lista que se renumera) desde código, tests ni
     documentos. El porqué que debe sobrevivir va a `.ai/DOMAIN.md` o a `docs/adr/`.
 
 ### Archivos que NO se usan como referencia

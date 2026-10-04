@@ -131,7 +131,7 @@ En herramientas sin comandos, «ejecuta la siguiente fase» equivale a `/phase` 
 5. **Paso C — cierre, siempre**, también si la fase queda bloqueada o en rojo (§Cierre de fase). Una fase sin
    cerrar no ha terminado.
 6. **Revisión.** La rama se queda en local. El Tech Lead la revisa con `git log --oneline <base>..HEAD` y
-   `git diff <base>...HEAD`, y decide el merge. **Nunca `git push`.**
+   `git diff <base>...HEAD`, y decide el merge. La IA no empuja nada (§Commits durante la fase).
 
 ### Estado de una fase
 
@@ -200,7 +200,7 @@ del Paso A, porque la revalidación lee el código y tiene que ser el de la rama
 
 Para crear la rama o cambiar a ella, el árbol de trabajo tiene que estar limpio; si no, dilo y para. Ya en la rama,
 vuelve a leer `.ai/STATE.md` (manda el de esa rama) y a resolver la fase: si sale otra, dilo y para. Sólo ramas
-locales: nada de `git fetch` ni `git push`.
+locales: nada de `git fetch` ni de push (§Commits durante la fase).
 
 Los merges los decide el Tech Lead tras revisar la rama, y la IA sólo los ejecuta si él lo pide. Si la épica
 declara rama base, las fases se mergean con `--no-ff` a `epic/<NN-slug>`, y ésta a `main` sólo al cerrar la épica.
@@ -246,7 +246,7 @@ Siempre, también si la fase se bloqueó o la verificación quedó roja:
 3. Estado final en la fase y en el mapa, con la fecha en `Cerrada`, y el puntero de `.ai/STATE.md` según §Estado de
    una fase. Regenera las zonas de §Sincronización post-lectura y añade el cierre a `§Últimos movimientos`.
 4. Decisiones de negocio nuevas a `.ai/DOMAIN.md §Decisiones tomadas`, con fecha y fase.
-5. Hallazgos fuera de alcance a `.ai/BACKLOG.md`. **No los arregles.**
+5. Hallazgos fuera de alcance a `.ai/BACKLOG.md`, sin arreglarlos (§Alcance).
 6. Lo que estorbó del protocolo (la sección «Qué mejorarías del protocolo» del RESULTADO) a `.ai/PROTOCOL.md`.
 7. **Si la fase añade algo que hay que hacer en producción al desplegarla** —una migración, un comando, una
    variable de entorno o de configuración, un cambio de cron o de colas, una restricción de orden—, una fila por
@@ -296,13 +296,13 @@ el guardián de los documentos.
 
 ## Cosas que no se hacen
 
-- Instalar dependencias sin preguntar.
-- Ampliar el alcance de la fase más allá de §Alcance.
-- Modificar, saltar o debilitar un test para que pase un cambio; bajar el nivel de un linter o de un analizador; añadir
-  exenciones a un gate. Lo que no pasa la barandilla está mal.
+- Instalar una dependencia nueva sin preguntar (`.ai/WORKFLOW.md §Dependencia nueva`).
+- Ampliar el alcance de la fase o arreglar lo que encuentres de paso (§Alcance).
+- Modificar, saltar o debilitar un test para que pase un cambio, o bajar el nivel de un linter o de un analizador.
+- Añadir exenciones a un gate (`.ai/WORKFLOW.md §Obediencia arquitectónica`).
 - Dejar llamadas de depuración en el código (las de `.ai/RULES.md §Lista negra`).
 - Tocar los archivos de «No tocar» de la fase o lo que `.ai/RULES.md §Alcance` deja fuera.
 - Escribir en el otro repositorio o citar sus documentos (§El otro repositorio).
 - Modificar este archivo, `.ai/RULES.md` o `.ai/WORKFLOW.md` desde una fase. Si crees que están mal: STOP & ASK, y
   la propuesta a `.ai/PROTOCOL.md`.
-- `git push`.
+- `git push` (§Commits durante la fase).
