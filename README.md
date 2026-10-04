@@ -8,7 +8,7 @@ comprueba que esa memoria no miente, y un único árbitro (`bin/verify.sh`) deci
 Sale del protocolo que se construyó en el backend y el frontend de Kiniela Pro, unificado en una sola versión con lo
 mejor de cada repo y sin nada propio de ese proyecto.
 
-**Versión del kit:** 2026-10-01.
+**Versión del kit:** 2026-10-04.
 
 ## Qué hay en cada kit
 
@@ -172,8 +172,8 @@ criterio de cierre; que las fases citadas existen; el manifiesto de despliegue; 
 citen documentos del repo hermano; y que las rutas y secciones citadas existan. Corre igual en el host que en un
 contenedor Alpine (busybox).
 
-Su cabecera explica cómo provocar cada fallo a mano: un chequeo nuevo se prueba en las dos direcciones (falla con el
-defecto, pasa sin él).
+Su cabecera explica cómo provocar cada fallo, y `sh tests/run.sh` lo hace en los dos kits: instala cada uno con una
+épica de prueba, comprueba que el guardián pasa y que cada fallo provocado lo hace saltar con su mensaje.
 
 ## Diferencias con el protocolo de Kiniela Pro
 
@@ -196,10 +196,13 @@ Para quien venga de esos repos:
 
 ## Mantener el kit
 
-- **Una regla vive en un solo archivo**; los demás la citan por el nombre de su sección. Si una regla puede
-  incumplirse en silencio, se le añade un chequeo a `bin/check-docs.sh`, probado en las dos direcciones.
+- **Una regla vive en un solo archivo**; los demás la citan por el nombre de su sección, nunca por su número. Si una
+  regla puede incumplirse en silencio, se le añade un chequeo a `bin/check-docs.sh` y su caso a `tests/run.sh`, que
+  lo prueba en las dos direcciones (falla con el defecto, pasa sin él).
 - **Los archivos comunes son idénticos en todos los kits.** Se cambian en uno y se copian a los demás en el mismo
   commit; `sh check-kits.sh` falla si difieren.
+- **La CI del kit** (`.github/workflows/kit.yml`) corre en cada PR `shellcheck -s sh` sobre los scripts,
+  `sh check-kits.sh` y `sh tests/run.sh`, también dentro de Alpine (busybox).
 - **Las mejoras vienen de los proyectos.** Cada proyecto acumula las suyas en `.ai/PROTOCOL.md`; las que no son
   propias de ese proyecto se suben aquí.
 - Al cambiar el kit, actualiza «Versión del kit» arriba.
