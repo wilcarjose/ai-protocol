@@ -1,0 +1,9 @@
+# tests/context-baseline.txt — lo que lee cada sesión al arrancar, en caracteres, medido con bin/measure-context.sh
+# sobre una instalación limpia de cada stack. tests/run.sh lo compara en cada PR: falla si una sesión crece más de
+# un 3 % y avisa si baja más de un 3 %, para que se actualice aquí. Subir una línea es cambiarla en un PR que
+# explique por qué hace falta más contexto.
+#
+# <stack> <sesión> <caracteres>
+laravel cualquiera 4028
+laravel ejecutor 51830
+nextjs ejecutor 52805
