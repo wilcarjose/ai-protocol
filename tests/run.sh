@@ -184,11 +184,12 @@ header() { awk_edit "$1" "{ print } /^> \\*\\*Tipo:\\*\\*/ { print \"$2\" }"; }
 # criterion <fase> <línea>: una casilla más al final de «Criterios de éxito».
 criterion() { awk_edit "$1" "/^## [0-9]+\\. Restricciones/ { print \"$2\"; print \"\" } { print }"; }
 
-# task <fase> <ID> <casilla>: la fase sale de esa tarea del paquete E1, con su criterio literal en §5.
+# task <fase> <ID> <casilla> <comando>: la fase sale de esa tarea del paquete E1, con su criterio literal en §5
+# seguido del comando que lo prueba.
 task() {
     header "$1" "> **Tarea externa:** $2"
     c=$(awk -F'|' -v t="$2" '{ i = $2; gsub(/ /, "", i) } i == t { c = $5; sub(/^ +/, "", c); sub(/ +$/, "", c); print c }' .ai/stages/E1.md)
-    criterion "$1" "$3 $c — \`curl -s http://localhost/api/demos\`"
+    criterion "$1" "$3 $c — \`$4\`"
 }
 
 # install <kit> <dir>: el kit instalado con install.sh y con la épica de prueba.
@@ -216,12 +217,12 @@ install() {
         printf '\n- `.ai/stages/E1.md §Decisiones vigentes`.\n' >> .ai/epics/02-paquete/epic-plan.md
         p=.ai/epics/02-paquete
         make_phase 02-paquete 01 HECHA '—'
-        task $p/phase-01.md E1-01 '- [x]'
+        task $p/phase-01.md E1-01 '- [x]' 'curl -s http://localhost/api/demos'
         make_phase 02-paquete 02 ESPERA_EVIDENCIA 'fase 01'
         edit $p/phase-02.md 's/^> \*\*Tipo:\*\* .*/> **Tipo:** operación/'
-        task $p/phase-02.md E1-02 '- [ ] [humano]'
+        task $p/phase-02.md E1-02 '- [ ] [humano]' 'dig +short demo.example'
         make_phase 02-paquete 03 LISTA_PARA_EJECUTAR 'fase 01'
-        task $p/phase-03.md E1-03 '- [ ]'
+        task $p/phase-03.md E1-03 '- [ ]' 'curl -s http://localhost/'
         header $p/phase-03.md '> **Modo:** ligero'
         awk_edit $p/phase-03.md '/^## [0-9]+\. Entregables/ { s = 1 } s && /^## [0-9]+\. Archivos/ { s = 0 } s && /^3\.$/ { next } { print }'
 
