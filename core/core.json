@@ -1,0 +1,30 @@
+{
+  "name": "core",
+  "version": "2.0.0-dev",
+  "files": [
+    ".ai/PLANNING.md",
+    ".ai/WORKFLOW.md",
+    ".ai/handoffs/README.md",
+    ".claude/commands/close.md",
+    ".claude/commands/phase.md",
+    "AGENTS.md",
+    "CLAUDE.md",
+    "bin/check-docs.sh",
+    "bin/measure-context.sh"
+  ],
+  "seed": [
+    ".ai/BACKLOG.md",
+    ".ai/DOMAIN.md",
+    ".ai/PROTOCOL.md",
+    ".ai/STATE.md",
+    ".ai/epics/.gitkeep",
+    ".ai/project/ARCHITECTURE.md",
+    ".ai/project/COMMIT-SCOPES.md",
+    ".ai/project/CONTRACT.md",
+    ".ai/project/CROSS-CUTTING.md",
+    ".ai/project/DECISIONS.md",
+    ".ai/project/README.md",
+    ".ai/project/SENSITIVE-ZONES.md",
+    "docs/runbooks/release.md"
+  ]
+}

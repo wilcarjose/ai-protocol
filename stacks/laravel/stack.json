@@ -1,0 +1,26 @@
+{
+  "name": "laravel",
+  "version": "2.0.0-dev",
+  "core": ">=2.0.0-dev <3.0.0",
+  "files": [
+    ".ai/RULES.md",
+    ".ai/templates/epic-plan.template.md",
+    ".ai/templates/phase.template.md",
+    ".claude/settings.json",
+    "bin/verify.sh",
+    "docs/README.md",
+    "phpstan.neon",
+    "scripts/normalize-routes.php",
+    "tests/Architecture/ArchitectureTest.php"
+  ],
+  "seed": [],
+  "gates": [
+    "docs",
+    "estilo",
+    "análisis",
+    "deuda",
+    "rutas",
+    "suite",
+    "arquitectura"
+  ]
+}

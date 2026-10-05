@@ -1,5 +1,6 @@
-# La CI del kit: en cada PR, los scripts pasan shellcheck y el guardián de cada stack pasa sobre una instalación de
-# prueba y detecta cada fallo provocado (tests/run.sh).
+# La CI del kit: en cada PR, los scripts pasan shellcheck, el núcleo y los stacks cuadran con sus manifiestos
+# (tests/structure.sh), y el guardián de cada stack pasa sobre una instalación de prueba y detecta cada fallo
+# provocado (tests/run.sh).
 name: kit
 
 on:
@@ -21,6 +22,9 @@ jobs:
         run: |
           pip install --quiet shellcheck-py==0.11.0.1
           shellcheck -s sh core/bin/*.sh stacks/*/bin/*.sh tests/*.sh
+
+      - name: estructura
+        run: sh tests/structure.sh
 
       - name: tests
         run: sh tests/run.sh

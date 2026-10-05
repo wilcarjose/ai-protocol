@@ -1,0 +1,23 @@
+{
+  "name": "nextjs",
+  "version": "2.0.0-dev",
+  "core": ">=2.0.0-dev <3.0.0",
+  "files": [
+    ".ai/RULES.md",
+    ".ai/templates/epic-plan.template.md",
+    ".ai/templates/phase.template.md",
+    ".claude/settings.json",
+    "bin/verify.sh",
+    "docs/README.md"
+  ],
+  "seed": [
+    "docs/vendor/INDEX.md"
+  ],
+  "gates": [
+    "docs",
+    "tipos",
+    "estilo",
+    "supresiones",
+    "tests"
+  ]
+}
