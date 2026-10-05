@@ -9,8 +9,8 @@
 
 | Fase | Objetivo | Depende de | Estado | PR |
 |---|---|---|---|---|
-| 1 | Base de verificación e inconsistencias | — | en revisión | #1 |
-| 2 | Núcleo, stacks e instalador | 1 | pendiente | — |
+| 1 | Base de verificación e inconsistencias | — | hecha | #1 |
+| 2 | Núcleo, stacks e instalador | 1 | en revisión | #2 |
 | 3 | Menos tokens | 2 | pendiente | — |
 | 4 | Planificador, revisor y tipos de tarea | 3 | pendiente | — |
 | 5 | Modo remoto y CI de los proyectos | 4 | pendiente | — |
@@ -232,16 +232,27 @@ Criterios de aceptación:
   ```
 
   Después de la fase 1, las citas por nombre son más largas que las numéricas: cualquiera 21 189, ejecutor 76 911, planificador 90 170 y rescate 48 424. El objetivo de la fase 3 (53 300 para el ejecutor) sigue calculado sobre la línea base.
+
+  Después de la fase 2 (`sh bin/measure-context.sh` sobre `install.sh --stack laravel`): cualquiera 21 017, ejecutor 78 762, planificador 92 021 y rescate 48 425. El ejecutor y el planificador leen además `.ai/project/README.md` (9 y 11 archivos), porque el contexto operativo y los repos hermanos salieron de `CLAUDE.md`.
 - **Fases divididas:** —
 - **Decisiones tomadas durante el plan:**
   - 2026-10-04 (fase 1): el fallo 5 del guardián (migraciones) solo se provoca en kits cuya plantilla de fase declara «Migraciones:». En Next.js no aplica, y `tests/run.sh` comprueba en su lugar que el guardián acepta fases sin ese campo. El criterio de la fase 1 pasa a «13 fallos en Laravel; 12 en Next.js, con el 5 como no aplicable».
   - 2026-10-04 (fase 1): la rama `plan-1a/fase-1` sale de `plan-1a/fase-0`, que tiene el plan y aún no está en `main`, y su PR va contra `main`.
+  - 2026-10-05 (fase 2): la fase va en un solo PR, sin dividirla en 2a y 2b.
+  - 2026-10-05 (fase 2): las versiones exactas del stack son del proyecto y viven en `.ai/project/DECISIONS.md §Stack y versiones exactas`. `RULES.md §Stack y versiones exactas` se queda con el paquete y su nota, y el chequeo «stack» exige una versión en la capa del proyecto por cada paquete de esa tabla (caso `9n` de `tests/run.sh`).
+  - 2026-10-05 (fase 2): hasta la fase 8, los tres paquetes van en `2.0.0-dev`, y cada stack pide el núcleo `>=2.0.0-dev <3.0.0`. Los CHANGELOG acumulan en «Sin publicar».
+  - 2026-10-05 (fase 2): en `--upgrade`, un archivo del kit que el proyecto cambió no se pisa: se enseña el diff como conflicto. El lock conserva la suma anterior, así que el conflicto se repite en cada upgrade hasta que el archivo coincide con el kit.
+  - 2026-10-05 (fase 2): el núcleo tiene su manifiesto, `core/core.json`, con el formato de `stack.json`. Cada manifiesto separa `files` (del kit, se actualizan) de `seed` (se copian si faltan y después son del proyecto: memoria, `.ai/project/`, `docs/runbooks/release.md`, `docs/vendor/INDEX.md`).
   - 2026-10-04 (fase 1): dónde vive cada regla que estaba repetida. Exenciones a un gate: `WORKFLOW.md §Obediencia arquitectónica`. No arreglar de paso: `CLAUDE.md §Alcance`. Dependencias nuevas: `WORKFLOW.md §Dependencia nueva`. `git push`: `CLAUDE.md §Commits durante la fase`. Las listas negras de `RULES.md` quedan solo con lo propio del stack.
 - **Lo que la siguiente fase necesita saber:**
-  - **Rutas fijas que la fase 2 tiene que mover a `core/` y `stacks/`.** `.github/workflows/kit.yml` llama a `sh check-kits.sh` (que la fase 2 sustituye por `tests/structure.sh`) y pasa shellcheck sobre `check-kits.sh laravel/bin/*.sh nextjs/bin/*.sh tests/*.sh`. `tests/run.sh` instala con `cp -R $ROOT/<kit>/.` y superpone `tests/fixtures/<kit>/`; con el instalador, debería llamar a `install.sh --stack <kit> --target <dir>`.
-  - **Archivos comunes.** `bin/measure-context.sh` es nuevo y está en la lista COMMON de `check-kits.sh`. Su lista de archivos por sesión está escrita en el script: la fase 3 la cambia al mover `/phase` y `/close` a skills.
-  - **El guardián.** Busca las secciones de la fase con `phase_section` (por nombre, con o sin número). El chequeo 12 rechaza toda cita `archivo.md §<dígito…>`. Las referencias internas a secciones de la fase («el §5 de la fase», «§9») siguen con número porque no son citas entre archivos.
-  - **Cómo se añade un caso a `tests/run.sh`.** Es una rama en `estropea()` y una línea `provoke` con el texto exacto que el guardián imprime. Las variantes `2n` y `12n` no cuentan entre los 13 de la cabecera.
-  - **Duplicado pendiente.** «No modificar `CLAUDE.md`, `RULES.md` ni `WORKFLOW.md` desde una fase» sigue en `CLAUDE.md §Cosas que no se hacen`, `WORKFLOW.md §Documentación`, la cabecera de `RULES.md` y `PROTOCOL.md`. Le toca a la fase 5 (protección del protocolo).
-  - **Versiones del fixture.** Salen de los ejemplos de `RULES.md §Stack y versiones exactas`. `laravel/pint` no tiene ejemplo y se fijó en `^1.24`.
-  - **Shellcheck.** La CI usa `shellcheck-py==0.11.0.1`, la versión con la que se dejaron los scripts sin avisos; una versión más nueva puede traer avisos nuevos.
+  - **Dónde vive cada cosa.** El núcleo, en `core/` (manifiesto `core/core.json`); cada stack, en `stacks/<stack>/` (`stack.json`). Instalados, los archivos conservan sus rutas de siempre (`CLAUDE.md`, `.ai/…`, `bin/…`). `install.sh` está en la raíz; `check-kits.sh` ya no existe.
+  - **Todo archivo nuevo entra en un manifiesto,** en `files` o en `seed`, o `tests/structure.sh` falla. Un archivo que se mueve, se cambia también en el manifiesto. Si su `--upgrade` no lo trae, `install.sh` lo retira del proyecto cuando el proyecto no lo tocó. Así, mover `/phase` y `/close` a skills en la fase 3 es: crear `core/.claude/skills/…`, quitar `.claude/commands/*` de `core/core.json` y ajustar las listas de `core/bin/measure-context.sh`. `.ai/archive/` es memoria, así que va en `seed`.
+  - **El núcleo no puede citar lo que no traen todos los stacks,** ni un stack lo de otro: `tests/structure.sh` lo comprueba con una búsqueda literal de la ruta. Un `rules/` por stack (fase 3) va en el `stack.json` de cada uno.
+  - **Los manifiestos y el lock se leen sin jq:** un valor por línea en los JSON. El lock tiene líneas `package <nombre> <versión>` y `file <kit|seed> <sha256|-> <ruta>`.
+  - **La capa del proyecto.** `.ai/project/README.md` entra en `CLAUDE.md §Orden de lectura`. Los demás archivos de la capa (`DECISIONS`, `ARCHITECTURE`, `CONTRACT`, `SENSITIVE-ZONES`, `CROSS-CUTTING`, `COMMIT-SCOPES`) solo se leen cuando una regla los cita. El guardián lee los repos hermanos de `.ai/project/README.md §Repos hermanos`. Ningún archivo del kit tiene ya `{{RELLENAR}}`: solo la capa del proyecto, `STATE.md` y `DOMAIN.md`.
+  - **`bin/verify.sh` mezcla kit y proyecto.** La baseline (`MIN_TESTS`, `MAX_*`) que mueven las fases y `VERIFY_SERVICE` hacen que el upgrade lo trate como modificado por el proyecto (conflicto) en cuanto un proyecto los cambia. La fase 5, que toca los gates de `verify.sh`, debería sacar esos valores a un archivo del proyecto.
+  - **Cómo se prueba el instalador.** El bloque `test_installer` de `tests/run.sh` usa `kit_copy` para simular un kit nuevo (o incompatible) en un directorio temporal y lo aplica con su propio `install.sh`. Un caso de `tests/structure.sh` es una rama en `breaks()`.
+  - **El contexto creció un poco.** El ejecutor está en 78 762 caracteres, frente a los 76 196 de la línea base. El objetivo de la fase 3 sigue siendo 53 300.
+  - **Duplicado pendiente (de la fase 1).** «No modificar `CLAUDE.md`, `RULES.md` ni `WORKFLOW.md` desde una fase» sigue en `CLAUDE.md §Cosas que no se hacen`, `WORKFLOW.md §Documentación`, la cabecera de `RULES.md` y `PROTOCOL.md`. Le toca a la fase 5.
+  - **Cada cambio va al `CHANGELOG.md` de su paquete,** en «Sin publicar».
+  - **Shellcheck.** La CI usa `shellcheck-py==0.11.0.1` sobre `install.sh core/bin/*.sh stacks/*/bin/*.sh tests/*.sh`.
