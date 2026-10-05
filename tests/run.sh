@@ -4,7 +4,7 @@
 #
 # ◆ QUÉ HACE, POR KIT
 #   1. Lo instala en un directorio temporal, como un proyecto nuevo: copia el
-#      kit, superpone tests/fixtures/<kit>/ (el composer.json o package.json con
+#      núcleo (core/) y el stack (stacks/<kit>/), superpone tests/fixtures/<kit>/ (el composer.json o package.json con
 #      las versiones de .ai/RULES.md §Stack y versiones exactas, y los archivos
 #      del proyecto que RULES.md cita), rellena cada {{RELLENAR}} y declara un
 #      repo hermano para que los chequeos «traspaso» y «cross-repo» apliquen.
@@ -119,7 +119,8 @@ make_phase() {
 # install <kit> <dir>: el kit instalado y con la épica de prueba.
 install() {
     mkdir -p "$2"
-    cp -R "$ROOT/$1/." "$2/"
+    cp -R "$ROOT/core/." "$2/"
+    cp -R "$ROOT/stacks/$1/." "$2/"
     cp -R "$FIXTURES/$1/." "$2/"
     (
         cd "$2" || exit 1

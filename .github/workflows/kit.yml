@@ -1,5 +1,5 @@
-# La CI del kit: en cada PR, los scripts pasan shellcheck, los archivos comunes son idénticos en los dos kits y
-# el guardián de cada kit pasa sobre una instalación de prueba y detecta cada fallo provocado (tests/run.sh).
+# La CI del kit: en cada PR, los scripts pasan shellcheck y el guardián de cada stack pasa sobre una instalación de
+# prueba y detecta cada fallo provocado (tests/run.sh).
 name: kit
 
 on:
@@ -20,10 +20,7 @@ jobs:
       - name: shellcheck
         run: |
           pip install --quiet shellcheck-py==0.11.0.1
-          shellcheck -s sh check-kits.sh laravel/bin/*.sh nextjs/bin/*.sh tests/*.sh
-
-      - name: kits idénticos
-        run: sh check-kits.sh
+          shellcheck -s sh core/bin/*.sh stacks/*/bin/*.sh tests/*.sh
 
       - name: tests
         run: sh tests/run.sh
