@@ -3,7 +3,8 @@
 # check-docs.sh — el guardián de los documentos del protocolo.
 #
 # ◆ QUÉ COMPRUEBA
-#   0. instalación — no queda ningún «{{RELLENAR» en los documentos normativos.
+#   0. instalación — no queda ningún «{{RELLENAR» en los documentos normativos
+#                    ni en la capa del proyecto (.ai/project/).
 #   1. puntero     — la cabecera de .ai/STATE.md apunta a la primera fila sin
 #                    HECHA del mapa (CLAUDE.md §Estado de una fase); sus seis
 #                    claves aparecen una vez y sin notas detrás; sólo la fase
@@ -33,8 +34,9 @@
 #                    otros repos cuadran con DOMAIN.md y BACKLOG.md
 #                    (CLAUDE.md §Sincronización post-lectura).
 #   8. destinos    — todo «Destino» de BACKLOG.md nombra una épica que existe.
-#   9. stack       — la tabla de .ai/RULES.md §Stack coincide, versión a
-#                    versión, con composer.json / package.json.
+#   9. stack       — cada paquete de .ai/RULES.md §Stack tiene su versión en
+#                    .ai/project/DECISIONS.md §Stack, y cada versión de esa
+#                    tabla coincide con composer.json / package.json.
 #  10. cross-repo  — ningún archivo cita documentos de un repo hermano.
 #  11. rutas       — las rutas citadas en los documentos normativos existen.
 #  12. secciones   — toda referencia «archivo.md §Sección» cita la sección por
@@ -59,7 +61,7 @@
 #       BACKLOG ni «Traspaso:».
 #    7. sube en uno «Decisiones abiertas» sin tocar DOMAIN.md.
 #    8. pon «99» en la columna Destino de una fila de BACKLOG.md.
-#    9. cambia una versión de la tabla de RULES.md §Stack.
+#    9. cambia una versión de la tabla de .ai/project/DECISIONS.md §Stack.
 #   10. escribe «<repo hermano>/docs/x.md» en cualquier .md.
 #   11. cita `bin/no-existe.sh` en CLAUDE.md.
 #   12. cita `.ai/RULES.md §No existe` en CLAUDE.md, o cita una que existe
@@ -92,6 +94,8 @@ CLAUDE_MD="$ROOT/CLAUDE.md"
 RULES="$AI/RULES.md"
 STATE="$AI/STATE.md"
 DOMAIN="$AI/DOMAIN.md"
+PROJECT="$AI/project"
+DECISIONS="$PROJECT/DECISIONS.md"
 BACKLOG="$AI/BACKLOG.md"
 TPL_PHASE="$AI/templates/phase.template.md"
 MANIFEST="$ROOT/docs/runbooks/release.md"
@@ -100,7 +104,8 @@ TAB=$(printf '\t')
 STRICT=0
 [ "${1:-}" = "--strict" ] && STRICT=1
 
-for f in "$CLAUDE_MD" "$RULES" "$AI/WORKFLOW.md" "$AI/PLANNING.md" "$STATE" "$DOMAIN" "$BACKLOG" "$TPL_PHASE"; do
+for f in "$CLAUDE_MD" "$RULES" "$AI/WORKFLOW.md" "$AI/PLANNING.md" "$STATE" "$DOMAIN" "$BACKLOG" "$TPL_PHASE" \
+         "$PROJECT/README.md" "$DECISIONS"; do
     [ -f "$f" ] || { printf '✗ check-docs: falta %s\n' "${f#"$ROOT"/}"; exit 1; }
 done
 
@@ -196,8 +201,8 @@ ACT_FILE=$(state_field 'Archivo de la fase' | tr -d '`')
 NN_ACT=''
 [ "$ACT_EPIC" = '—' ] || NN_ACT=${ACT_EPIC%%-*}
 
-# Repos hermanos: los nombres entre comillas invertidas de «> **Repos hermanos:**» de CLAUDE.md.
-REPOS=$(sed -n 's/^> \*\*Repos hermanos:\*\* *//p' "$CLAUDE_MD" | head -n 1)
+# Repos hermanos: los nombres entre comillas invertidas de «> **Repos hermanos:**» de .ai/project/README.md.
+REPOS=$(sed -n 's/^> \*\*Repos hermanos:\*\* *//p' "$PROJECT/README.md" | head -n 1)
 case "$REPOS" in *'{{'*) REPOS='' ;; esac
 # shellcheck disable=SC2016  # las comillas invertidas son literales
 REPOS=$(printf '%s\n' "$REPOS" | grep -oE '`[^`]+`' | tr -d '`' | tr '\n' ' ')
@@ -206,9 +211,9 @@ TPL_HAS_MIG=0
 grep -q '^> \*\*Migraciones:\*\*' "$TPL_PHASE" && TPL_HAS_MIG=1
 
 # ── 0. Instalación ──────────────────────────────────────────────────────────
-printf '◆ instalación (no queda ningún {{RELLENAR}} en los documentos normativos)\n'
+printf '◆ instalación (no queda ningún {{RELLENAR}} en los documentos normativos ni en .ai/project/)\n'
 
-for f in "$CLAUDE_MD" "$ROOT/AGENTS.md" "$AI"/*.md "$ROOT"/.claude/commands/*.md "$ROOT/docs/README.md"; do
+for f in "$CLAUDE_MD" "$ROOT/AGENTS.md" "$AI"/*.md "$PROJECT"/*.md "$ROOT"/.claude/commands/*.md "$ROOT/docs/README.md"; do
     [ -f "$f" ] || continue
     n=$(grep -c '{{RELLENAR' "$f")
     [ "$n" -eq 0 ] || bad "$(rel "$f"): $n marcador(es) {{RELLENAR}} sin completar; cada uno dice qué va"
@@ -448,7 +453,7 @@ fi
 printf '◆ traspaso (una fase HECHA que cambió el contrato deja su fila para el repo hermano)\n'
 
 if [ -z "$REPOS" ]; then
-    ok 'CLAUDE.md no declara repos hermanos: no aplica'
+    ok '.ai/project/README.md no declara repos hermanos: no aplica'
 else
     for f in "$AI"/epics/*/phase-*.md; do
         [ -f "$f" ] || continue
@@ -546,15 +551,25 @@ done
 report fail 'todos los destinos existen' 'destinos que no son una épica:'
 
 # ── 9. Stack ────────────────────────────────────────────────────────────────
-printf '◆ stack (la tabla de .ai/RULES.md §Stack frente a composer.json y package.json)\n'
+printf '◆ stack (.ai/RULES.md §Stack y .ai/project/DECISIONS.md §Stack frente a composer.json y package.json)\n'
 
 MANIFS=''
 for m in composer.json package.json; do [ -f "$ROOT/$m" ] && MANIFS="$MANIFS $ROOT/$m"; done
 if ! grep -qE '^## [0-9]+\. Stack' "$RULES"; then
     bad 'RULES.md: no tiene la sección «## N. Stack y versiones exactas»'
 fi
-# «paquete<TAB>versión», o «paquete<TAB><TAB>MAL» si una fila tiene un número de versiones que no cuadra.
+grep -q '^## Stack y versiones exactas' "$DECISIONS" \
+    || bad '.ai/project/DECISIONS.md: no tiene la sección «## Stack y versiones exactas»'
+# Los paquetes que el stack da por hechos: la primera columna de la tabla de RULES.md §Stack, uno por línea.
 awk '/^## [0-9]+\. Stack/ { f = 1; next } f && /^## / { exit } f' "$RULES" | awk -F'|' '
+    /^\|/ && !/^\| *-/ {
+        n = $2; gsub(/`/, "", n); gsub(/^ +| +$/, "", n)
+        if (n == "Paquete" || n == "") next
+        nn = split(n, N, / \/ /); for (i = 1; i <= nn; i++) print N[i]
+    }' > "$TMPD/stack-rules"
+# Las versiones del proyecto: «paquete<TAB>versión», o «paquete<TAB><TAB>MAL» si una fila tiene un número de
+# versiones que no cuadra con el de paquetes.
+section "$DECISIONS" 'Stack y versiones exactas' | awk -F'|' '
     /^\|/ && !/^\| *-/ {
         n = $2; v = $3; gsub(/`/, "", n); gsub(/^ +| +$/, "", n); gsub(/^ +| +$/, "", v)
         if (n == "Paquete" || n == "") next
@@ -565,26 +580,31 @@ awk '/^## [0-9]+\. Stack/ { f = 1; next } f && /^## / { exit } f' "$RULES" | awk
             else print N[i] "\t\tMAL"
         }
     }' > "$TMPD/stack"
+while read -r name; do
+    [ -n "$name" ] || continue
+    cut -f1 "$TMPD/stack" | grep -qxF "$name" \
+        || bad "DECISIONS.md §Stack: «$name» (de RULES.md §Stack) no tiene versión"
+done < "$TMPD/stack-rules"
 while IFS="$TAB" read -r name ver flag; do
     [ -n "$name" ] || continue
-    if [ -n "${flag:-}" ]; then bad "RULES.md §Stack: la fila de «$name» no tiene una versión por paquete"; continue; fi
-    case "$ver" in ''|*'{{'*) bad "RULES.md §Stack: «$name» no tiene versión"; continue ;; esac
+    if [ -n "${flag:-}" ]; then bad "DECISIONS.md §Stack: la fila de «$name» no tiene una versión por paquete"; continue; fi
+    case "$ver" in ''|*'{{'*) bad "DECISIONS.md §Stack: «$name» no tiene versión"; continue ;; esac
     found=''
     for m in $MANIFS; do grep -qF "\"$name\": \"$ver\"" "$m" && found=1; done
     [ -n "$found" ] && continue
     qname=$(printf '%s' "$name" | sed 's/[].[^$*\\]/\\&/g')
     # shellcheck disable=SC2086  # los manifiestos van separados por espacios
     have=$( [ -n "$MANIFS" ] && grep -hoE "\"$qname\": *\"[^\"]*\"" $MANIFS | head -n 1 | sed 's/.*: *"//; s/"$//')
-    if [ -z "$have" ]; then bad "RULES.md §Stack: «$name» no está en composer.json ni en package.json"
-    else bad "RULES.md §Stack: «$name» dice $ver y el manifiesto dice $have"; fi
+    if [ -z "$have" ]; then bad "DECISIONS.md §Stack: «$name» no está en composer.json ni en package.json"
+    else bad "DECISIONS.md §Stack: «$name» dice $ver y el manifiesto dice $have"; fi
 done < "$TMPD/stack"
-report fail 'RULES.md §Stack coincide con los manifiestos' 'RULES.md §Stack no coincide con lo instalado:'
+report fail 'las versiones del stack coinciden con los manifiestos' 'las versiones del stack no coinciden con lo instalado:'
 
 # ── 10. Cross-repo ──────────────────────────────────────────────────────────
 printf '◆ cross-repo (los documentos de un repo hermano no se citan; su código, sí)\n'
 
 if [ -z "$REPOS" ]; then
-    ok 'CLAUDE.md no declara repos hermanos: no aplica'
+    ok '.ai/project/README.md no declara repos hermanos: no aplica'
 else
     ( cd "$ROOT" && find . \( -name .git -o -name node_modules -o -path ./vendor -o -path ./storage \
             -o -path ./bootstrap/cache -o -path ./public/build -o -path ./.next -o -path ./coverage \
@@ -604,7 +624,7 @@ else
 fi
 
 # ── 11 y 12. Rutas y secciones citadas en los documentos normativos ─────────
-NORMATIVE="$CLAUDE_MD $ROOT/AGENTS.md $RULES $AI/WORKFLOW.md $AI/PLANNING.md $DOMAIN $AI/templates/*.md $ROOT/.claude/commands/*.md $ROOT/docs/README.md"
+NORMATIVE="$CLAUDE_MD $ROOT/AGENTS.md $RULES $AI/WORKFLOW.md $AI/PLANNING.md $DOMAIN $PROJECT/*.md $AI/templates/*.md $ROOT/.claude/commands/*.md $ROOT/docs/README.md"
 
 printf '◆ rutas citadas en los documentos normativos (aviso; falla con --strict)\n'
 for src in $NORMATIVE; do
@@ -656,6 +676,7 @@ while IFS="$TAB" read -r src file sec; do
         STATE.md|.ai/STATE.md) t="$STATE" ;;
         BACKLOG.md|.ai/BACKLOG.md) t="$BACKLOG" ;;
         docs/runbooks/release.md) t="$MANIFEST" ;;
+        .ai/project/*.md) t="$ROOT/${file#./}"; [ -f "$t" ] || { bad "$src: cita «$file», que no existe"; continue; } ;;
         *) continue ;;
     esac
     case "$sec" in *'<'*|*'NN'*) continue ;; esac

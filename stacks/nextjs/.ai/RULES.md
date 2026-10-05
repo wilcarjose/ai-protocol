@@ -1,4 +1,4 @@
-# RULES — {{RELLENAR: nombre del proyecto}} · frontend Next.js
+# RULES — frontend Next.js
 
 > Las reglas de **cómo se escribe código** en este repositorio, para cualquier agente de IA y para cualquier humano.
 > Léelo completo antes de escribir una sola línea. Si algo aquí contradice tu instinto, gana este archivo.
@@ -12,27 +12,30 @@
 > 3. Lo que cambia con el estado del proyecto (decisiones de negocio, contrato vigente del backend, fase activa) vive
 >    en `.ai/DOMAIN.md` y `.ai/STATE.md`. Aquí sólo hay reglas **estables**.
 >
-> Son las convenciones por defecto del kit de protocolo. Al instalarlo se ajustan al proyecto; después, sólo las
-> cambia el Tech Lead.
+> Son las reglas del stack del kit `ai-protocol`, y las actualiza `install.sh --upgrade`. Lo que decide cada proyecto
+> (versiones, alcance adicional, autorización, zonas sensibles, ámbitos del dominio) vive en `.ai/project/`, y aquí
+> se cita. Un proyecto puede cambiar este archivo, pero entonces el upgrade ya no lo actualiza solo: lo enseña como
+> conflicto.
 
 ---
 
 ## 1. Stack y versiones exactas
 
-Verificadas contra `package.json`: el chequeo «stack» de `bin/check-docs.sh` compara esta tabla, versión a versión,
-con lo que declara el manifiesto. Una fila por paquete (varios en una fila, separados por « / »; una sola versión
-vale para todos).
+Los paquetes que el stack da por hechos. Sus versiones exactas son del proyecto y viven en
+`.ai/project/DECISIONS.md §Stack y versiones exactas`: el chequeo «stack» de `bin/check-docs.sh` exige allí una por
+cada paquete de esta tabla y la compara con `package.json`. Una fila por paquete (varios en una fila, separados por
+« / »).
 
-| Paquete | Versión | Nota |
-|---|---|---|
-| `next` | {{RELLENAR: p. ej. 16.1.0}} | App Router. ⚠️ La semántica de caché cambia entre versiones mayores |
-| `react` / `react-dom` | {{RELLENAR: p. ej. 19.2.3}} | |
-| `typescript` | {{RELLENAR: p. ej. ^5}} | `strict: true` en `tsconfig.json` |
-| `zod` | {{RELLENAR: p. ej. ^4.3.6}} | Toda frontera se valida (§4) |
-| `@tanstack/react-query` | {{RELLENAR: p. ej. ^5.90.0}} | Datos del servidor en el cliente (§6) |
-| `zustand` | {{RELLENAR: p. ej. ^5.0.9}} | Estado de cliente compartido (§6) |
-| `vitest` | {{RELLENAR: p. ej. ^4.0.0}} | Tests unitarios (§11) |
-| `eslint` | {{RELLENAR: p. ej. ^9}} | Config plana, con la regla de capas (§5) |
+| Paquete | Nota |
+|---|---|
+| `next` | App Router. ⚠️ La semántica de caché cambia entre versiones mayores |
+| `react` / `react-dom` | |
+| `typescript` | `strict: true` en `tsconfig.json` |
+| `zod` | Toda frontera se valida (§4) |
+| `@tanstack/react-query` | Datos del servidor en el cliente (§6) |
+| `zustand` | Estado de cliente compartido (§6) |
+| `vitest` | Tests unitarios (§11) |
+| `eslint` | Config plana, con la regla de capas (§5) |
 
 > **Antes de usar una API de cualquiera de estas librerías, lee `docs/vendor/INDEX.md`** (§8). Tu memoria de
 > entrenamiento corresponde probablemente a otra versión.
@@ -60,7 +63,7 @@ next.config.*              ← sólo si la fase lo pide
 el repo hermano            ← nunca se escribe en él (CLAUDE.md §El otro repositorio)
 ```
 
-{{RELLENAR: lo que este proyecto deja fuera además, o «Nada más.»}}
+Lo que este proyecto deja fuera además: `.ai/project/ARCHITECTURE.md §Fuera de alcance`.
 
 Si un cambio *parece* requerir tocar algo de fuera de alcance: **detente y repórtalo**. Es una señal de que el
 alcance de la fase está mal, no un obstáculo que sortear.
@@ -81,9 +84,8 @@ esquemas del contrato y las factorías de claves de caché viven ahí. Toda peti
 único sitio que construye las cabeceras (autenticación, idioma, tenant, zona horaria…). Perder una cabecera devuelve
 datos equivocados **sin error**.
 
-{{RELLENAR: cómo se autentica el cliente (token Bearer, cookie HttpOnly detrás de un BFF en `src/app/api/`…) y qué
-cabeceras lleva toda petición. Si hay BFF: su lista blanca de rutas es la única puerta; una ruta nueva se añade ahí,
-nunca se abre otro proxy.}}
+Cómo se autentica el cliente y qué cabeceras lleva toda petición: `.ai/project/CONTRACT.md §Autenticación y
+cabeceras`. Si hay un BFF (en `src/app/api/`), su lista blanca de rutas es la única puerta.
 
 ### 3.2 Cómo se conoce el contrato
 
@@ -116,9 +118,9 @@ Se lee de los esquemas o de los snapshots. Si ninguno la fija: **detente y pregu
 
 ### 3.5 Claves de caché: tenant y usuario, siempre
 
-**Toda clave de TanStack Query y todo `next.tags` empieza por el tenant (si lo hay) y, si la respuesta depende del
-usuario, por el usuario.** Se construyen con factorías en `src/shared/api/` y en el `api/` de cada feature, nunca a
-mano. Una clave que no discrimina usuario sirve los datos de uno a otro: es la misma fuga que un valor cacheado
+**Toda clave de TanStack Query y todo `next.tags` empieza por el tenant (si lo hay:
+`.ai/project/CROSS-CUTTING.md §Tenant`) y, si la respuesta depende del usuario, por el usuario.** Se construyen con
+factorías en `src/shared/api/` y en el `api/` de cada feature, nunca a mano. Una clave que no discrimina usuario sirve los datos de uno a otro: es la misma fuga que un valor cacheado
 compartido en el backend, una capa más arriba.
 
 ### 3.6 Lo que el backend manda de varias formas se lee en UN solo sitio
@@ -198,8 +200,8 @@ Next instalada: `docs/vendor/INDEX.md`).
   `document.cookie`, `localStorage`/`sessionStorage`, `window.location.href = …` (se usa el router) y cálculos de
   negocio.
 - **Cero texto visible escrito a mano en JSX** si el proyecto tiene más de un idioma: toda cadena pasa por las
-  traducciones, y una clave nueva se añade a **todos** los idiomas a la vez. {{RELLENAR: librería de i18n y
-  ubicación de los mensajes, o «Un solo idioma: los textos van en el componente.»}}
+  traducciones, y una clave nueva se añade a **todos** los idiomas a la vez. Los idiomas, la librería y dónde
+  viven los mensajes: `.ai/project/CROSS-CUTTING.md §Idiomas`.
 - **Todo elemento interactivo lleva `data-testid`** con el formato `<dominio>-<elemento>[-<variante>]`, en
   kebab-case y en inglés (`auth-login-email`, `orders-row-${id}`). Cambiar uno rompe sus E2E: se cambian en el mismo
   commit o no se cambia.
@@ -246,7 +248,7 @@ Tocar estas zonas de una forma que la fase no describe con precisión es motivo 
 
 - Autenticación, sesión, cookies y tokens.
 - Pagos y planes.
-- {{RELLENAR: los cálculos o reglas de los que depende el negocio, o bórralo}}
+- Las del proyecto: `.ai/project/SENSITIVE-ZONES.md`.
 
 ---
 
@@ -311,6 +313,4 @@ Conventional Commits en inglés (`CLAUDE.md §Commits durante la fase`). Ámbito
 
 - Transversales: `api`, `auth`, `i18n`, `e2e`, `ci`, `deps`, `docs`, `tests`, `planning`, `protocol`, y
   `phase-<NN>-<FF>` para los commits de arranque, reanudación y cierre de una fase.
-- Del dominio: {{RELLENAR: un ámbito por área del negocio, p. ej. `orders`, `catalog`, `profile`}}.
-
-Un ámbito nuevo se añade aquí antes de usarlo.
+- Del dominio: los de `.ai/project/COMMIT-SCOPES.md`, donde se añade uno nuevo antes de usarlo.

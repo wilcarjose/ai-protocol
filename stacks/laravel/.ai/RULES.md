@@ -1,4 +1,4 @@
-# RULES — {{RELLENAR: nombre del proyecto}} · backend Laravel
+# RULES — backend Laravel
 
 > Las reglas de **cómo se escribe código** en este repositorio, para cualquier agente de IA y para cualquier humano.
 > Léelo completo antes de escribir una sola línea. Si algo aquí contradice tu instinto, gana este archivo.
@@ -12,23 +12,27 @@
 > 3. Lo que cambia con el estado del proyecto (decisiones de negocio, fase activa) vive en `.ai/DOMAIN.md` y
 >    `.ai/STATE.md`. Aquí sólo hay reglas **estables**.
 >
-> Son las convenciones por defecto del kit de protocolo. Al instalarlo se ajustan al proyecto; después, sólo las
-> cambia el Tech Lead.
+> Son las reglas del stack del kit `ai-protocol`, y las actualiza `install.sh --upgrade`. Lo que decide cada proyecto
+> (versiones, alcance adicional, autorización, zonas sensibles, ámbitos del dominio) vive en `.ai/project/`, y aquí
+> se cita. Un proyecto puede cambiar este archivo, pero entonces el upgrade ya no lo actualiza solo: lo enseña como
+> conflicto.
 
 ---
 
 ## 1. Stack y versiones exactas
 
-Verificadas contra `composer.json`: el chequeo «stack» de `bin/check-docs.sh` compara esta tabla, versión a
-versión, con lo que declaran los manifiestos. Una fila por paquete (varios en una fila, separados por « / »).
+Los paquetes que el stack da por hechos. Sus versiones exactas son del proyecto y viven en
+`.ai/project/DECISIONS.md §Stack y versiones exactas`: el chequeo «stack» de `bin/check-docs.sh` exige allí una por
+cada paquete de esta tabla y la compara con `composer.json`. Una fila por paquete (varios en una fila, separados por
+« / »).
 
-| Paquete | Versión | Nota |
-|---|---|---|
-| `php` | {{RELLENAR: p. ej. ^8.4}} | Property hooks y visibilidad asimétrica disponibles, con las restricciones de §10 |
-| `laravel/framework` | {{RELLENAR: p. ej. ^13.0}} | Esqueleto slim: `bootstrap/app.php`, sin `Kernel.php` |
-| `pestphp/pest` | {{RELLENAR: p. ej. ^4.0}} | Pest, no PHPUnit clásico. Incluye el plugin de arquitectura |
-| `laravel/pint` | {{RELLENAR}} | Estilo |
-| `larastan/larastan` | {{RELLENAR: p. ej. ^3.0}} | Análisis estático (`phpstan.neon`) |
+| Paquete | Nota |
+|---|---|
+| `php` | Property hooks y visibilidad asimétrica disponibles, con las restricciones de §10 |
+| `laravel/framework` | Esqueleto slim: `bootstrap/app.php`, sin `Kernel.php` |
+| `pestphp/pest` | Pest, no PHPUnit clásico. Incluye el plugin de arquitectura |
+| `laravel/pint` | Estilo |
+| `larastan/larastan` | Análisis estático (`phpstan.neon`) |
 
 **Regla dura:** la documentación de dos versiones seguidas de Laravel se parece mucho y los modelos de lenguaje
 las mezclan. Si necesitas una API del framework y no estás 100 % seguro de que existe en **tu** versión, no la uses:
@@ -71,8 +75,7 @@ composer.json              ← dependencias nuevas: .ai/WORKFLOW.md §Dependenci
 .env*                      ← nunca se leen ni se escriben secretos
 ```
 
-{{RELLENAR: lo que este proyecto deja fuera además (un backoffice que se refactoriza aparte, un namespace que
-pertenece a un paquete como `app/Actions/Fortify/**`…), o «Nada más.»}}
+Lo que este proyecto deja fuera además: `.ai/project/ARCHITECTURE.md §Fuera de alcance`.
 
 Si un cambio *parece* requerir tocar algo de fuera de alcance: **detente y repórtalo**. Es una señal de que el
 alcance de la fase está mal, no un obstáculo que sortear.
@@ -179,9 +182,8 @@ distintos y no son intercambiables.
 
 ### 4.6 Autorización
 
-{{RELLENAR: el único mecanismo de autorización del proyecto. Por ejemplo: «Policies de Laravel, invocadas desde
-`FormRequest::authorize()`» o «middleware con alias por recurso + comprobación explícita en la Action; este proyecto
-no usa Policies». Elige uno: dos mecanismos conviviendo es una segunda fuente de verdad.}}
+Un solo mecanismo de autorización: dos conviviendo son una segunda fuente de verdad. Cuál es, lo dice
+`.ai/project/ARCHITECTURE.md §Autorización`.
 
 ---
 
@@ -390,7 +392,7 @@ Tocar estas zonas de una forma que la fase no describe con precisión es motivo 
 
 - Autenticación, sesiones, tokens y permisos.
 - Pagos, planes y facturación.
-- {{RELLENAR: los cálculos de los que depende el negocio (puntuaciones, precios, plazos…), o bórralo}}
+- Las del proyecto: `.ai/project/SENSITIVE-ZONES.md`.
 
 ---
 
@@ -452,6 +454,4 @@ Conventional Commits en inglés (`CLAUDE.md §Commits durante la fase`). Ámbito
 
 - Transversales: `api`, `auth`, `infra`, `deps`, `docs`, `tests`, `ci`, `planning`, `protocol`, y
   `phase-<NN>-<FF>` para los commits de arranque, reanudación y cierre de una fase.
-- Del dominio: {{RELLENAR: un ámbito por área del negocio, p. ej. `orders`, `payments`, `catalog`}}.
-
-Un ámbito nuevo se añade aquí antes de usarlo.
+- Del dominio: los de `.ai/project/COMMIT-SCOPES.md`, donde se añade uno nuevo antes de usarlo.

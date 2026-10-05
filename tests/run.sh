@@ -4,17 +4,20 @@
 #
 # ◆ QUÉ HACE, POR KIT
 #   1. Lo instala en un directorio temporal, como un proyecto nuevo: copia el
-#      núcleo (core/) y el stack (stacks/<kit>/), superpone tests/fixtures/<kit>/ (el composer.json o package.json con
-#      las versiones de .ai/RULES.md §Stack y versiones exactas, y los archivos
-#      del proyecto que RULES.md cita), rellena cada {{RELLENAR}} y declara un
-#      repo hermano para que los chequeos «traspaso» y «cross-repo» apliquen.
+#      núcleo (core/) y el stack (stacks/<kit>/), y superpone
+#      tests/fixtures/<kit>/: el composer.json o package.json con una versión
+#      por paquete de .ai/RULES.md §Stack y versiones exactas, y los archivos
+#      del proyecto que RULES.md cita. Escribe esas versiones en
+#      .ai/project/DECISIONS.md, rellena cada {{RELLENAR}} y declara un repo
+#      hermano para que los chequeos «traspaso» y «cross-repo» apliquen.
 #   2. Crea desde las plantillas una épica de prueba: 01-demo, CERRADA, con dos
 #      fases HECHA; y 02-demo, con su fase 01 LISTA_PARA_EJECUTAR y el puntero
 #      de STATE.md en ella.
 #   3. Comprueba que `sh bin/check-docs.sh --strict` pasa sobre esa instalación.
 #   4. Provoca, cada uno en una copia limpia, los 13 fallos de «CÓMO PROVOCAR
-#      CADA FALLO» de la cabecera de bin/check-docs.sh, más dos variantes: una
-#      fase con las secciones sin número (2n) y una cita de sección por su
+#      CADA FALLO» de la cabecera de bin/check-docs.sh, más tres variantes: una
+#      fase con las secciones sin número (2n), un paquete de RULES.md sin
+#      versión en .ai/project/DECISIONS.md (9n) y una cita de sección por su
 #      número (12n). Cada caso tiene que fallar con el mensaje de su chequeo,
 #      no con cualquier otro.
 #   El fallo 5 (migraciones) sólo existe si la plantilla de fase declara
@@ -53,23 +56,28 @@ edit() { sed "$2" "$1" > "$1.tmp" && mv "$1.tmp" "$1"; }
 # awk_edit <archivo> <programa de awk>: lo mismo con awk.
 awk_edit() { awk "$2" "$1" > "$1.tmp" && mv "$1.tmp" "$1"; }
 
-# fill_stack <RULES.md> <manifiesto>: la versión de cada fila de §Stack sale del manifiesto (una pareja
-# «"paquete": "versión"» por línea). Una fila con varios paquetes toma la del primero.
+# fill_stack <RULES.md> <DECISIONS.md> <manifiesto>: la fila de marcador de DECISIONS.md §Stack pasa a una fila
+# por paquete de RULES.md §Stack, con la versión que declara el manifiesto (una pareja «"paquete": "versión"» por
+# línea).
 fill_stack() {
     awk '
-        NR == FNR {
+        FILENAME == ARGV[1] {
             if ($0 ~ /^ *"[^"]+": *"[^"]*",? *$/) {
                 l = $0; sub(/^ *"/, "", l); sub(/",? *$/, "", l); split(l, kv, /": *"/); v[kv[1]] = kv[2]
             }
             next
         }
-        /^## [0-9]+\. Stack/ { s = 1 }
-        s && /^## / && !/Stack/ { s = 0 }
-        s && /^\| `/ && (i = index($0, "{{RELLENAR")) > 0 {
-            n = $0; sub(/^\| `/, "", n); sub(/`.*/, "", n)
-            if (n in v) { r = substr($0, i); $0 = substr($0, 1, i - 1) v[n] substr(r, index(r, "}}") + 2) }
+        FILENAME == ARGV[2] {
+            if ($0 ~ /^## [0-9]+\. Stack/) { s = 1; next }
+            if (s && /^## /) s = 0
+            if (s && /^\| `/) {
+                n = $0; sub(/^\| /, "", n); sub(/ \|.*/, "", n); gsub(/`/, "", n)
+                k = split(n, N, / \/ /); for (i = 1; i <= k; i++) rows = rows "| `" N[i] "` | " v[N[i]] " |\n"
+            }
+            next
         }
-        { print }' "$2" "$1" > "$1.tmp" && mv "$1.tmp" "$1"
+        /^\| \{\{RELLENAR/ { printf "%s", rows; next }
+        { print }' "$3" "$1" "$2" > "$2.tmp" && mv "$2.tmp" "$2"
 }
 
 # fill_markers <archivo> <repo hermano>: cada {{RELLENAR…}}, aunque ocupe varias líneas, pasa a «Demo»;
@@ -126,7 +134,7 @@ install() {
         cd "$2" || exit 1
         manifest=composer.json
         [ -f package.json ] && manifest=package.json
-        fill_stack .ai/RULES.md "$manifest"
+        fill_stack .ai/RULES.md .ai/project/DECISIONS.md "$manifest"
         find . -type f -name '*.md' -exec grep -lF '{{RELLENAR' {} + | while read -r f; do fill_markers "$f" "$SIBLING"; done
 
         make_epic 01-demo CERRADA 01 02
@@ -169,8 +177,10 @@ estropea() {
                 's/^> \*\*Contrato HTTP:\*\* SIN CAMBIOS$/> **Contrato HTTP:** CAMBIO AUTORIZADO (prueba)/' ;;
         7)  edit .ai/STATE.md 's/^- \*\*Decisiones abiertas:\*\* 0 (0/- **Decisiones abiertas:** 1 (0/' ;;
         8)  printf '| 1 | %s | api | interno | 99 | Prueba. | — | abierto |\n' "$DATE" >> .ai/BACKLOG.md ;;
-        9)  awk_edit .ai/RULES.md 'BEGIN { FS = OFS = "|" } /^## [0-9]+\. Stack/ { s = 1 }
+        9)  awk_edit .ai/project/DECISIONS.md 'BEGIN { FS = OFS = "|" } /^## Stack/ { s = 1 }
                 s && !d && /^\| `/ { $3 = " 0.0.0 "; d = 1 } { print }' ;;
+        # Un paquete que el stack da por hecho y el proyecto no versiona.
+        9n) awk_edit .ai/project/DECISIONS.md '/^## Stack/ { s = 1 } s && !d && /^\| `/ { d = 1; next } { print }' ;;
         10) printf '\nVer %s/docs/x.md.\n' "$SIBLING" >> .ai/DOMAIN.md ;;
         11) printf '\nVer `bin/no-existe.sh`.\n' >> CLAUDE.md ;;
         12) printf '\nVer `.ai/RULES.md §No existe`.\n' >> CLAUDE.md ;;
@@ -245,14 +255,15 @@ for KIT in $KITS; do
     provoke 6  'traspaso: CAMBIO AUTORIZADO sin traspaso'            'cambia el contrato y nada lo traspasa'
     provoke 7  'contadores: «Decisiones abiertas» sube sin DOMAIN'   'la cabecera dice «Decisiones abiertas: 1'
     provoke 8  'destinos: «99» en la columna Destino'                '«Destino» es 99'
-    provoke 9  'stack: otra versión en RULES.md §Stack'              'dice 0.0.0 y el manifiesto dice'
+    provoke 9  'stack: otra versión en DECISIONS.md §Stack'          'dice 0.0.0 y el manifiesto dice'
+    provoke 9n 'stack: un paquete de RULES.md sin versión'         '(de RULES.md §Stack) no tiene versión'
     provoke 10 'cross-repo: cita un documento del repo hermano'      "cita documentos de «$SIBLING»"
     # shellcheck disable=SC2016  # las comillas invertidas son literales
     provoke 11 'rutas: cita bin/no-existe.sh'                        'cita `bin/no-existe.sh`, que no existe'
     provoke 12 'secciones: cita una sección que no existe'           'cita «.ai/RULES.md §No existe»'
     provoke 12n 'secciones: cita una sección por su número'          'cita «.ai/WORKFLOW.md §3» por su número'
-    # 2n y 12n son variantes de los chequeos 2 y 12: no cuentan entre los 13 de la cabecera.
-    n=$((DETECTED - 2))
+    # 2n, 9n y 12n son variantes de los chequeos 2, 9 y 12: no cuentan entre los 13 de la cabecera.
+    n=$((DETECTED - 3))
     note=''
     [ "$TOTAL" -eq 13 ] || note=' (el 5 no aplica)'
     printf '  → %s/%s fallos de la cabecera provocados y detectados%s\n' "$n" "$TOTAL" "$note"

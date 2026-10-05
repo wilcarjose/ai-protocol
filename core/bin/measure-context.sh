@@ -5,10 +5,10 @@
 # ◆ QUÉ MIDE
 #   Los caracteres de los archivos del protocolo que carga cada tipo de sesión:
 #     cualquiera    CLAUDE.md
-#     ejecutor      CLAUDE.md, /phase, STATE, DOMAIN, RULES, WORKFLOW, BACKLOG
-#                   y la plantilla de fase
-#     planificador  CLAUDE.md, STATE, DOMAIN, RULES, WORKFLOW, PLANNING,
-#                   BACKLOG, PROTOCOL y las dos plantillas
+#     ejecutor      CLAUDE.md, /phase, STATE, project/README, DOMAIN, RULES,
+#                   WORKFLOW, BACKLOG y la plantilla de fase
+#     planificador  CLAUDE.md, STATE, project/README, DOMAIN, RULES, WORKFLOW,
+#                   PLANNING, BACKLOG, PROTOCOL y las dos plantillas
 #     rescate       CLAUDE.md, /close, STATE, WORKFLOW y la plantilla de fase
 #   Es la línea base para reducir el contexto: si un cambio del protocolo
 #   mueve qué lee una sesión, la lista de abajo se cambia con él.
@@ -31,8 +31,8 @@ ROOT=${1:-"$(dirname "$0")/.."}
 cd "$ROOT" || exit 1
 
 SESSIONS='cualquiera:CLAUDE.md
-ejecutor:CLAUDE.md .claude/commands/phase.md .ai/STATE.md .ai/DOMAIN.md .ai/RULES.md .ai/WORKFLOW.md .ai/BACKLOG.md .ai/templates/phase.template.md
-planificador:CLAUDE.md .ai/STATE.md .ai/DOMAIN.md .ai/RULES.md .ai/WORKFLOW.md .ai/PLANNING.md .ai/BACKLOG.md .ai/PROTOCOL.md .ai/templates/epic-plan.template.md .ai/templates/phase.template.md
+ejecutor:CLAUDE.md .claude/commands/phase.md .ai/STATE.md .ai/project/README.md .ai/DOMAIN.md .ai/RULES.md .ai/WORKFLOW.md .ai/BACKLOG.md .ai/templates/phase.template.md
+planificador:CLAUDE.md .ai/STATE.md .ai/project/README.md .ai/DOMAIN.md .ai/RULES.md .ai/WORKFLOW.md .ai/PLANNING.md .ai/BACKLOG.md .ai/PROTOCOL.md .ai/templates/epic-plan.template.md .ai/templates/phase.template.md
 rescate:CLAUDE.md .claude/commands/close.md .ai/STATE.md .ai/WORKFLOW.md .ai/templates/phase.template.md'
 
 chars() { LC_ALL=C tr -d '\200-\277' < "$1" | wc -c | tr -d ' '; }

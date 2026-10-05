@@ -1,4 +1,4 @@
-# {{RELLENAR: nombre del proyecto y del repo, p. ej. «Acme — backend»}} · protocolo de trabajo
+# Protocolo de trabajo con IA
 
 > Punto de entrada de cualquier sesión de IA en este repositorio. Describe **cómo se trabaja**: fases, ramas,
 > commits, cierre y memoria entre sesiones.
@@ -6,6 +6,9 @@
 > - Las reglas de **cómo se escribe código** viven en `.ai/RULES.md`.
 > - El protocolo del **ejecutor** (ciclo, cuándo parar, bloque STOP & ASK, reporte) vive en `.ai/WORKFLOW.md`.
 > - Cómo se **planifica** una épica o una fase vive en `.ai/PLANNING.md`, y sólo lo lee quien planifica.
+> - Lo que **este proyecto** decide y las reglas dan por supuesto (contexto operativo, repos hermanos, versiones,
+>   zonas sensibles, ámbitos de commit…) vive en `.ai/project/`. Este archivo, `.ai/RULES.md` y `.ai/WORKFLOW.md`
+>   son del kit `ai-protocol` y los actualiza `install.sh --upgrade`; `.ai/project/` no la toca nunca.
 >
 > Jerarquía si algo choca: `.ai/RULES.md` > `.ai/WORKFLOW.md` > este archivo. Si este archivo contradice a
 > `RULES.md`, gana `RULES.md` y hay que corregir este.
@@ -20,11 +23,13 @@
 ## Orden de lectura (sesión en frío)
 
 1. `.ai/STATE.md` — qué fase está activa y qué la bloquea.
-2. `.ai/DOMAIN.md` — lo decidido. **No se vuelve a preguntar.**
-3. `.ai/RULES.md` — stack, alcance, contrato, arquitectura, lista negra.
-4. `.ai/WORKFLOW.md` — ciclo del ejecutor, criterios de parada, reporte.
-5. El archivo de la fase activa (`.ai/epics/<NN-slug>/phase-<FF>.md`) y lo que cite en su §2.
-6. **El código real**, antes de citar un documento como evidencia de algo: si discrepan, gana el código y lo
+2. `.ai/project/README.md` — el contexto operativo y los repos hermanos. El resto de `.ai/project/` se lee cuando
+   una regla lo cita.
+3. `.ai/DOMAIN.md` — lo decidido. **No se vuelve a preguntar.**
+4. `.ai/RULES.md` — stack, alcance, contrato, arquitectura, lista negra.
+5. `.ai/WORKFLOW.md` — ciclo del ejecutor, criterios de parada, reporte.
+6. El archivo de la fase activa (`.ai/epics/<NN-slug>/phase-<FF>.md`) y lo que cite en su §2.
+7. **El código real**, antes de citar un documento como evidencia de algo: si discrepan, gana el código y lo
    reportas (`.ai/WORKFLOW.md §El ciclo obligatorio`, la regla del `grep`).
 
 ## Sincronización post-lectura
@@ -45,20 +50,11 @@ regenera estas zonas de `.ai/STATE.md`. Es idempotente: si nada cambió, el `git
 `bin/check-docs.sh` (chequeo «contadores») recalcula todo esto y falla si no cuadra: quien sincroniza a mano y el
 guardián dan siempre el mismo número.
 
-## Contexto operativo
-
-{{RELLENAR: lo que una sesión en frío debe saber del entorno y que no es una regla de código ni una decisión de
-negocio. Por ejemplo: «la base de datos local es un volcado de producción: antes de endurecer una validación,
-comprueba que los datos históricos la cumplen», «los cron de X están comentados a propósito», «no hay tráfico real
-hasta tal fecha». Si no hay nada, escribe «Nada que destacar.»}}
-
 ## El otro repositorio
 
-> **Repos hermanos:** {{RELLENAR: el nombre de la carpeta de cada repo hermano entre comillas invertidas y
-> separados por comas, p. ej. `frontend` o `backend`, `mobile`; o «—» si este proyecto no tiene ninguno}}
-
-Cada repo hermano vive en su propia carpeta, al lado de esta (`../<repo>/`), con su propio protocolo. Cada sesión se
-abre en el repo en el que va a trabajar. Si no hay repos hermanos, esta sección no se dispara nunca.
+Los repos hermanos se declaran en `.ai/project/README.md §Repos hermanos`. Cada uno vive en su propia carpeta, al
+lado de esta (`../<repo>/`), con su propio protocolo. Cada sesión se abre en el repo en el que va a trabajar. Si no
+hay repos hermanos, esta sección no se dispara nunca.
 
 - **Leer el código del otro repo está permitido y es lo esperado** cuando hay una duda real sobre el contrato: la
   forma de una respuesta, un código de error, un status. Es más fiable que suponer.
