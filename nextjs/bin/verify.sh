@@ -60,6 +60,7 @@ run() {
 # ─────────────────────────────────────────────────────────────────────────────
 
 # La deuda de lint congelada sólo mengua (.ai/RULES.md §Verificación del stack).
+# shellcheck disable=SC2329  # se invoca a través de run()
 suppressions_gate() {
     n=0
     if [ -f eslint-suppressions.json ]; then
@@ -72,6 +73,7 @@ suppressions_gate() {
 
 # Los tests y su baseline: el conteo sale de la línea «Tests  N passed» de Vitest (anclada, para no
 # confundirla con «Test Files»). Sin archivos de test, cuenta 0.
+# shellcheck disable=SC2329  # se invoca a través de run()
 tests_gate() {
     npx vitest run --reporter=dot --passWithNoTests > "$TMPD/vitest.log" 2>&1
     rc=$?

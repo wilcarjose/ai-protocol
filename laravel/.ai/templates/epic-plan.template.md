@@ -3,10 +3,11 @@
 > **Slug:** `NN-slug`
 > **Estado:** SIN_EMPEZAR
 
-<!-- Cómo se rellena cada sección: .ai/PLANNING.md §2.
+<!-- Cómo se rellena cada sección: .ai/PLANNING.md §Épica.
 
      Campos opcionales de la cabecera (bórralos si no aplican):
-     > **Rama base:** `epic/NN-slug`        ← .ai/PLANNING.md §6; sólo mientras la épica está SIN_EMPEZAR
+     > **Rama base:** `epic/NN-slug`        ← .ai/PLANNING.md §Rama base de la épica; sólo mientras la épica
+                                               está SIN_EMPEZAR
      > **Espejo de:** <repo hermano> <NN-slug>  ← si sigue a una épica del otro repo, y qué entrega éste antes
 
      El «Estado:» va solo en su línea y sin nada detrás: SIN_EMPEZAR | EN_CURSO | CERRADA. Lo mueve el ejecutor
@@ -53,8 +54,8 @@ Ninguna.
 
 ## Fases
 
-<!-- Reglas de corte: .ai/PLANNING.md §3.1. Numeración: §4 (nunca se renumera). Cada fila tiene su fila en
-     .ai/STATE.md §Mapa de fases, en el mismo orden. -->
+<!-- Reglas de corte: .ai/PLANNING.md §Reglas de corte. Numeración: .ai/PLANNING.md §Numeración (nunca se
+     renumera). Cada fila tiene su fila en .ai/STATE.md §Mapa de fases, en el mismo orden. -->
 
 | Fase | Qué cubre | Depende de |
 |---|---|---|
@@ -69,8 +70,8 @@ Ninguna.
 
 ## Criterio de cierre
 
-<!-- Comandos que se pueden cumplir, probados contra el repo al escribirlos (.ai/PLANNING.md §5). Lo comprueba,
-     casilla a casilla, quien cierra la última fase. -->
+<!-- Comandos que se pueden cumplir, probados contra el repo al escribirlos (.ai/PLANNING.md §Antes de dar el plan
+     por listo). Lo comprueba, casilla a casilla, quien cierra la última fase. -->
 
 - [ ] Todas las fases de la tabla en `HECHA`
 - [ ] `bash bin/verify.sh` en verde

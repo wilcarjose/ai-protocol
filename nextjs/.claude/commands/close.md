@@ -32,9 +32,9 @@ commits en la rama».
 Rellena `RESULTADO DE LA EJECUCIÓN` con lo **verificable**:
 
 - **Estado final:** `HECHA` sólo si `bin/verify.sh` está verde, todos los entregables están y todas las casillas del
-  §5 se cumplen tal como están escritas (`.ai/WORKFLOW.md §2.10`). Si falta algo, `BLOQUEADA` o
-  `VERIFICACION_ROJA`, con el detalle; si el motivo es una pregunta sin responder, `BLOQUEADA` y la pregunta en
-  `.ai/DOMAIN.md §Decisiones pendientes`.
+  §5 se cumplen tal como están escritas (`.ai/WORKFLOW.md §Un criterio de éxito no se puede cumplir`). Si falta
+  algo, `BLOQUEADA` o `VERIFICACION_ROJA`, con el detalle; si el motivo es una pregunta sin responder, `BLOQUEADA`
+  y la pregunta en `.ai/DOMAIN.md §Decisiones pendientes`.
 - «Archivos tocados realmente» sale de `git diff --stat`, no de la lista prevista.
 - Si hay trabajo sin commitear, dilo y di si es reversible. No lo commitees como si fuera una fila.
 - Lo que no puedas probar, déjalo vacío y márcalo como pendiente. **No escribas memoria** («se hizo X» cuando X no

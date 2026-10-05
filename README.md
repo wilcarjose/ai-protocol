@@ -8,7 +8,7 @@ comprueba que esa memoria no miente, y un único árbitro (`bin/verify.sh`) deci
 Sale del protocolo que se construyó en el backend y el frontend de Kiniela Pro, unificado en una sola versión con lo
 mejor de cada repo y sin nada propio de ese proyecto.
 
-**Versión del kit:** 2026-10-01.
+**Versión del kit:** 2026-10-04.
 
 ## Qué hay en cada kit
 
@@ -34,6 +34,7 @@ AGENTS.md                 Redirección a CLAUDE.md para Cursor, Codex, aider… 
   settings.json           Permisos del agente (qué puede ejecutar sin preguntar y qué nunca).        [stack]
 bin/
   check-docs.sh           El guardián: 13 chequeos sobre la coherencia de la memoria.                [común]
+  measure-context.sh      Cuántos caracteres lee cada tipo de sesión al arrancar.                    [común]
   verify.sh               El único árbitro: gates, su orden y la baseline que nunca empeora.         [stack]
 docs/
   README.md               Qué va en cada carpeta de docs/.                                           [stack]
@@ -51,7 +52,7 @@ Además, propios de cada stack:
 ### 1. El proyecto y sus herramientas
 
 El kit da por hecho el stack de su `RULES.md`. Instálalo o, si el proyecto no lo usa, quita la fila de
-`.ai/RULES.md §1` y lo que dependa de ella.
+`.ai/RULES.md §Stack y versiones exactas` y lo que dependa de ella.
 
 **Laravel**
 
@@ -62,7 +63,7 @@ composer require --dev larastan/larastan
 php artisan install:api               # si expone una API
 ```
 
-En `tests/TestCase.php`, que ningún test llame a la red real (`.ai/RULES.md §7`):
+En `tests/TestCase.php`, que ningún test llame a la red real (`.ai/RULES.md §Tests`):
 
 ```php
 protected function setUp(): void
@@ -82,8 +83,8 @@ npm i zod @tanstack/react-query zustand
 npm i -D vitest eslint-plugin-boundaries
 ```
 
-La regla de capas de `.ai/RULES.md §5` (`app → features → entities → shared`) se configura en `eslint.config.mjs`
-con `eslint-plugin-boundaries`, y `tsconfig.json` lleva `"strict": true`.
+La regla de capas de `.ai/RULES.md §Estructura y regla de dependencias` (`app → features → entities → shared`) se
+configura en `eslint.config.mjs` con `eslint-plugin-boundaries`, y `tsconfig.json` lleva `"strict": true`.
 
 ### 2. Copiar el kit
 
@@ -171,8 +172,8 @@ criterio de cierre; que las fases citadas existen; el manifiesto de despliegue; 
 citen documentos del repo hermano; y que las rutas y secciones citadas existan. Corre igual en el host que en un
 contenedor Alpine (busybox).
 
-Su cabecera explica cómo provocar cada fallo a mano: un chequeo nuevo se prueba en las dos direcciones (falla con el
-defecto, pasa sin él).
+Su cabecera explica cómo provocar cada fallo, y `sh tests/run.sh` lo hace en los dos kits: instala cada uno con una
+épica de prueba, comprueba que el guardián pasa y que cada fallo provocado lo hace saltar con su mensaje.
 
 ## Diferencias con el protocolo de Kiniela Pro
 
@@ -188,17 +189,20 @@ Para quien venga de esos repos:
 - **`BACKLOG.md`** con `Impacto`, `Destino` y `Cerrado por`, y la regla de triaje en `PLANNING.md`.
 - **`DOMAIN.md §Decisiones pendientes`** con ids `D<n>` y las columnas `Categoría`, `Bloquea`, `Propuesto por`.
 - **Commits de fase** `chore(phase-<NN>-<FF>): start | resume | close`, con épica y fase en el ámbito.
-- **Criterios de parada** unificados (`WORKFLOW.md §2.1`–`§2.10`); los propios del dominio se declaran en
+- **Criterios de parada** unificados (`WORKFLOW.md §Contrato`–`§2.10`); los propios del dominio se declaran en
   `RULES.md §Zonas sensibles`.
 - **Sin listas de deuda congelada** (`handoff-allowlist.txt`, `crossrepo-allowlist.txt`): un proyecto nuevo empieza
   limpio y los chequeos no toleran excepciones.
 
 ## Mantener el kit
 
-- **Una regla vive en un solo archivo**; los demás la citan por el nombre de su sección. Si una regla puede
-  incumplirse en silencio, se le añade un chequeo a `bin/check-docs.sh`, probado en las dos direcciones.
+- **Una regla vive en un solo archivo**; los demás la citan por el nombre de su sección, nunca por su número. Si una
+  regla puede incumplirse en silencio, se le añade un chequeo a `bin/check-docs.sh` y su caso a `tests/run.sh`, que
+  lo prueba en las dos direcciones (falla con el defecto, pasa sin él).
 - **Los archivos comunes son idénticos en todos los kits.** Se cambian en uno y se copian a los demás en el mismo
   commit; `sh check-kits.sh` falla si difieren.
+- **La CI del kit** (`.github/workflows/kit.yml`) corre en cada PR `shellcheck -s sh` sobre los scripts,
+  `sh check-kits.sh` y `sh tests/run.sh`, también dentro de Alpine (busybox).
 - **Las mejoras vienen de los proyectos.** Cada proyecto acumula las suyas en `.ai/PROTOCOL.md`; las que no son
   propias de ese proyecto se suben aquí.
 - Al cambiar el kit, actualiza «Versión del kit» arriba.

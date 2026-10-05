@@ -10,10 +10,12 @@
 #                    activa está EN_CURSO; las filas de cada épica, en orden.
 #   2. fases       — cada phase-*.md: estado válido e igual al del mapa;
 #                    «Contrato HTTP» válido; los campos de cabecera propios del
-#                    stack que pida la plantilla; §9 con filas; «Depende de»
-#                    sólo cita fases anteriores; RESULTADO vacío si no empezó,
-#                    relleno si se cerró y con los encabezados de la plantilla;
-#                    una HECHA, con todas las casillas del §5 marcadas.
+#                    stack que pida la plantilla; «Plan de commits» con filas;
+#                    «Depende de» sólo cita fases anteriores; RESULTADO vacío si
+#                    no empezó, relleno si se cerró y con los encabezados de la
+#                    plantilla; una HECHA, con todas las casillas de «Criterios
+#                    de éxito» marcadas. Las secciones se buscan por su nombre,
+#                    con o sin número delante («## 5. Criterios de éxito»).
 #   3. épicas      — cada epic-plan: estado válido y coherente con el mapa
 #                    (CERRADA = todas HECHA y criterio de cierre marcado); su
 #                    tabla «Fases», en orden y con las mismas fases que el
@@ -35,8 +37,9 @@
 #                    versión, con composer.json / package.json.
 #  10. cross-repo  — ningún archivo cita documentos de un repo hermano.
 #  11. rutas       — las rutas citadas en los documentos normativos existen.
-#  12. secciones   — toda referencia «archivo.md §Sección» apunta a una
-#                    sección que existe.
+#  12. secciones   — toda referencia «archivo.md §Sección» cita la sección por
+#                    su nombre, no por su número, y el nombre es el de una
+#                    sección que existe (un número no sobrevive a renumerar).
 #
 #   11 y 12 son heurísticos (sacan rutas y secciones de la prosa): avisan, y
 #   sólo bloquean con --strict. El resto son comparaciones exactas y bloquean
@@ -59,7 +62,8 @@
 #    9. cambia una versión de la tabla de RULES.md §Stack.
 #   10. escribe «<repo hermano>/docs/x.md» en cualquier .md.
 #   11. cita `bin/no-existe.sh` en CLAUDE.md.
-#   12. cita `.ai/RULES.md §No existe` en CLAUDE.md.
+#   12. cita `.ai/RULES.md §No existe` en CLAUDE.md, o cita una que existe
+#       por su número: `.ai/WORKFLOW.md §3`.
 #
 # ◆ PORTABILIDAD
 #   POSIX sh y awk/sed/grep sin extensiones GNU: corre igual en el host que en
@@ -124,9 +128,22 @@ report() {
     : > "$PROBLEMS"
 }
 rel() { printf '%s' "${1#"$ROOT"/}"; }
+# Las líneas no vacías de $1 en una sola, separadas por espacios y cada una con el prefijo $2.
+inline() { printf '%s\n' "$1" | awk -v p="${2:-}" 'NF { printf "%s%s ", p, $0 }'; }
 
 # Líneas de la sección «## <título>» de un archivo, hasta la siguiente «## ».
 section() { awk -v t="## $2" 'index($0, t) == 1 { f = 1; next } f && /^## / { exit } f' "$1"; }
+
+# Líneas de la sección de una fase que se llama <nombre>, con o sin número delante («## 5. <nombre>»), hasta la
+# siguiente «## » o «---». Sale != 0 si la fase no la tiene. Por nombre: renumerar la plantilla no la pierde.
+phase_section() {
+    awk -v t="$2" '
+        /^## / { if (f) exit; h = substr($0, 4); sub(/^[0-9]+[a-z]?\. */, "", h); sub(/ +$/, "", h)
+                 if (h == t) { f = 1; next } }
+        f && /^---/ { exit }
+        f
+        END { exit f ? 0 : 1 }' "$1"
+}
 
 # Valor de una clave de la cabecera de STATE.md («- **Clave:** valor»).
 state_field() { sed -n "s/^- \*\*$1:\*\* *//p" "$STATE" | head -n 1; }
@@ -182,6 +199,7 @@ NN_ACT=''
 # Repos hermanos: los nombres entre comillas invertidas de «> **Repos hermanos:**» de CLAUDE.md.
 REPOS=$(sed -n 's/^> \*\*Repos hermanos:\*\* *//p' "$CLAUDE_MD" | head -n 1)
 case "$REPOS" in *'{{'*) REPOS='' ;; esac
+# shellcheck disable=SC2016  # las comillas invertidas son literales
 REPOS=$(printf '%s\n' "$REPOS" | grep -oE '`[^`]+`' | tr -d '`' | tr '\n' ' ')
 
 TPL_HAS_MIG=0
@@ -206,6 +224,7 @@ for key in 'Épica activa' 'Fase activa' 'Archivo de la fase' 'Decisiones abiert
 done
 grep -qE '^- \*\*(Épica activa|Fase activa):\*\* *[^ ]+ +[^ ]' "$STATE" \
     && bad 'STATE.md: «Épica activa» o «Fase activa» lleva texto detrás del valor; las notas van en §Bloqueo activo'
+# shellcheck disable=SC2016  # las comillas invertidas son literales
 grep -qE '^- \*\*Archivo de la fase:\*\* *(`[^`]+`|—) *$' "$STATE" \
     || bad 'STATE.md: «Archivo de la fase» lleva algo más que la ruta entre comillas invertidas (o «—»)'
 
@@ -234,15 +253,15 @@ awk '$3 == "EN_CURSO" { print $1 "/" $2 }' "$MAP" | while read -r r; do
     [ "$r" = "$ACT_EPIC/$ACT_PH" ] || bad "STATE.md: $r está EN_CURSO, pero la fase activa es $ACT_EPIC/$ACT_PH; sólo una sesión ejecuta"
 done
 
-for e in $(awk '!seen[$1]++ { print $1 }' "$MAP"); do
+awk '!seen[$1]++ { print $1 }' "$MAP" | while read -r e; do
     seq=$(awk -v e="$e" '$1 == e { print $2 }' "$MAP")
     [ "$seq" = "$(printf '%s\n' "$seq" | sort)" ] \
-        || bad "STATE.md §Mapa de fases: las filas de $e no están en orden de ejecución ($(printf '%s ' $seq))"
+        || bad "STATE.md §Mapa de fases: las filas de $e no están en orden de ejecución ($(inline "$seq"))"
 done
 report fail 'el puntero coincide con el mapa' 'el puntero de STATE.md no es fiable:'
 
 # ── 2. Fases ────────────────────────────────────────────────────────────────
-printf '◆ fases (estado igual al del mapa, cabecera, §9, «Depende de», RESULTADO)\n'
+printf '◆ fases (estado igual al del mapa, cabecera, «Plan de commits», «Depende de», RESULTADO)\n'
 
 TPL_HEADS="$TMPD/tpl-heads"
 awk '/^## RESULTADO DE LA EJECUCI/ { f = 1; next } f && /^### / { print }' "$TPL_PHASE" > "$TPL_HEADS"
@@ -272,8 +291,10 @@ for f in "$AI"/epics/*/phase-*.md; do
         grep -q '^> \*\*Migraciones:\*\* ' "$f" || bad "$r: la cabecera no tiene «Migraciones:» (la plantilla lo pide)"
     fi
 
-    awk '/^## 9\./ { s = 1; next } s && /^(## |---)/ { exit } s && /^\| *[0-9]+[a-z]? *\|/ { n++ }
-         END { exit (n > 0) ? 0 : 1 }' "$f" || bad "$r: §9 «Plan de commits» sin filas"
+    for sec in 'Criterios de éxito' 'Plan de commits'; do
+        phase_section "$f" "$sec" > /dev/null || bad "$r: no tiene la sección «$sec» (la de la plantilla)"
+    done
+    phase_section "$f" 'Plan de commits' | grep -qE '^\| *[0-9]+[a-z]? *\|' || bad "$r: «Plan de commits» sin filas"
 
     # «Depende de» sólo cita fases anteriores de su épica; las de otra épica («NN/FF») no se comparan.
     for dep in $(sed -n 's/.*\*\*Depende de:\*\* *//p' "$f" | head -n 1 \
@@ -304,8 +325,8 @@ for f in "$AI"/epics/*/phase-*.md; do
     esac
 
     if [ "$fs" = HECHA ]; then
-        n=$(awk '/^## 5\./ { s = 1; next } s && /^## / { exit } s && /^- \[ \]/ { c++ } END { print c + 0 }' "$f")
-        [ "$n" -eq 0 ] || bad "$r (HECHA): $n casilla(s) del §5 sin marcar (.ai/WORKFLOW.md §2.10)"
+        n=$(phase_section "$f" 'Criterios de éxito' | grep -c '^- \[ \]')
+        [ "$n" -eq 0 ] || bad "$r (HECHA): $n casilla(s) de «Criterios de éxito» sin marcar (.ai/WORKFLOW.md §Un criterio de éxito no se puede cumplir)"
     else
         # Una fase viva tiene los encabezados del RESULTADO de la plantilla vigente: si se escribió con una
         # plantilla vieja, salta en su Paso A y no al cerrarla. Las HECHA son historia.
@@ -354,16 +375,16 @@ for d in "$AI"/epics/*/; do
 
     seq=$(epic_table "$plan")
     [ "$seq" = "$(printf '%s\n' "$seq" | sort)" ] \
-        || bad "$r: la tabla «Fases» no está en orden de ejecución ($(printf '%s ' $seq))"
+        || bad "$r: la tabla «Fases» no está en orden de ejecución ($(inline "$seq"))"
     mseq=$(awk -v e="$e" '$1 == e { print $2 }' "$MAP" | sort)
     [ "$(printf '%s\n' "$seq" | sort)" = "$mseq" ] \
-        || bad "$r: la tabla «Fases» ($(printf '%s ' $seq)) y STATE.md §Mapa de fases ($(printf '%s ' $mseq)) no tienen las mismas fases"
+        || bad "$r: la tabla «Fases» ($(inline "$seq")) y STATE.md §Mapa de fases ($(inline "$mseq")) no tienen las mismas fases"
 
-    for id in $(grep -oE '(^|[^A-Za-z0-9])D[0-9]+' "$plan" | sed 's/^[^D]*//' | sort -u); do
+    grep -oE '(^|[^A-Za-z0-9])D[0-9]+' "$plan" | sed 's/^[^D]*//' | sort -u | while read -r id; do
         grep -qx "$id" "$DOM_IDS" || bad "$r: cita $id, que no existe en DOMAIN.md §Decisiones pendientes"
     done
 done
-for e in $(awk '{ print $1 }' "$MAP" | sort -u); do
+awk '{ print $1 }' "$MAP" | sort -u | while read -r e; do
     [ -d "$AI/epics/$e" ] || bad "STATE.md §Mapa de fases: la épica $e no tiene carpeta en .ai/epics/"
 done
 if [ -n "$NN_ACT" ] && [ -f "$AI/epics/$ACT_EPIC/epic-plan.md" ] && [ "$OPEN" -gt 0 ] \
@@ -379,15 +400,15 @@ check_ref() { has_phase "${2%%/*}" "${2#*/}" || bad "$(rel "$1"): cita la fase $
 
 for f in "$DOMAIN" "$STATE" "$BACKLOG" "$MANIFEST" "$AI"/epics/*/*.md; do
     [ -f "$f" ] || continue
-    for x in $(grep -oE '[Ff]ases? [0-9][0-9]/[0-9][0-9][a-z]?' "$f" | sed 's/^[Ff]ases* //' | sort -u); do
+    grep -oE '[Ff]ases? [0-9][0-9]/[0-9][0-9][a-z]?' "$f" | sed 's/^[Ff]ases* //' | sort -u | while read -r x; do
         check_ref "$f" "$x"
     done
 done
-for x in $(awk -F'|' '/^\| *D[0-9]+ *\|/ { print $(NF-4) }' "$DOMAIN" | grep -oE '[0-9][0-9]/[0-9][0-9][a-z]?' | sort -u); do
+awk -F'|' '/^\| *D[0-9]+ *\|/ { print $(NF-4) }' "$DOMAIN" | grep -oE '[0-9][0-9]/[0-9][0-9][a-z]?' | sort -u | while read -r x; do
     check_ref "$DOMAIN" "$x"
 done
 if [ -f "$MANIFEST" ]; then
-    for x in $(awk -F'|' '/^\| *[0-9][0-9]\/[0-9][0-9][a-z]? *\|/ { x = $2; gsub(/[ \t]/, "", x); print x }' "$MANIFEST" | sort -u); do
+    awk -F'|' '/^\| *[0-9][0-9]\/[0-9][0-9][a-z]? *\|/ { x = $2; gsub(/[ \t]/, "", x); print x }' "$MANIFEST" | sort -u | while read -r x; do
         check_ref "$MANIFEST" "$x"
     done
 fi
@@ -397,7 +418,7 @@ for d in "$AI"/epics/*/; do
     e=$(basename "$d")
     for f in "$d"*.md; do
         [ -f "$f" ] || continue
-        for x in $(grep -oE '[Ff]ases? [0-9][0-9][a-z]?/?' "$f" | grep -v '/$' | sed 's/^[Ff]ases* //' | sort -u); do
+        grep -oE '[Ff]ases? [0-9][0-9][a-z]?/?' "$f" | grep -v '/$' | sed 's/^[Ff]ases* //' | sort -u | while read -r x; do
             has_phase "${e%%-*}" "$x" || bad "$(rel "$f"): cita la fase $x, que no está en la tabla «Fases» de su épica"
         done
     done
@@ -478,7 +499,7 @@ blq=$(strip_comments "$STATE" | awk 'index($0, "## Bloqueo activo") == 1 { f = 1
 blq_ids=$(printf '%s\n' "$blq" | grep -oE '(^|[^A-Za-z0-9])D[0-9]+' | sed 's/^[^D]*//' | sort -u)
 want_ids=$(awk '$2 == 1 { print $1 }' "$TMPD/dpend" | sort -u)
 [ "$blq_ids" = "$want_ids" ] \
-    || bad "STATE.md §Bloqueo activo nombra «$(printf '%s ' $blq_ids)» y las decisiones pendientes que bloquean la épica activa son «$(printf '%s ' $want_ids)»"
+    || bad "STATE.md §Bloqueo activo nombra «$(inline "$blq_ids")» y las decisiones pendientes que bloquean la épica activa son «$(inline "$want_ids")»"
 [ "$d_m" -gt 0 ] || printf '%s\n' "$blq" | grep -q 'Ninguno' \
     || bad 'STATE.md §Bloqueo activo: no hay decisiones que bloqueen y la sección no dice «**Ninguno.**»'
 
@@ -507,7 +528,7 @@ fi
 tbl_ids=$(section "$STATE" 'Pendientes en otros repos' | grep -oE '^\| *#[0-9]+' | tr -dc '0-9\n' | sort -u)
 want_ids=$(awk '{ print $1 }' "$TMPD/xpend" | sort -u)
 [ "$tbl_ids" = "$want_ids" ] \
-    || bad "STATE.md §Pendientes en otros repos lista «$(printf '#%s ' $tbl_ids)» y BACKLOG.md tiene abiertas «$(printf '#%s ' $want_ids)»"
+    || bad "STATE.md §Pendientes en otros repos lista «$(inline "$tbl_ids" '#')» y BACKLOG.md tiene abiertas «$(inline "$want_ids" '#')»"
 report fail "contadores al día (decisiones: $d_n/$d_m · otros repos: $x_n/$x_m)" 'STATE.md no está sincronizado (CLAUDE.md §Sincronización post-lectura):'
 
 # ── 8. Destinos de BACKLOG.md ───────────────────────────────────────────────
@@ -588,6 +609,7 @@ NORMATIVE="$CLAUDE_MD $ROOT/AGENTS.md $RULES $AI/WORKFLOW.md $AI/PLANNING.md $DO
 printf '◆ rutas citadas en los documentos normativos (aviso; falla con --strict)\n'
 for src in $NORMATIVE; do
     [ -f "$src" ] || continue
+    # shellcheck disable=SC2016  # las comillas invertidas son literales
     for c in $(grep -oE '`[A-Za-z0-9_.][A-Za-z0-9_./@-]*/[A-Za-z0-9_.@-]+\.(php|ts|tsx|js|mjs|cjs|md|mdc|sh|json|neon|txt|xml|yml|yaml)`' "$src" \
                | tr -d '`' | sort -u); do
         case "$c" in ../*) continue ;; esac
@@ -599,7 +621,7 @@ for src in $NORMATIVE; do
 done
 report warn 'todas las rutas citadas existen' 'rutas citadas que no existen:'
 
-printf '◆ referencias «archivo.md §Sección» (aviso; falla con --strict)\n'
+printf '◆ referencias «archivo.md §Sección» (por su nombre; aviso, falla con --strict)\n'
 # «archivo<TAB>sección» por cada «X.md §Sección». La sección termina en una comilla invertida, una
 # puntuación, un punto seguido de espacio, «», », «—», «-->» u otro «§»; y sin un «y»/«o» final. Escribir la
 # referencia entre comillas invertidas (`CLAUDE.md §Cierre de fase`) la delimita sin ambigüedad.
@@ -637,15 +659,13 @@ while IFS="$TAB" read -r src file sec; do
         *) continue ;;
     esac
     case "$sec" in *'<'*|*'NN'*) continue ;; esac
-    heads=$(grep -E '^#{2,4} ' "$t" | sed -E 's/^#+ +//')
-    if printf '%s' "$sec" | grep -qE '^[0-9]+$'; then
-        printf '%s\n' "$heads" | grep -qE "^$sec\\." && continue
-    else
-        printf '%s\n' "$heads" | grep -qF "$sec" && continue
-    fi
+    case "$sec" in
+        [0-9]*) bad "$src: cita «$file §$sec» por su número; cítala por su nombre"; continue ;;
+    esac
+    grep -E '^#{2,4} ' "$t" | sed -E 's/^#+ +//' | grep -qF "$sec" && continue
     bad "$src: cita «$file §$sec», que no es ninguna sección de $file"
 done < "$TMPD/refs"
-report warn 'todas las referencias a secciones existen' 'referencias a secciones que no existen:'
+report warn 'todas las referencias a secciones existen y van por su nombre' 'referencias a secciones que no existen o van por su número:'
 
 # ── Veredicto ───────────────────────────────────────────────────────────────
 printf '\n'

@@ -1,0 +1,12 @@
+{
+    "name": "demo/backend",
+    "require": {
+        "php": "^8.4",
+        "laravel/framework": "^13.0"
+    },
+    "require-dev": {
+        "larastan/larastan": "^3.0",
+        "laravel/pint": "^1.24",
+        "pestphp/pest": "^4.0"
+    }
+}

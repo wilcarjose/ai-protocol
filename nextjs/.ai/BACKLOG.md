@@ -1,7 +1,7 @@
 # Hallazgos fuera de alcance
 
 <!-- Lo que la IA encuentra mientras trabaja y NO debe arreglar en la fase activa. Sin esto, o lo arregla (y la
-     fase se descontrola) o lo olvida (y se pierde). Se revisa al planificar (.ai/PLANNING.md §2, triaje).
+     fase se descontrola) o lo olvida (y se pierde). Se revisa al planificar (.ai/PLANNING.md §Épica, triaje).
 
      NO es un registro de decisiones: si un hallazgo pide una decisión de producto o de arquitectura, su pregunta
      va a .ai/DOMAIN.md §Decisiones pendientes y esta fila la cita.
@@ -11,7 +11,7 @@
      · #: correlativo, nunca se reutiliza.
      · Área: el módulo o la capa de este repo (api, auth, tests, ci…), o el nombre de un repo hermano
        (CLAUDE.md §El otro repositorio) si lo que hay que hacer es allí.
-     · Impacto: lo observable, sin severidad (.ai/WORKFLOW.md §7). Uno de:
+     · Impacto: lo observable, sin severidad (.ai/WORKFLOW.md §Documentación). Uno de:
          datos      expone o modifica datos de usuarios
          seguridad  autenticación, sesiones, permisos
          dinero     pagos, planes, facturación

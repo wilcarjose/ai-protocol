@@ -5,7 +5,7 @@
 >
 > Tres reglas que aplican a todo lo demás:
 >
-> 1. Si crees que una regla está mal o desactualizada: **STOP & ASK** (`.ai/WORKFLOW.md §3`). Nadie edita este
+> 1. Si crees que una regla está mal o desactualizada: **STOP & ASK** (`.ai/WORKFLOW.md §STOP & ASK`). Nadie edita este
 >    archivo sin el visto bueno del Tech Lead, y nunca desde una fase.
 > 2. Las reglas de **cómo se trabaja** (qué reportar, cuándo parar, cómo verificar) viven en `.ai/WORKFLOW.md` y en
 >    `CLAUDE.md`. Jerarquía si chocan: este archivo > `.ai/WORKFLOW.md` > `CLAUDE.md`.
@@ -67,7 +67,7 @@ tests/**
 ```
 database/migrations/**     ← sólo si la fase lo autoriza en su cabecera «Migraciones:»
 config/**                  ← sólo si la fase lo pide
-composer.json              ← ninguna dependencia nueva sin preguntar
+composer.json              ← dependencias nuevas: .ai/WORKFLOW.md §Dependencia nueva
 .env*                      ← nunca se leen ni se escriben secretos
 ```
 
@@ -85,7 +85,7 @@ El contrato HTTP es todo lo que un cliente ve: URLs, verbos, status, claves de e
 orden, cabeceras y el texto de los mensajes de error. **No cambia por defecto.** Cualquier cambio, aunque sea para
 cerrar un agujero, requiere:
 
-1. **STOP & ASK** (`.ai/WORKFLOW.md §2.1`), salvo que la fase ya lo traiga autorizado.
+1. **STOP & ASK** (`.ai/WORKFLOW.md §Contrato`), salvo que la fase ya lo traiga autorizado.
 2. La autorización del Tech Lead escrita en la fase: su cabecera dice `Contrato HTTP: CAMBIO AUTORIZADO`, con el
    cambio campo por campo y la decisión de `.ai/DOMAIN.md` que lo respalda.
 3. El traspaso al repo hermano que lo consume (`CLAUDE.md §El otro repositorio`).
@@ -296,7 +296,7 @@ docblock de tres líneas para explicar que significa lo contrario de lo que pare
   una base de datos **distinta** de la de desarrollo.
 - **Cuando un test falla por una diferencia de motor:** prohibido cambiar el código de producción para que pase y
   prohibido mockear la base de datos. Si el fallo es del test (tipos, orden de `NULL`, colación), se arregla el test
-  sin relajar la aserción. Si destapa un bug de producción, va a `.ai/BACKLOG.md` y no se arregla de paso.
+  sin relajar la aserción. Si destapa un bug de producción, va a `.ai/BACKLOG.md` (`CLAUDE.md §Alcance`).
 - **Fakes:** cada contrato tiene su Fake, que permite aserciones (`assertSent()`, `assertNothingSent()`,
   `respondWith()`). Viven en `tests/Fakes/` y se enlazan en el entorno de test. Si un test necesita `Http::fake()`,
   falta un contrato.
@@ -386,7 +386,7 @@ el resto. Una característica del lenguaje se aplica sólo si **elimina líneas*
 ## 13. Zonas sensibles
 
 Tocar estas zonas de una forma que la fase no describe con precisión es motivo de parada
-(`.ai/WORKFLOW.md §2.9`):
+(`.ai/WORKFLOW.md §Zona sensible`):
 
 - Autenticación, sesiones, tokens y permisos.
 - Pagos, planes y facturación.
@@ -413,34 +413,36 @@ lo que no cabe en el script:
 
 ## 15. Lista negra
 
+Las prohibiciones que valen para cualquier stack no se repiten aquí: no arreglar de paso (`CLAUDE.md §Alcance`),
+dependencias nuevas (`.ai/WORKFLOW.md §Dependencia nueva`) y exenciones a un gate
+(`.ai/WORKFLOW.md §Obediencia arquitectónica`). Éstas son las de Laravel:
+
 1. ⛔ **No inventes funcionalidad**: ni un endpoint, ni un campo, ni un flag «de paso».
-2. ⛔ **No arregles bugs que encuentres de paso**: a `.ai/BACKLOG.md`.
-3. ⛔ **No crees ni edites migraciones** sin que la cabecera de la fase las autorice.
-4. ⛔ **No renombres columnas, tablas ni claves de respuesta** sin `CAMBIO AUTORIZADO` (§3).
-5. ⛔ **No cambies el texto de un mensaje de error** sin `CAMBIO AUTORIZADO`: el cliente puede mostrarlo tal cual.
-6. ⛔ **No borres código comentado que parezca una regla de negocio desactivada.** Repórtalo.
-7. ⛔ **No cambies TTLs de caché ni valores de configuración** sin autorización. Si están mal, repórtalo.
-8. ⛔ **No instales paquetes de Composer** sin que la fase lo pida.
-9. ⛔ **No uses paquetes de Actions ni de DTOs** (`lorisleiva/laravel-actions`, `spatie/laravel-data`): las Actions
+2. ⛔ **No crees ni edites migraciones** sin que la cabecera de la fase las autorice.
+3. ⛔ **No renombres columnas, tablas ni claves de respuesta** sin `CAMBIO AUTORIZADO` (§3).
+4. ⛔ **No cambies el texto de un mensaje de error** sin `CAMBIO AUTORIZADO`: el cliente puede mostrarlo tal cual.
+5. ⛔ **No borres código comentado que parezca una regla de negocio desactivada.** Repórtalo.
+6. ⛔ **No cambies TTLs de caché ni valores de configuración** sin autorización. Si están mal, repórtalo.
+7. ⛔ **No uses paquetes de Actions ni de DTOs** (`lorisleiva/laravel-actions`, `spatie/laravel-data`): las Actions
    son clases PHP planas resueltas por el contenedor.
-10. ⛔ **No añadas un `JsonResource` con envoltorio `data`** donde hoy hay un array plano, ni reordenes las claves de
-    una respuesta.
-11. ⛔ **No refactorices más de un endpoint por commit.**
-12. ⛔ **No dejes la Action y el Service viejo activos a la vez**: si extraes a una Action, el Service deja de tener
+8. ⛔ **No añadas un `JsonResource` con envoltorio `data`** donde hoy hay un array plano, ni reordenes las claves de
+   una respuesta.
+9. ⛔ **No refactorices más de un endpoint por commit.**
+10. ⛔ **No dejes la Action y el Service viejo activos a la vez**: si extraes a una Action, el Service deja de tener
     esa lógica.
-13. ⛔ **No uses `auth()->user()` en Services ni Actions.** Sólo controladores y middleware conocen la petición.
-14. ⛔ **No silencies excepciones** (`catch (\Exception $e) { continue; }`). Si el código existente lo hace, se
+11. ⛔ **No uses `auth()->user()` en Services ni Actions.** Sólo controladores y middleware conocen la petición.
+12. ⛔ **No silencies excepciones** (`catch (\Exception $e) { continue; }`). Si el código existente lo hace, se
     conserva y se reporta; código nuevo así, nunca.
-15. ⛔ **No añadas exenciones al test de arquitectura** (`->ignoring()`, `->exclude()`, saltar un `arch()`). Si
-    crees que hace falta una, detente y repórtalo.
-16. ⛔ **No cambies comportamiento dentro de una tarea declarada «sin cambio de comportamiento».**
-17. ⛔ **No uses `array_first()` ni `array_last()` globales**: un polyfill las define con otra semántica. Usa
+13. ⛔ **No uses `->ignoring()`, `->exclude()` ni saltes un `arch()`** en el test de arquitectura: son exenciones a
+    un gate.
+14. ⛔ **No cambies comportamiento dentro de una tarea declarada «sin cambio de comportamiento».**
+15. ⛔ **No uses `array_first()` ni `array_last()` globales**: un polyfill las define con otra semántica. Usa
     `Illuminate\Support\Arr::first()` / `Arr::last()`.
-18. ⛔ **No uses `ReflectionMethod::setAccessible()` para probar un método privado**, ni quites `final` a una clase
+16. ⛔ **No uses `ReflectionMethod::setAccessible()` para probar un método privado**, ni quites `final` a una clase
     para heredarla en un test: falta un contrato o un Fake, o el test prueba implementación en vez de comportamiento.
-19. ⛔ **No cites catálogos mutables** (`P<n>-<m>`, `§X` de una lista que se renumera) desde código, tests ni
+17. ⛔ **No cites catálogos mutables** (`P<n>-<m>`, `§X` de una lista que se renumera) desde código, tests ni
     documentos. El porqué que debe sobrevivir va a `.ai/DOMAIN.md` o a `docs/`.
-20. ⛔ **No dejes llamadas de depuración**: `dd()`, `dump()`, `ray()`, `var_dump()`.
+18. ⛔ **No dejes llamadas de depuración**: `dd()`, `dump()`, `ray()`, `var_dump()`.
 
 ---
 

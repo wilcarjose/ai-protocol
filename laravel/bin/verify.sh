@@ -81,6 +81,7 @@ run() {
 
 # El contrato HTTP no cambia sin autorización (.ai/RULES.md §Contrato HTTP): si las rutas difieren del
 # baseline, el cambio es involuntario hasta que se demuestre lo contrario.
+# shellcheck disable=SC2329  # se invoca a través de run()
 routes_gate() {
     if [ ! -f docs/contract/routes-baseline.txt ]; then
         echo 'falta docs/contract/routes-baseline.txt; genéralo con:'
@@ -96,6 +97,7 @@ routes_gate() {
 }
 
 # La deuda de análisis estático sólo mengua (.ai/RULES.md §Verificación del stack).
+# shellcheck disable=SC2329  # se invoca a través de run()
 phpstan_debt_gate() {
     n=0
     [ -f phpstan-baseline.neon ] && n=$(grep -c 'message:' phpstan-baseline.neon)
@@ -107,6 +109,7 @@ phpstan_debt_gate() {
 }
 
 # La suite completa y su baseline: el conteo sale de la línea «Tests: … N passed» de Pest.
+# shellcheck disable=SC2329  # se invoca a través de run()
 tests_gate() {
     ./vendor/bin/pest --colors=never > "$TMPD/pest.log" 2>&1
     rc=$?
@@ -126,10 +129,12 @@ run 'estilo'        ./vendor/bin/pint --test
 run 'análisis'      ./vendor/bin/phpstan analyse --no-progress --memory-limit="$PHPSTAN_MEMORY_LIMIT"
 run 'deuda'         phpstan_debt_gate
 run 'rutas'         routes_gate
-run 'arquitectura'  ./vendor/bin/pest --colors=never tests/Architecture
+# La suite completa ya incluye tests/Architecture: con --fast es lo único que corre de Pest; sin él, no se repite.
 if [ "$FAST" -eq 0 ]; then
+    printf '\n▸ arquitectura  (dentro de la suite)\n'
     run 'suite'     tests_gate
 else
+    run 'arquitectura'  ./vendor/bin/pest --colors=never tests/Architecture
     printf '\n▸ suite  (omitida con --fast; el cierre de una fase exige el verify completo)\n'
 fi
 
