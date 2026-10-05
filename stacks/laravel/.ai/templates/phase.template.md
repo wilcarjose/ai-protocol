@@ -2,11 +2,14 @@
 
 > **Épica:** `NN-slug` · **Depende de:** — | fase FF-1
 > **Estado:** LISTA_PARA_EJECUTAR
+> **Tipo:** código
 > **Contrato HTTP:** SIN CAMBIOS
 > **Migraciones:** ninguna
 
-<!-- Cómo se rellena cada sección: .claude/skills/planning/SKILL.md §Fase. En la cabecera:
+<!-- Cómo se rellena cada sección: .claude/skills/plan-phase/SKILL.md §Fase. En la cabecera:
      · «Estado:» va solo en su línea, y se escribe a la vez aquí y en .ai/STATE.md §Mapa de fases.
+     · «Tipo:» código | operación | validación externa (.claude/skills/plan-phase/SKILL.md §Tipos de tarea).
+     · Opcionales: «> **Modo:** ligero» y «> **Tarea externa:** <ID>» (de un paquete de .ai/stages/).
      · «Contrato HTTP:» SIN CAMBIOS | CAMBIO AUTORIZADO (qué cambia, campo por campo, y su decisión de DOMAIN.md).
        Con CAMBIO AUTORIZADO, la fase deja su traspaso o la línea «> **Traspaso:** ninguno — <motivo>».
      · «Migraciones:» ninguna | autorizadas (tablas). Si las hay, el cierre las anota en docs/runbooks/release.md. -->
@@ -57,7 +60,8 @@
 ## 5. Criterios de éxito
 
 <!-- Cada uno es un comando, y todos se pueden cumplir a la vez; se ejecutan contra el árbol de hoy al escribirlos.
-     Al cerrar, cada casilla se ejecuta tal como está escrita, su salida va a «Verificación» y se marca. -->
+     Al cerrar, cada casilla se ejecuta tal como está escrita, su salida va a «Verificación» y se marca. Lo que sólo
+     puede comprobar la persona lleva «[humano]» tras la casilla. -->
 
 - [ ] `bash bin/verify.sh` en verde
 - [ ] `./vendor/bin/pest --filter=<Test>` cubre <comportamiento concreto>
@@ -92,6 +96,12 @@ Ninguna.
 | # | Commit |
 |---|---|
 | 1 | `feat(<ámbito>): …` |
+
+## 10. Revisión
+
+<!-- La escribe /review (.claude/skills/review/SKILL.md). -->
+
+Sin revisar.
 
 ---
 
@@ -135,7 +145,7 @@ Ninguna.
 ### Calibración
 
 <!-- Entregables y archivos previstos frente a reales, cuánto costó y si la fase estaba bien partida
-     (.claude/skills/planning/SKILL.md §Reglas de corte). -->
+     (.claude/skills/plan-phase/SKILL.md §Reglas de corte). -->
 
 ### Qué mejorarías del protocolo
 
