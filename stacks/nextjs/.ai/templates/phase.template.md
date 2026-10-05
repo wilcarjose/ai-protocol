@@ -4,16 +4,12 @@
 > **Estado:** LISTA_PARA_EJECUTAR
 > **Contrato HTTP:** SIN CAMBIOS
 
-<!-- Cómo se rellena cada sección: .ai/PLANNING.md §Fase.
-
-     Cabecera:
-     · «Estado:» va solo en su línea y se escribe a la vez aquí y en .ai/STATE.md §Mapa de fases
-       (CLAUDE.md §Estado de una fase).
+<!-- Cómo se rellena cada sección: .claude/skills/planning/SKILL.md §Fase. En la cabecera:
+     · «Estado:» va solo en su línea, y se escribe a la vez aquí y en .ai/STATE.md §Mapa de fases.
      · «Contrato HTTP:» SIN CAMBIOS | CAMBIO AUTORIZADO (qué cambia, campo por campo, y su decisión de DOMAIN.md).
-       Con CAMBIO AUTORIZADO, la fase deja su traspaso como entregable propio (CLAUDE.md §El otro repositorio) o
-       añade la línea «> **Traspaso:** ninguno — <motivo>». bin/check-docs.sh lo comprueba al cerrar.
-     · Si la fase deja un paso que hacer en producción (una variable de entorno, una orden de despliegue), el cierre lo
-       anota en docs/runbooks/release.md (CLAUDE.md §Cierre de fase). -->
+       Con CAMBIO AUTORIZADO, la fase deja su traspaso o la línea «> **Traspaso:** ninguno — <motivo>».
+     · Un paso que hacer en producción (una variable de entorno, una orden de despliegue) lo anota el cierre en
+       docs/runbooks/release.md. -->
 
 ## 1. Objetivo
 
@@ -23,14 +19,14 @@
 
 <!-- Rutas concretas. .ai/RULES.md y .ai/WORKFLOW.md se leen siempre: no los listes. -->
 
-- `.ai/epics/<NN-slug>/phase-<FF-1>.md` → «Lo que la siguiente fase necesita saber»
+- `sh bin/handoff.sh NN-slug FF-1`: lo que dejó la fase anterior
+- `.ai/rules/<tema>.md`: cada tema de las reglas que toca la fase (`.ai/RULES.md §Reglas por tema`)
 -
 
 ## 3. Entregables
 
-<!-- 3 a 7, observables. Un entregable por número: nunca «A y B» en la misma línea, y nunca «X si Y».
-     Si un entregable no lo ve ningún gate de bin/verify.sh, dale su criterio en §5 y su fila propia en §9,
-     o no se hará (.ai/PLANNING.md §Coherencia interna). -->
+<!-- 3 a 7, observables. Uno por número: nunca «A y B» en la misma línea, ni «X si Y». Si ningún gate de
+     bin/verify.sh lo ve, lleva su criterio en §5 y su fila propia en §9. -->
 
 1.
 2.
@@ -60,10 +56,8 @@
 
 ## 5. Criterios de éxito
 
-<!-- Cada uno es un comando, y todos se pueden cumplir a la vez. Ejecútalos contra el árbol de hoy al
-     escribirlos (.ai/PLANNING.md §Antes de dar el plan por listo). Al cerrar, cada casilla se ejecuta tal como
-     está escrita, su salida se pega en «Verificación» y se marca (.ai/WORKFLOW.md §Un criterio de éxito no se
-     puede cumplir). -->
+<!-- Cada uno es un comando, y todos se pueden cumplir a la vez; se ejecutan contra el árbol de hoy al escribirlos.
+     Al cerrar, cada casilla se ejecuta tal como está escrita, su salida va a «Verificación» y se marca. -->
 
 - [ ] `bash bin/verify.sh` en verde
 - [ ] `npx vitest run <archivo>` cubre <comportamiento concreto>
@@ -71,33 +65,29 @@
 
 ## 6. Restricciones
 
-<!-- Sólo las de esta fase: las generales viven en `CLAUDE.md §Cosas que no se hacen` y no se copian.
-     Si no hay ninguna: «Sólo las generales». -->
+<!-- Sólo las de esta fase: las generales (CLAUDE.md §Cosas que no se hacen) no se copian. -->
 
 Sólo las generales.
 
 ## 7. Decisiones ya tomadas
 
-<!-- Cada una con su id de .ai/DOMAIN.md o su fecha y una línea de resumen. Incluye las excepciones que
-     autorizó el Tech Lead (p. ej. pasar de ~10 archivos). -->
+<!-- Cada una con su id de .ai/DOMAIN.md o su fecha y una línea de resumen, incluidas las excepciones que autorizó
+     el Tech Lead (p. ej. pasar de ~10 archivos). -->
 
 -
 
 ## 8. Preguntas abiertas
 
-<!-- Vacío al empezar. Si te bloqueas, aquí va el bloque STOP & ASK completo (.ai/WORKFLOW.md §STOP & ASK).
-     Formato de cada pregunta: **Pn · AAAA-MM-DD · Paso A|B** — qué pasa · opciones · recomendación ·
-     Estado: pendiente | respondida (respuesta, quién y cuándo).
-     No se borran al resolverse: son el porqué de las decisiones de la fase. Si cruzan su alcance, también van
-     a .ai/DOMAIN.md §Decisiones pendientes (regla de traza). -->
+<!-- Vacío al empezar. Formato: **Pn · AAAA-MM-DD · Paso A|B** — qué pasa · opciones · recomendación ·
+     Estado: pendiente | respondida (respuesta, quién y cuándo). No se borran al resolverse. Si cruzan el alcance
+     de la fase, también van a .ai/DOMAIN.md §Decisiones pendientes (.ai/WORKFLOW.md §STOP & ASK). -->
 
 Ninguna.
 
 ## 9. Plan de commits
 
-<!-- Cada fila es un commit que la IA hace ella misma durante la fase (CLAUDE.md §Commits durante la fase).
-     Una fila puede cubrir varios entregables relacionados; un entregable que ningún gate ve, en su fila
-     propia. Los commits de arranque y cierre no van aquí. -->
+<!-- Una fila, un commit (.claude/skills/phase/SKILL.md §Commits durante la fase). Un entregable que ningún gate
+     ve, en su fila propia. El arranque y el cierre no van aquí. -->
 
 | # | Commit |
 |---|---|
@@ -107,22 +97,25 @@ Ninguna.
 
 ## RESULTADO DE LA EJECUCIÓN
 
-<!-- Se rellena al cerrar, también si la fase queda bloqueada o en rojo. No borres los encabezados.
-     Las cifras se copian de la salida de un comando, no de memoria. -->
+<!-- Se rellena al cerrar, también si la fase queda bloqueada o en rojo, sin borrar los encabezados. Las cifras se
+     copian de la salida de un comando. Es el único reporte de la fase: el chat sólo lo resume. -->
 
 **Estado final:** ⬜ HECHA ⬜ BLOQUEADA ⬜ VERIFICACION_ROJA
 **Fecha:**
 
 ### Qué se hizo
 
+<!-- Incluye los tests añadidos y, si el contrato cambió, el traspaso (fila de BACKLOG o «ninguno — motivo»). -->
+
 ### Archivos tocados realmente
 
-<!-- `git diff --stat` desde el commit de arranque: los de verdad, no los previstos. La diferencia es información. -->
+<!-- `git diff --stat` desde el commit de arranque: los de verdad, no los previstos. -->
 
 ### Verificación
 
-<!-- La salida de `bash bin/verify.sh` y la de cada criterio del §5, enteras. Si algo quedó rojo, los fallos
-     concretos; si un gate falló por algo ajeno, cómo se comprobó que también falla en la rama base. -->
+<!-- La salida de `bash bin/verify.sh` y la de cada criterio del §5, enteras. Una de más de 40 líneas va a
+     `.ai/epics/<NN-slug>/evidence/<FF>-<nombre>.txt`, enlazada aquí con su código de salida. Si un gate falló por
+     algo ajeno, cómo se comprobó que también falla en la rama base. -->
 
 ### Commits aplicados
 
@@ -130,14 +123,10 @@ Ninguna.
 
 ### Divergencias documentación ↔ código
 
-<!-- .ai/WORKFLOW.md §El ciclo obligatorio: lo que un documento decía y el código no cumple. -->
-
 ### Decisiones tomadas durante la ejecución
 
-<!-- Las de negocio, copiadas también a .ai/DOMAIN.md.
-     Un entregable de §3 que NO se hizo no es una decisión de ejecución y no va aquí: es un criterio incumplido.
-     O se hace, o se para con STOP & ASK antes de cerrar. Justificarlo aquí deja la fase HECHA con trabajo sin
-     hacer. -->
+<!-- Las de negocio, copiadas también a .ai/DOMAIN.md. Un entregable que NO se hizo no es una decisión: es un
+     criterio incumplido, y se para con STOP & ASK antes de cerrar. -->
 
 ### Hallazgos fuera de alcance
 
@@ -145,8 +134,8 @@ Ninguna.
 
 ### Calibración
 
-<!-- Para afinar .ai/PLANNING.md §Reglas de corte: entregables y archivos previstos frente a reales, cuánto
-     costó, y si la fase estaba partida por donde tocaba. -->
+<!-- Entregables y archivos previstos frente a reales, cuánto costó y si la fase estaba bien partida
+     (.claude/skills/planning/SKILL.md §Reglas de corte). -->
 
 ### Qué mejorarías del protocolo
 
@@ -154,7 +143,7 @@ Ninguna.
 
 ### Lo que la siguiente fase necesita saber
 
-<!-- EL CAMPO MÁS IMPORTANTE. La próxima sesión empieza sin memoria y es lo único que leerá de ésta. En orden:
+<!-- EL CAMPO MÁS IMPORTANTE: la próxima sesión sólo lee esto de ésta (bin/handoff.sh). En orden:
      1. Qué quedó hecho y dónde vive (nombres reales de clases, métodos y archivos).
      2. Qué quedó a medias o como deuda a propósito, con su fila de .ai/BACKLOG.md.
      3. Supuestos de la siguiente fase que ya no valen.

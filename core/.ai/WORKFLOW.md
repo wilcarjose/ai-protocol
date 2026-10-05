@@ -1,8 +1,8 @@
 # Protocolo de la IA ejecutora
 
 > Cómo trabaja la IA que ejecuta una fase: el ciclo, cuándo se detiene, cómo pregunta y qué entrega al final. Las
-> reglas de código viven en `.ai/RULES.md`; el protocolo de fases (rama, pasos, commits, cierre), en `CLAUDE.md`. Si
-> este archivo choca con `.ai/RULES.md`, gana `RULES.md`.
+> reglas de código viven en `.ai/RULES.md`; el protocolo de fases (rama, pasos, commits, cierre), en las skills
+> `/phase` y `/close` (`.claude/skills/`). Si este archivo choca con `.ai/RULES.md`, gana `RULES.md`.
 
 ---
 
@@ -31,7 +31,8 @@ enterrarla en un commit o en un comentario.**
 3. **PLANTEAR.** Si algo dispara un criterio de §2, te detienes ahí: emites el bloque de §3 y terminas tu turno. No
    implementas una versión parcial «por avanzar».
 4. **EJECUTAR.** Sólo lo que la fase pide (`CLAUDE.md §Alcance`). Nada adyacente, por tentador que sea.
-5. **REPORTAR.** Con la plantilla de §9, que es el único formato de reporte final.
+5. **REPORTAR.** En el RESULTADO de la fase, que es el único reporte; el chat sólo lo resume en cinco líneas
+   (`.claude/skills/phase/cierre.md §Reporte final`).
 
 ---
 
@@ -101,8 +102,9 @@ que depende el negocio…) de una forma que la fase no describe con precisión.
 ### 2.10 Un criterio de éxito no se puede cumplir tal como está escrito
 
 Cada casilla del §5 de la fase se ejecuta **tal como está escrita**: el comando que dice, contra lo que dice y con
-el motor o el servicio que dice. Su salida —o su evidencia, si no es un comando— se pega **entera** en
-«Verificación» del RESULTADO, y entonces se marca la casilla. Si no se puede ejecutar así (falta un servicio o un
+el motor o el servicio que dice. Su salida —o su evidencia, si no es un comando— va **entera** a «Verificación»
+del RESULTADO, o a un archivo de evidencia que el RESULTADO enlaza si pasa de 40 líneas
+(`.claude/skills/phase/cierre.md §Cierre de fase`), y entonces se marca la casilla. Si no se puede ejecutar así (falta un servicio o un
 dato, el comando está mal escrito, depende de algo que la fase no controla) o no se cumple, **te detienes**:
 corregir el criterio o moverlo a otra fase lo decide el Tech Lead.
 
@@ -169,11 +171,10 @@ todas las decisiones abiertas en una sola tabla.
 
 ## 4. Cuando un gate se pone rojo por algo ajeno a la fase
 
-`bash bin/verify.sh` es el único árbitro (`CLAUDE.md §Verificación`). Si se pone rojo por algo que reproduces en la
-rama base sin tus cambios, no lo arrastres:
+Si `bash bin/verify.sh` se pone rojo por algo que reproduces en la rama base sin tus cambios, no lo arrastres:
 
 - Si es configuración trivial (ignorar un directorio generado, por ejemplo), arréglalo en su propio commit y dilo en
-  el reporte.
+  el RESULTADO.
 - Si no lo es, anótalo en `.ai/BACKLOG.md` y **para y pregunta**. Una fase no se cierra en rojo por ruido ajeno.
 
 ---
@@ -181,7 +182,7 @@ rama base sin tus cambios, no lo arrastres:
 ## 5. Obediencia arquitectónica
 
 Todo `.ai/RULES.md` es innegociable salvo autorización explícita y por escrito del Tech Lead en la fase; si la fase
-la contiene, cítala en el reporte. Además, estas prohibiciones de procedimiento valen para cualquier stack (las del
+la contiene, cítala en el RESULTADO. Además, estas prohibiciones de procedimiento valen para cualquier stack (las del
 stack viven en `.ai/RULES.md §Lista negra`):
 
 1. ⛔ **No añadas exenciones a un gate.** Ni a un test de arquitectura, ni al linter, ni al analizador estático, ni
@@ -201,11 +202,9 @@ stack viven en `.ai/RULES.md §Lista negra`):
 
 ## 6. Verificación — la suite completa manda
 
-**Ninguna fase se cierra sin `bash bin/verify.sh` en verde.** Qué comprueba, en qué orden y con qué baseline lo
-define el propio script; no se repite aquí.
+**Ninguna fase se cierra sin `bash bin/verify.sh` en verde** (`.claude/skills/phase/SKILL.md §Verificación`). Su
+baseline (conteo de tests, deuda congelada) nunca empeora: si un cierre la empeora, algo se borró o se saltó.
 
-- La baseline (los números que nunca empeoran: conteo de tests, deuda congelada) vive en `bin/verify.sh`. Si un
-  cierre los empeora, algo se borró o se saltó.
 - ⛔ Prohibido `skip`, `todo`, tests marcados como incompletos o grupos excluidos para que la suite pase.
 - Un test que falla **señala un problema real**. Los tests sólo se **añaden**; las aserciones existentes no se
   relajan (§2.7).
@@ -221,29 +220,31 @@ define el propio script; no se repite aquí.
 
 | Archivo | Contiene | Quién escribe |
 |---|---|---|
-| `CLAUDE.md` | Protocolo de fases: lectura en frío, ramas, pasos, commits, cierre | Sólo el Tech Lead |
-| `.ai/RULES.md` | Reglas de código: stack, alcance, contrato, arquitectura, lista negra | Sólo el Tech Lead |
+| `CLAUDE.md` | Orientación: lectura en frío, alcance, prohibiciones y punteros | Sólo el Tech Lead |
+| `.claude/skills/` | `/phase` (ciclo, ramas, commits y cierre), `/close` (rescate) y `/planning` | Sólo el Tech Lead |
+| `.ai/RULES.md` | El núcleo de las reglas de código: stack, alcance, contrato, lista negra | Sólo el Tech Lead |
+| `.ai/rules/` | Las reglas de código por tema, que la fase cita cuando las toca | Sólo el Tech Lead |
 | `.ai/WORKFLOW.md` | Este protocolo | Sólo el Tech Lead |
-| `.ai/PLANNING.md` | Cómo se planifica una épica o una fase | Sólo el Tech Lead |
 | `.ai/STATE.md` | El puntero: fase activa, mapa de fases, bloqueos, últimos movimientos | La IA, en cada cierre y en cada sincronización |
 | `.ai/DOMAIN.md` | Glosario, reglas de negocio, decisiones tomadas y pendientes | La IA añade; nadie reescribe lo anterior |
 | `.ai/BACKLOG.md` | Hallazgos fuera de alcance y pendientes en otros repos | La IA añade, sin arreglarlos |
 | `.ai/PROTOCOL.md` | Mejoras del protocolo que propone cada fase | La IA añade al cerrar; el Tech Lead las aplica |
+| `.ai/archive/` | Lo cerrado de la memoria: backlog, decisiones reemplazadas, mejoras aplicadas | La IA, al cerrar (`.claude/skills/phase/cierre.md §Archivo de la memoria`) |
 | `.ai/project/` | Lo que decide este proyecto y las reglas citan: contexto, versiones, alcance, contrato, zonas sensibles | El Tech Lead, o la fase que lo lista en su §4 |
-| `.ai/epics/` | Épicas y fases: el encargo y el registro de lo que pasó | Quien planifica; el ejecutor rellena el RESULTADO |
+| `.ai/epics/` | Épicas y fases: el encargo y el registro de lo que pasó; su `evidence/`, las salidas largas | Quien planifica; el ejecutor rellena el RESULTADO |
 | `.ai/handoffs/` | Entregas del otro repo, copiadas | La sesión de planificación |
 | `docs/` | Lo que no es protocolo: arquitectura, runbooks, contrato… (`docs/README.md`) | Según `docs/README.md` |
 
 **Reglas de escritura:**
 
-1. **Nunca modifiques `CLAUDE.md`, `.ai/RULES.md`, `.ai/WORKFLOW.md` ni `.ai/PLANNING.md` desde una fase.** Si crees
-   que algo está mal: STOP & ASK, y la propuesta a `.ai/PROTOCOL.md`.
+1. **Nunca modifiques `CLAUDE.md`, `.ai/RULES.md`, `.ai/rules/`, `.ai/WORKFLOW.md` ni las skills desde una fase.**
+   Si crees que algo está mal: STOP & ASK, y la propuesta a `.ai/PROTOCOL.md`.
 2. **Todo hallazgo lateral va a `.ai/BACKLOG.md`**, con archivo, clase o método y evidencia. No a un comentario.
 3. **No clasifiques la severidad tú.** Describe el impacto observable (¿afecta a datos de usuario, a la seguridad, a
    dinero, a lo que el usuario ve?) y deja que el Tech Lead decida la prioridad. Un defecto de facturación mal
    descrito acaba archivado como deuda técnica.
-4. **Un comentario en el código no es un canal de comunicación.** Si un humano tiene que saberlo, va en el reporte
-   y en `.ai/BACKLOG.md`, no enterrado en un docblock de cuarenta líneas.
+4. **Un comentario en el código no es un canal de comunicación.** Si un humano tiene que saberlo, va en el
+   RESULTADO y en `.ai/BACKLOG.md`, no enterrado en un docblock de cuarenta líneas.
 5. **Las referencias entre archivos se verifican con `grep` en una sesión en frío.** Cita el nombre de la clase, el
    método o la sección, nunca un número de línea: un número no sobrevive a un cambio. Si el `grep` no encuentra el
    destino, la referencia miente y se corrige.
@@ -266,58 +267,3 @@ justificar **no** arreglar algo, aplica este filtro antes de aceptarla:
 
 Si los tres filtros no se superan con claridad: **STOP & ASK**, con la cita, el contexto original y por qué crees que
 ya no aplica. **No arreglar es una decisión, no un valor por defecto.** Y las decisiones las toma el Tech Lead.
-
----
-
-## 9. Plantilla del reporte final
-
-```markdown
-## Qué se hizo
-[tres o cuatro frases]
-
-## Archivos
-- creados: ruta (N líneas) — propósito en una frase
-- modificados: ruta — qué cambió en una frase
-
-## Tests
-- añadidos: N (cuáles y qué fijan)
-- modificados: N — justificación obligatoria por cada uno (§2.7)
-
-## Verificación
-- bash bin/verify.sh: [VERDE | ROJO — gate que falla y el fallo concreto]
-- baseline de bin/verify.sh: [IGUAL | mejoró: qué número y a cuánto]
-
-## Contrato HTTP
-[SIN CAMBIOS] o [CAMBIO AUTORIZADO por: cita de la fase + descripción] · traspaso: [fila de BACKLOG | ninguno — motivo]
-
-## Commits aplicados
-`git log --oneline <hash_de_arranque>^..HEAD`, uno por línea, incluido el de cierre. `git status` limpio.
-
-## Divergencias documentación ↔ código detectadas
-- archivo — el documento dice X, el código hace Y
-
-## Hallazgos fuera de alcance (copiados a .ai/BACKLOG.md)
-- descripción + impacto observable, sin asignar severidad
-
-## Decisiones que tomé y podrías querer revisar
-- donde elegí entre alternativas razonables
-
-## Qué mejoraría del protocolo (copiado a .ai/PROTOCOL.md)
-- qué estorbó y qué propongo
-
-## Lo que la siguiente fase necesita saber
-[lo que la siguiente fase da por hecho y ya es cierto, o ya no lo es]
-```
-
-Cierra con dos líneas fuera de la plantilla: qué debe revisar el Tech Lead y con qué comando
-(`git diff <base>...HEAD`).
-
----
-
-## 10. Las cinco frases que resumen el protocolo
-
-1. **El código manda sobre la documentación.** Haz el `grep` antes de citar.
-2. **Detente y pregunta.** Un STOP & ASK es un entregable, no un fracaso.
-3. **`bash bin/verify.sh` en verde, siempre.** Baseline vigente y mejorando, nunca empeorando.
-4. **No decidas de producto.** Enumera opciones, recomienda, espera.
-5. **No entierres nada en un commit o en un comentario.** Si un humano debe saberlo, va en el reporte.
