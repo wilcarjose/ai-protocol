@@ -229,6 +229,7 @@ define el propio script; no se repite aquí.
 | `.ai/DOMAIN.md` | Glosario, reglas de negocio, decisiones tomadas y pendientes | La IA añade; nadie reescribe lo anterior |
 | `.ai/BACKLOG.md` | Hallazgos fuera de alcance y pendientes en otros repos | La IA añade, sin arreglarlos |
 | `.ai/PROTOCOL.md` | Mejoras del protocolo que propone cada fase | La IA añade al cerrar; el Tech Lead las aplica |
+| `.ai/project/` | Lo que decide este proyecto y las reglas citan: contexto, versiones, alcance, contrato, zonas sensibles | El Tech Lead, o la fase que lo lista en su §4 |
 | `.ai/epics/` | Épicas y fases: el encargo y el registro de lo que pasó | Quien planifica; el ejecutor rellena el RESULTADO |
 | `.ai/handoffs/` | Entregas del otro repo, copiadas | La sesión de planificación |
 | `docs/` | Lo que no es protocolo: arquitectura, runbooks, contrato… (`docs/README.md`) | Según `docs/README.md` |

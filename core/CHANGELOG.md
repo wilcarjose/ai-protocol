@@ -21,6 +21,7 @@ etiqueta `core-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, ar
   `.ai/project/DECISIONS.md §Stack y versiones exactas`; exige una versión por cada paquete de
   `.ai/RULES.md §Stack y versiones exactas`, busca marcadores en `.ai/project/` y valida las citas a sus secciones.
 - `bin/measure-context.sh` cuenta `.ai/project/README.md` en las sesiones de ejecutor y planificador.
+- `.ai/WORKFLOW.md §Documentación` lista `.ai/project/` y quién la escribe.
 
 ## 1.x
 
