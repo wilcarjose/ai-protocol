@@ -1,7 +1,7 @@
 # Cierre de una fase
 
 > Lo lee `/phase` en su Paso C y `/close` al documentar una fase interrumpida. Se hace siempre, también si la fase
-> quedó bloqueada o en rojo.
+> quedó bloqueada o en rojo. Una fase ligera sigue §Cierre ligero.
 
 ## Cierre de fase
 
@@ -11,27 +11,52 @@
    (`.ai/WORKFLOW.md §Un criterio de éxito no se puede cumplir`). Una salida de más de **40 líneas** va entera a
    `.ai/epics/<NN-slug>/evidence/<FF>-<nombre>.txt`, y «Verificación» enlaza esa ruta entre comillas invertidas,
    con el código de salida y las líneas que deciden. `bin/check-docs.sh` comprueba que cada evidencia enlazada
-   existe.
-3. **Estado final** en la fase y en el mapa, con la fecha en `Cerrada`, y el puntero de `.ai/STATE.md`
-   (`.claude/skills/phase/SKILL.md §Estado de una fase`). Regenera las zonas derivadas
-   (`.claude/skills/phase/SKILL.md §Sincronización post-lectura`) y añade el cierre, en una línea, arriba de
-   `§Últimos movimientos`.
-4. Decisiones de negocio nuevas a `.ai/DOMAIN.md §Decisiones tomadas`, con fecha y fase.
-5. Hallazgos fuera de alcance a `.ai/BACKLOG.md`, sin arreglarlos (`CLAUDE.md §Alcance`).
-6. «Qué mejorarías del protocolo» a `.ai/PROTOCOL.md`.
-7. **Memoria archivada** (§Archivo de la memoria).
-8. **Si la fase añade algo que hacer en producción al desplegarla** (una migración, un comando, una variable de
+   existe. Una casilla `[humano]` no la marca la IA: la evidencia la aporta la persona (§Evidencia humana).
+3. **Revisión**, si la fase va a quedar `HECHA` o `ESPERA_EVIDENCIA`: `/review` (sin skills,
+   `.claude/skills/review/SKILL.md`), y ningún bloqueante sin marcar. Sus arreglos cuentan entre los intentos de
+   `.claude/skills/phase/SKILL.md §Verificación`. En `BLOQUEADA` o `VERIFICACION_ROJA` no hace falta.
+4. **Estado final** en la fase y en el mapa, con la fecha en `Cerrada`, y el puntero de `.ai/STATE.md`
+   (`.claude/skills/phase/SKILL.md §Estado de una fase`). `ESPERA_EVIDENCIA` si sólo quedan casillas `[humano]`
+   abiertas. Regenera las zonas derivadas (`.claude/skills/phase/SKILL.md §Sincronización post-lectura`) y añade
+   el cierre, en una línea, arriba de `§Últimos movimientos`.
+5. Decisiones de negocio nuevas a `.ai/DOMAIN.md §Decisiones tomadas`, con fecha y fase.
+6. Hallazgos fuera de alcance a `.ai/BACKLOG.md`, sin arreglarlos (`CLAUDE.md §Alcance`).
+7. «Qué mejorarías del protocolo» a `.ai/PROTOCOL.md`.
+8. **Memoria archivada** (§Archivo de la memoria).
+9. **Si la fase añade algo que hacer en producción al desplegarla** (una migración, un comando, una variable de
    entorno o de configuración, un cambio de cron o de colas, una restricción de orden), una fila por paso en
    `docs/runbooks/release.md §Pasos por fase`. Es lo que evita olvidarlo en un despliegue meses después.
-9. **Si la fase deja algo para otro repo**, su traspaso (§Traspaso al otro repo).
-10. **Si la fase mejoró la baseline** (más tests, menos deuda), el número en `bin/verify.sh`. Nunca en la dirección
+10. **Si la fase deja algo para otro repo**, su traspaso (§Traspaso al otro repo).
+11. **Si la fase mejoró la baseline** (más tests, menos deuda), el número en `bin/verify.sh`. Nunca en la dirección
     mala.
-11. **Si la fase queda `HECHA` y era la última de su épica**, §Cierre de épica.
-12. `sh bin/check-docs.sh --strict` en verde: el puntero se escribe después del último `bin/verify.sh`, y es lo que
+12. **Si la fase queda `HECHA` y era la última sin `HECHA` de su épica**, §Cierre de épica.
+13. `sh bin/check-docs.sh --strict` en verde: el puntero se escribe después del último `bin/verify.sh`, y es lo que
     la siguiente sesión ejecutará sin preguntar.
-13. Commit `chore(phase-<NN>-<FF>): close` con el RESULTADO, la evidencia, la memoria y, si cambiaron, el manifiesto
-    de despliegue, el epic-plan y la baseline de `bin/verify.sh`. `git status` limpio.
-14. §Reporte final.
+14. Commit `chore(phase-<NN>-<FF>): close` con el RESULTADO, la evidencia, la revisión, la memoria y, si cambiaron,
+    el manifiesto de despliegue, el epic-plan y la baseline de `bin/verify.sh`. `git status` limpio.
+15. §Reporte final.
+
+## Cierre ligero
+
+Una fase con `> **Modo:** ligero` hace los pasos 1 a 4, 8 y 13 a 15 de §Cierre de fase; los demás, sólo si tienen
+algo que escribir (una decisión, un hallazgo, un paso de despliegue, un traspaso). Los encabezados del RESULTADO se
+quedan, y los que no aplican dicen «—».
+
+## Evidencia humana
+
+Una fase de operación o de validación externa cierra en `ESPERA_EVIDENCIA` cuando todo está hecho salvo sus casillas
+`[humano]`: entregables commiteados, `bin/verify.sh` en verde, las demás casillas marcadas y la revisión sin
+bloqueantes. El puntero la salta (`.claude/skills/phase/SKILL.md §Estado de una fase`) y
+`.ai/STATE.md §Esperando evidencia` la nombra con lo que falta. Cuando la persona aporta la evidencia,
+`/phase <epica> <FF>`:
+
+1. En la rama de la fase si sigue abierta; si ya se integró, en la que diga el Tech Lead.
+2. Cada evidencia va a «Verificación», o a su archivo de `evidence/`, con quién la aportó y cuándo, y su casilla se
+   marca. Si no muestra lo que la casilla pide, dilo y para: la fase sigue esperando.
+3. Con todas marcadas, `HECHA` en la fase y en el mapa, con la fecha de hoy en `Cerrada`; fuera de
+   `§Esperando evidencia`, una línea en `§Últimos movimientos` y, si era la última sin `HECHA` de su épica,
+   §Cierre de épica.
+4. `sh bin/check-docs.sh --strict` en verde, commit `chore(phase-<NN>-<FF>): evidence` y §Reporte final.
 
 ## Archivo de la memoria
 
@@ -49,8 +74,9 @@ El chequeo «memoria» de `bin/check-docs.sh` falla si queda algo por archivar.
 
 ## Cierre de épica
 
-Lo hace quien cierra con `HECHA` la última fase de la épica, en su mismo commit. Si esa fase queda `BLOQUEADA` o
-`VERIFICACION_ROJA`, no hay cierre de épica: sigue `EN_CURSO` y el puntero se queda en la fase.
+Lo hace quien deja en `HECHA` la última fase de la épica que no lo estaba, en su mismo commit: al cerrarla o al
+completar su evidencia (§Evidencia humana). Mientras una fase de la épica no esté `HECHA`, no hay cierre de épica:
+sigue `EN_CURSO`.
 
 1. **Comprueba cada casilla del «Criterio de cierre»** del epic-plan igual que las de una fase, con su salida en
    «Verificación» del RESULTADO de esta última fase.
@@ -84,7 +110,7 @@ La fila se escribe en la fase que causa el cambio. `bin/check-docs.sh` no deja c
 
 El RESULTADO es el reporte: el chat no lo repite. Cinco líneas:
 
-1. La fase (`NN/FF`) y su estado final.
+1. La fase (`NN/FF`) y su estado final; en `ESPERA_EVIDENCIA`, qué evidencia falta y quién la aporta.
 2. `bash bin/verify.sh`: verde, o el gate que falla.
 3. Los commits: cuántos y el rango (`<arranque>^..HEAD`).
 4. Lo que el Tech Lead tiene que decidir o mirar (preguntas abiertas, decisiones tomadas, traspasos), o «nada».

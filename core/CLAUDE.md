@@ -1,7 +1,7 @@
 # Protocolo de trabajo con IA
 
 > Punto de entrada de cualquier sesión de IA en este repositorio: qué leer, qué no se hace y dónde vive cada cosa.
-> Es del kit `ai-protocol`, como `.ai/RULES.md`, `.ai/rules/`, `.ai/WORKFLOW.md` y `.claude/skills/`, y lo actualiza
+> Es del kit `ai-protocol`, como `.ai/RULES.md`, `.ai/rules/`, `.ai/WORKFLOW.md` y `.claude/`, y lo actualiza
 > `install.sh --upgrade`. Lo que decide este proyecto vive en `.ai/project/`, que el instalador no toca nunca.
 >
 > Jerarquía si algo choca: `.ai/RULES.md` > `.ai/WORKFLOW.md` > las skills > este archivo. **Cada regla vive en un
@@ -25,8 +25,10 @@
 | Para | Skill | Sin skills, lee |
 |---|---|---|
 | Ejecutar la fase activa, o la que se pida | `/phase [<epica> <FF>]` | `.claude/skills/phase/SKILL.md` |
-| Rescatar una fase que otra sesión dejó a medias | `/close [<epica> <FF>]` | `.claude/skills/close/SKILL.md` |
-| Crear o cambiar una épica o una fase | `/planning` | `.claude/skills/planning/SKILL.md` |
+| Rescatar una fase interrumpida | `/close [<epica> <FF>]` | `.claude/skills/close/SKILL.md` |
+| Planificar una épica o un paquete de tareas | `/plan-epic` | `.claude/skills/plan-epic/SKILL.md` |
+| Planificar una fase | `/plan-phase` | `.claude/skills/plan-phase/SKILL.md` |
+| Revisar la rama de una fase | `/review` | `.claude/skills/review/SKILL.md` |
 
 «Ejecuta la siguiente fase» equivale a `/phase` sin argumentos. Una sesión, una fase.
 

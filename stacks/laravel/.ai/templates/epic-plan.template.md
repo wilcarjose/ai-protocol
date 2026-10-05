@@ -3,11 +3,11 @@
 > **Slug:** `NN-slug`
 > **Estado:** SIN_EMPEZAR
 
-<!-- Cómo se rellena cada sección: .claude/skills/planning/SKILL.md §Épica.
+<!-- Cómo se rellena cada sección: .claude/skills/plan-epic/SKILL.md §Épica.
 
      Campos opcionales de la cabecera (bórralos si no aplican):
      > **Rama base:** `epic/NN-slug`        ← sólo mientras la épica está SIN_EMPEZAR
-                                               (.claude/skills/planning/SKILL.md §Rama base de la épica)
+                                               (.claude/skills/plan-epic/SKILL.md §Rama base de la épica)
      > **Espejo de:** <repo hermano> <NN-slug>  ← si sigue a una épica del otro repo, y qué entrega éste antes
 
      El «Estado:» va solo en su línea y sin nada detrás: SIN_EMPEZAR | EN_CURSO | CERRADA. Lo mueve el ejecutor
@@ -54,8 +54,8 @@ Ninguna.
 
 ## Fases
 
-<!-- Reglas de corte y numeración (nunca se renumera): .claude/skills/planning/SKILL.md §Reglas de corte y
-     .claude/skills/planning/SKILL.md §Numeración. Cada fila tiene su fila en .ai/STATE.md §Mapa de fases, en el
+<!-- Reglas de corte y numeración (nunca se renumera): .claude/skills/plan-phase/SKILL.md §Reglas de corte y
+     .claude/skills/plan-epic/SKILL.md §Numeración. Cada fila tiene su fila en .ai/STATE.md §Mapa de fases, en el
      mismo orden. -->
 
 | Fase | Qué cubre | Depende de |
@@ -72,7 +72,7 @@ Ninguna.
 ## Criterio de cierre
 
 <!-- Comandos que se pueden cumplir, probados contra el repo al escribirlos
-     (.claude/skills/planning/SKILL.md §Antes de dar el plan por listo). Lo comprueba, casilla a casilla, quien
+     (.claude/skills/plan-phase/SKILL.md §Antes de dar el plan por listo). Lo comprueba, casilla a casilla, quien
      cierra la última fase. -->
 
 - [ ] Todas las fases de la tabla en `HECHA`

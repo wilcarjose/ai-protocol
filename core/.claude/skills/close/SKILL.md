@@ -11,7 +11,7 @@ Argumentos: `$ARGUMENTS`. Sin argumentos, la fase activa de `.ai/STATE.md`; con 
 carpeta) y `<FF>` (`01`, `03b`).
 
 La fase tiene que estar `EN_CURSO`, `BLOQUEADA` o `VERIFICACION_ROJA` en `.ai/STATE.md §Mapa de fases`. Si está
-`HECHA` o `LISTA_PARA_EJECUTAR`, dilo y para: no hay nada que rescatar.
+`HECHA`, `ESPERA_EVIDENCIA` o `LISTA_PARA_EJECUTAR`, dilo y para: no hay nada que rescatar.
 
 **`/close` no implementa nada.** Averigua y documenta qué pasó de verdad, no qué se pretendía. Para retomar el
 trabajo está `/phase`, que reanuda una fase `BLOQUEADA` o `VERIFICACION_ROJA`.
@@ -35,8 +35,9 @@ Rellena el RESULTADO con lo **verificable**:
 
 - **Estado final:** `HECHA` sólo si `bin/verify.sh` está verde, todos los entregables están y todas las casillas de
   «Criterios de éxito» se cumplen tal como están escritas (`.ai/WORKFLOW.md §Un criterio de éxito no se puede
-  cumplir`). Si falta algo, `BLOQUEADA` o `VERIFICACION_ROJA`, con el detalle; si el motivo es una pregunta sin
-  responder, `BLOQUEADA` y la pregunta en `.ai/DOMAIN.md §Decisiones pendientes`.
+  cumplir`); `ESPERA_EVIDENCIA` si sólo faltan casillas `[humano]`. Si falta algo, `BLOQUEADA` o
+  `VERIFICACION_ROJA`, con el detalle; si el motivo es una pregunta sin responder, `BLOQUEADA` y la pregunta en
+  `.ai/DOMAIN.md §Decisiones pendientes`.
 - «Archivos tocados realmente» sale de `git diff --stat`, no de la lista prevista.
 - Si hay trabajo sin commitear, dilo y di si es reversible. No lo commitees como si fuera una fila.
 - Lo que no puedas probar, déjalo vacío y márcalo como pendiente. **No escribas memoria** («se hizo X» cuando X no

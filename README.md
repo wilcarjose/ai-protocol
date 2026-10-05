@@ -43,16 +43,20 @@ AGENTS.md                 Redirección a CLAUDE.md para Cursor, Codex, aider… 
   archive/                Lo cerrado de la memoria: backlog, decisiones reemplazadas, mejoras.      [núcleo · semilla]
   project/                La capa del proyecto: contexto, versiones, alcance, contrato, zonas…      [núcleo · semilla]
   templates/              Plantillas de épica y de fase.                                             [stack · kit]
+  stages/                 Paquetes de tareas de un plan externo; su README dice el formato.         [núcleo · kit]
   epics/                  Las épicas y sus fases, con su evidence/ (vacía al instalar).             [núcleo · semilla]
   handoffs/               Entregas del repo hermano, copiadas.                                       [núcleo · kit]
   protocol.lock           Lo que instaló install.sh: versiones y suma de cada archivo.               [install.sh]
 .claude/
   skills/phase/           /phase — ejecuta la fase activa: rama, pasos, commits; cierre.md, el cierre. [núcleo · kit]
   skills/close/           /close — documenta una fase que otra sesión dejó a medias.                 [núcleo · kit]
-  skills/planning/        /planning — cómo se crea o se cambia una épica o una fase.                 [núcleo · kit]
+  skills/plan-epic/       /plan-epic — crea o cambia una épica, también desde un paquete de tareas.  [núcleo · kit]
+  skills/plan-phase/      /plan-phase — crea o cambia una fase: corte, tipo de tarea, coherencia.    [núcleo · kit]
+  skills/review/          /review — lanza el revisor y escribe sus hallazgos en la fase.             [núcleo · kit]
+  agents/reviewer.md      El revisor IA: subagente de solo lectura que compara el diff con la fase.  [núcleo · kit]
   settings.json           Permisos del agente (qué puede ejecutar sin preguntar y qué nunca).        [stack · kit]
 bin/
-  check-docs.sh           El guardián: 14 chequeos sobre la coherencia de la memoria.                [núcleo · kit]
+  check-docs.sh           El guardián: 15 chequeos sobre la coherencia de la memoria.                [núcleo · kit]
   handoff.sh              Lo que una fase dejó dicho para la siguiente, y nada más.                  [núcleo · kit]
   measure-context.sh      Cuántos caracteres lee cada tipo de sesión al arrancar.                    [núcleo · kit]
   verify.sh               El único árbitro: gates, su orden y la baseline que nunca empeora.         [stack · kit]
@@ -158,9 +162,10 @@ git add -A && git commit -m "chore(protocol): install ai-protocol"
 
 ### 6. La primera épica
 
-Con el agente: *«/planning: la épica 01 —<objetivo>—»*. Quien planifica escribe el
-epic-plan y las fases, las filas del mapa en `.ai/STATE.md` y las decisiones pendientes en `.ai/DOMAIN.md`, y deja el
-puntero en la primera fase lista. Después, `/phase`.
+Con el agente: *«/plan-epic: la épica 01 —<objetivo>—»*, o *«/plan-epic .ai/stages/<id>.md»* si las tareas llegan
+de un plan externo (§Cómo se trabaja). Quien planifica escribe el epic-plan y, con `/plan-phase`, las fases, las
+filas del mapa en `.ai/STATE.md` y las decisiones pendientes en `.ai/DOMAIN.md`, y deja el puntero en la primera fase
+lista. Después, `/phase`.
 
 ## Actualizar un proyecto
 
@@ -190,19 +195,38 @@ cerrado que ya estaba en ella (las filas cerradas de `BACKLOG.md`, las respondid
 mejoras aplicadas de `PROTOCOL.md` —la n.º 1, «Protocolo instalado», también— y lo que pase de 10 líneas en
 `STATE.md §Últimos movimientos`) se mueve a mano, en un commit `chore(protocol): …`, hasta que
 `sh bin/check-docs.sh --strict` pase. `/phase` y `/close` pasan de `.claude/commands/` a `.claude/skills/`, y
-`.ai/PLANNING.md` a la skill `/planning`: el upgrade retira los viejos si el proyecto no los cambió.
+`.ai/PLANNING.md` a las skills `/plan-epic` y `/plan-phase`: el upgrade retira los viejos si el proyecto no los
+cambió. Las fases escritas con la plantilla anterior no llevan «Tipo» ni «Revisión»: cuentan como de código y el
+guardián no les exige revisión. `.ai/STATE.md` no necesita `§Esperando evidencia` hasta que una fase quede en
+`ESPERA_EVIDENCIA`.
 
 ## Cómo se trabaja
 
-1. **Planificar** (`/planning`): épica con objetivo, fuera de alcance, contrato, fases y criterio de cierre;
-   cada fase con un objetivo, 3–7 entregables, archivos, criterios de éxito ejecutables y plan de commits.
+1. **Planificar.** `/plan-epic`: épica con objetivo, fuera de alcance, contrato, fases y criterio de cierre.
+   `/plan-phase`: cada fase con un objetivo, 3–7 entregables, archivos, criterios de éxito ejecutables y plan de
+   commits.
+   - **Desde un plan externo:** la persona copia la parte que toca a este repo en `.ai/stages/<id>.md` (una tabla
+     con ID, tarea, repo, criterio de aceptación y dependencias, más las decisiones vigentes), y `/plan-epic` la
+     convierte en una épica con una fase por tarea. Cada fase lleva `> **Tarea externa:** <ID>` y el criterio
+     copiado literal; las tareas no se replanifican.
+   - **Tipo de tarea** (`> **Tipo:**`): `código`; `operación` (scripts, configuración y runbook versionados; lo que
+     sólo la persona puede comprobar va en casillas `[humano]`); o `validación externa`. Una fase de los dos últimos
+     tipos cierra en `ESPERA_EVIDENCIA` hasta que la persona aporta su evidencia; el puntero la salta mientras
+     tanto y `STATE.md §Esperando evidencia` la nombra.
+   - **Fase ligera** (`> **Modo:** ligero`): uno o dos entregables, sin cambio de contrato ni migraciones; no se
+     para en el Paso A si no hay preguntas, y el cierre es reducido.
 2. **`/phase`** — una sesión por fase:
    - **Paso 0:** resuelve la fase activa de `.ai/STATE.md` y su rama `phase/<NN-slug>/<FF>`.
    - **Paso A:** lectura en frío, revalidación contra el código, y **se para** a esperar tu visto bueno.
    - **Paso B:** un commit por fila del plan, cada uno con `bash bin/verify.sh --fast` en verde.
    - **Paso C:** `bash bin/verify.sh` completo, RESULTADO de la fase (sobre todo «Lo que la siguiente fase necesita
-     saber», que la siguiente lee con `bin/handoff.sh`; las salidas de más de 40 líneas, en `evidence/`), estado y
-     puntero, memoria al día y archivada, commit de cierre. El chat sólo da cinco líneas que apuntan al RESULTADO.
+     saber», que la siguiente lee con `bin/handoff.sh`; las salidas de más de 40 líneas, en `evidence/`),
+     **`/review`**, estado y puntero, memoria al día y archivada, commit de cierre. El chat sólo da cinco líneas que
+     apuntan al RESULTADO.
+   - **El revisor** (`.claude/agents/reviewer.md`) es un subagente de solo lectura que no ve la conversación:
+     compara el diff de la rama con los entregables, los criterios y su evidencia, las reglas, `.ai/project/`, las
+     zonas sensibles y el alcance, y `/review` escribe sus hallazgos en la sección «Revisión» de la fase. Con un
+     bloqueante sin resolver, la fase no se cierra.
 3. **Revisar** la rama en local (`git log --oneline main..HEAD`, `git diff main...HEAD`) y decidir el merge. El agente
    nunca hace `git push`.
 4. **`/close`** si una sesión se cortó: documenta lo que de verdad pasó, sin completar nada.
@@ -231,7 +255,10 @@ criterio de cierre; que las fases citadas existen; el manifiesto de despliegue; 
 `STATE.md` frente a `DOMAIN.md` y `BACKLOG.md`; los destinos del backlog; las versiones de `.ai/project/DECISIONS.md`
 frente a los manifiestos; que no se citen documentos del repo hermano; que las rutas y secciones citadas existan; que
 cada evidencia enlazada exista; y que la memoria activa sólo guarde lo vigente, con lo cerrado en `.ai/archive/` y
-como mucho 10 líneas en «Últimos movimientos». Corre igual en el host que en un contenedor Alpine (busybox).
+como mucho 10 líneas en «Últimos movimientos». También el tipo y el modo de cada fase, sus casillas `[humano]`, el
+estado `ESPERA_EVIDENCIA` y `STATE.md §Esperando evidencia`, que una fase cerrada pasó por `/review` sin bloqueantes
+abiertos, y que cada tarea externa está en un paquete de `.ai/stages/` con su criterio literal en la fase. Corre igual
+en el host que en un contenedor Alpine (busybox).
 
 Su cabecera explica cómo provocar cada fallo, y `sh tests/run.sh` lo hace en los dos stacks: instala cada uno con
 `install.sh` y una épica de prueba, comprueba que el guardián pasa y que cada fallo provocado lo hace saltar con su
@@ -248,7 +275,7 @@ Para quien venga de esos repos:
 - **Sin páginas de seguimiento** (Artifacts): el archivo de la fase es el único registro.
 - **`STATE.md`** lleva siempre `Pendientes en otros repos: N (M condicionan el despliegue)`, y el guardián comprueba
   que los contadores, `§Bloqueo activo` y la tabla de pendientes cuadran con `DOMAIN.md` y `BACKLOG.md`.
-- **`BACKLOG.md`** con `Impacto`, `Destino` y `Cerrado por`, y la regla de triaje en la skill `/planning`.
+- **`BACKLOG.md`** con `Impacto`, `Destino` y `Cerrado por`, y la regla de triaje en la skill `/plan-epic`.
 - **`DOMAIN.md §Decisiones pendientes`** con ids `D<n>` y las columnas `Categoría`, `Bloquea`, `Propuesto por`.
 - **Commits de fase** `chore(phase-<NN>-<FF>): start | resume | close`, con épica y fase en el ámbito.
 - **Criterios de parada** unificados (`WORKFLOW.md §Contrato`–`§2.10`); los propios del dominio se declaran en

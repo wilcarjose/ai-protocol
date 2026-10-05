@@ -8,8 +8,31 @@ etiqueta `core-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, ar
 ### Añadido
 
 - `.claude/skills/`: `/phase` (`phase/SKILL.md`: pasos, rama, estados, sincronización, commits y verificación;
-  `phase/cierre.md`: cierre de fase y de épica, archivo de la memoria, traspaso y reporte final), `/close` y
-  `/planning`. `/phase` y `/close` llevan `disable-model-invocation: true`.
+  `phase/cierre.md`: cierre de fase y de épica, archivo de la memoria, traspaso, evidencia humana y reporte final),
+  `/close`, `/plan-epic` (épicas, numeración, rama base y entrada desde un paquete de tareas), `/plan-phase` (corte,
+  tipos de tarea, fases ligeras y coherencia) y `/review`. `/phase` y `/close` llevan
+  `disable-model-invocation: true`.
+- Revisor IA: `.claude/agents/reviewer.md`, subagente de solo lectura que compara el diff de la rama con los
+  entregables, los criterios y su evidencia, las reglas, `.ai/project/`, las zonas sensibles y el alcance. `/review`
+  lo lanza y escribe sus hallazgos, bloqueantes (`- [ ] **B<n>**`) y no bloqueantes, en la sección «Revisión» de la
+  fase. `/phase` lo ejecuta en el cierre (`phase/cierre.md`, paso 3) y no cierra con bloqueantes abiertos.
+- Paquetes de tareas: `.ai/stages/README.md` con el formato (tabla de ID, tarea, repo, criterio de aceptación y
+  dependencias, y las decisiones vigentes). Cada fase que sale de uno lleva `> **Tarea externa:** <ID>` y su criterio
+  literal.
+- Tipos de tarea (`> **Tipo:** código | operación | validación externa`), con casillas `[humano]` para la evidencia
+  que sólo aporta la persona, y el estado `ESPERA_EVIDENCIA`: el puntero lo salta y `STATE.md §Esperando evidencia`
+  (semilla) lo nombra. `/phase <epica> <FF>` completa la evidencia (`phase/cierre.md §Evidencia humana`) con el
+  commit `chore(phase-<NN>-<FF>): evidence`.
+- Fases ligeras (`> **Modo:** ligero`): uno o dos entregables, sin parada en el Paso A si no hay preguntas ni
+  supuestos rotos, y cierre reducido (`phase/cierre.md §Cierre ligero`).
+- `bin/check-docs.sh`, chequeo 14 «tareas»: toda «Tarea externa» es una fila de un paquete de `.ai/stages/` y su
+  criterio está, literal, en «Criterios de éxito» de la fase.
+- `bin/check-docs.sh`, chequeo «fases»: «Tipo» y «Modo» válidos (sin ellos, código y modo normal); una fase ligera,
+  con uno o dos entregables, sin cambio de contrato ni migraciones; `[humano]` sólo fuera del tipo código; una
+  `ESPERA_EVIDENCIA`, de operación o validación externa y con sólo casillas `[humano]` abiertas; una `HECHA` o
+  `ESPERA_EVIDENCIA` con sección «Revisión», revisada y sin bloqueantes abiertos.
+- `bin/check-docs.sh`: el puntero salta las fases en `ESPERA_EVIDENCIA`, y el chequeo «contadores» cuadra
+  `STATE.md §Esperando evidencia` con el mapa.
 - `bin/handoff.sh <NN-slug> <FF>`: imprime sólo «Lo que la siguiente fase necesita saber» de una fase.
 - `.ai/archive/` (semilla): `BACKLOG.md`, `DOMAIN.md` y `PROTOCOL.md` con lo cerrado de la memoria. La fila «Protocolo
   instalado» de `PROTOCOL.md` nace ya archivada.
@@ -32,7 +55,8 @@ etiqueta `core-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, ar
   líneas va a un archivo de evidencia que el RESULTADO enlaza.
 - `bin/check-docs.sh` busca los ids `D<n>` también en `.ai/archive/DOMAIN.md`, cuenta como normativos `.ai/rules/` y
   las skills, y valida las citas a sus secciones.
-- `bin/measure-context.sh` mide la sesión «cierre» (lo que añade el Paso C) aparte del arranque del ejecutor.
+- `bin/measure-context.sh` mide la sesión «cierre» (lo que añade el Paso C, con `/review`) aparte del arranque del
+  ejecutor, separa al planificador en «plan-epica» y «plan-fase», y mide la sesión «revisor».
 - Las semillas `BACKLOG.md`, `DOMAIN.md`, `PROTOCOL.md` y `STATE.md` explican qué pasa a `.ai/archive/` y el tope de
   «Últimos movimientos».
 - `CLAUDE.md` deja de tener `{{RELLENAR}}`: el título es genérico, y el contexto operativo y los repos hermanos pasan
@@ -47,7 +71,7 @@ etiqueta `core-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, ar
 
 - `.claude/commands/phase.md` y `.claude/commands/close.md`: ahora son skills. `install.sh --upgrade` los retira, con
   su carpeta si queda vacía.
-- `.ai/PLANNING.md`: ahora es la skill `/planning`.
+- `.ai/PLANNING.md`: ahora son las skills `/plan-epic` y `/plan-phase`.
 
 ## 1.x
 

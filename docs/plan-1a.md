@@ -11,8 +11,8 @@
 |---|---|---|---|---|
 | 1 | Base de verificación e inconsistencias | — | hecha | #1 |
 | 2 | Núcleo, stacks e instalador | 1 | hecha | #2 |
-| 3 | Menos tokens | 2 | en revisión | #3 |
-| 4 | Planificador, revisor y tipos de tarea | 3 | pendiente | — |
+| 3 | Menos tokens | 2 | hecha | #3 |
+| 4 | Planificador, revisor y tipos de tarea | 3 | en revisión | #4 |
 | 5 | Modo remoto y CI de los proyectos | 4 | pendiente | — |
 | 6 | Stack Laravel modular por defecto | 5 | pendiente | — |
 | 7 | Stack Next.js completo | 5 | pendiente | — |
@@ -247,6 +247,21 @@ Criterios de aceptación:
   ```
 
   El ejecutor de Laravel baja un 32 % respecto a la línea base (76 196). «cierre» es lo que el ejecutor añade en el Paso C (`.claude/skills/phase/cierre.md`) y no cuenta en el arranque. Los valores del ejecutor y de `CLAUDE.md` están en `tests/context-baseline.txt`.
+
+  Después de la fase 4, sobre una instalación limpia (el planificador se separa en épica y fase, y se mide el revisor):
+
+  ```
+  Sesión         laravel   nextjs
+  cualquiera        4171     4171
+  ejecutor         53080    54055
+  cierre           10339    10339
+  plan-epica       53337    54188
+  plan-fase        55427    56402
+  revisor          33063    34044
+  rescate          38361    38355
+  ```
+
+  El ejecutor de Laravel sigue por debajo de 53 300 (un 30 % menos que la línea base). Sube 1 250 caracteres por el estado `ESPERA_EVIDENCIA`, el modo ligero, el tipo de tarea y la sección «Revisión» de la plantilla; `CLAUDE.md`, por las tres skills nuevas de su tabla. «cierre» incluye ahora `/review`, y el rescate lo nota porque lee `cierre.md`. `tests/context-baseline.txt` tiene los valores nuevos.
 - **Fases divididas:** —
 - **Decisiones tomadas durante el plan:**
   - 2026-10-04 (fase 1): el fallo 5 del guardián (migraciones) solo se provoca en kits cuya plantilla de fase declara «Migraciones:». En Next.js no aplica, y `tests/run.sh` comprueba en su lugar que el guardián acepta fases sin ese campo. El criterio de la fase 1 pasa a «13 fallos en Laravel; 12 en Next.js, con el 5 como no aplicable».
@@ -263,15 +278,22 @@ Criterios de aceptación:
   - 2026-10-05 (fase 3): al archivo de `DOMAIN.md` van, además de las decisiones con `**Reemplazada por:**`, las filas `respondida` de §Decisiones pendientes. Lo que sobra de «Últimos movimientos» se borra, sin archivarlo: el detalle vive en el RESULTADO de cada fase.
   - 2026-10-05 (fase 3): la evidencia de una fase vive en `.ai/epics/<NN-slug>/evidence/<FF>-<nombre>.txt`, fuera del patrón `phase-*.md` que recorre el guardián.
   - 2026-10-05 (fase 3): reglas que cambian de casa con `CLAUDE.md` mínimo. Commits y `git push`: `.claude/skills/phase/SKILL.md §Commits durante la fase`. Traspaso: `.claude/skills/phase/cierre.md §Traspaso al otro repo`. No arreglar de paso: sigue en `CLAUDE.md §Alcance`.
+  - 2026-10-05 (fase 4): la fase va en un solo PR, sin dividirla en 4a y 4b.
+  - 2026-10-05 (fase 4): `ESPERA_EVIDENCIA` no retiene el puntero: es la primera fila sin `HECHA` ni `ESPERA_EVIDENCIA`. `STATE.md §Esperando evidencia` (sección derivada, que cuadra el chequeo «contadores») nombra las que esperan; una instalación anterior puede no tenerla mientras no haya ninguna. La fase que depende de una que espera se para en su Paso A, porque su «Depende de» no está `HECHA`. La épica no se cierra mientras una fase espere. La evidencia se completa con `/phase <epica> <FF>` y el commit `chore(phase-<NN>-<FF>): evidence` (`cierre.md §Evidencia humana`).
+  - 2026-10-05 (fase 4): «Tipo» y «Modo» son opcionales en la cabecera: sin ellos, código y modo normal, para que las fases escritas con la plantilla anterior sigan pasando tras el upgrade. Una fase ligera exige, además de uno o dos entregables, `Contrato HTTP: SIN CAMBIOS` y, si la plantilla lo pide, `Migraciones: ninguna`.
+  - 2026-10-05 (fase 4): la sección «Revisión» es el `## 10.` de la plantilla, fuera del RESULTADO. El guardián sólo la exige en las fases `HECHA` o `ESPERA_EVIDENCIA` que la tienen, así que las fases antiguas no fallan. `/review` corre en el paso 3 de `cierre.md`, después de ejecutar los criterios (el revisor comprueba su evidencia) y antes del estado final; en `BLOQUEADA` o `VERIFICACION_ROJA` no hace falta.
+  - 2026-10-05 (fase 4): el chequeo 14 «tareas» comprueba, además de que la tarea existe en un paquete, que su criterio está literal en «Criterios de éxito». Una tarea es una fase: si no cabe en una, STOP & ASK, porque partirla es cambiar el plan externo.
+  - 2026-10-05 (fase 4): el criterio de `/review` se probó lanzando un subagente `general-purpose` con `reviewer.md` como instrucciones. Un agente definido en una instalación temporal no se puede cargar como tipo propio desde esta sesión. La revisión encontró, además del bloqueante esperado, dos defectos reales del fixture: el comando de cada tarea (corregido en `tests/run.sh`) y el ámbito `web` del commit de prueba.
   - 2026-10-04 (fase 1): dónde vive cada regla que estaba repetida. Exenciones a un gate: `WORKFLOW.md §Obediencia arquitectónica`. No arreglar de paso: `CLAUDE.md §Alcance`. Dependencias nuevas: `WORKFLOW.md §Dependencia nueva`. `git push`: `CLAUDE.md §Commits durante la fase`. Las listas negras de `RULES.md` quedan solo con lo propio del stack.
 - **Lo que la siguiente fase necesita saber:**
   - **Dónde vive cada cosa.** El núcleo, en `core/` (manifiesto `core/core.json`); cada stack, en `stacks/<stack>/` (`stack.json`). Instalados, los archivos conservan sus rutas (`CLAUDE.md`, `.ai/…`, `.claude/skills/…`, `bin/…`). `install.sh` está en la raíz.
-  - **Las skills.** `/phase` es `.claude/skills/phase/SKILL.md` (pasos, rama, estados, sincronización, commits, verificación) más `phase/cierre.md` (cierre, épica, archivo de la memoria, traspaso, reporte final). `/close` y `/planning` son una `SKILL.md` cada una; `/phase` y `/close` llevan `disable-model-invocation: true`. La fase 4 parte `/planning` en `/plan-epic` y `/plan-phase` y añade `/review`: cada skill nueva entra en `core/core.json` (`files`) y en las listas de `core/bin/measure-context.sh`, y si la lee el ejecutor al arrancar, mueve su línea en `tests/context-baseline.txt`. Si `/planning` desaparece, el upgrade la retira sola.
+  - **Las skills.** `/phase` es `.claude/skills/phase/SKILL.md` (pasos, rama, estados, sincronización, commits, verificación) más `phase/cierre.md` (cierre con revisión, cierre ligero, evidencia humana, épica, archivo de la memoria, traspaso, reporte final). `/close`, `/plan-epic`, `/plan-phase` y `/review` son una `SKILL.md` cada una; `/phase` y `/close` llevan `disable-model-invocation: true`, y `/review` no, para que `/phase` la invoque. El revisor es `.claude/agents/reviewer.md` (Read, Grep, Glob y Bash sólo para git y el guardián). Una skill o un agente nuevo entra en `core/core.json` (`files`) y en las listas de `core/bin/measure-context.sh`, y si la lee el ejecutor al arrancar, mueve su línea en `tests/context-baseline.txt`. El upgrade desde la fase 3 retira `/planning` sola (probado).
+  - **Para el modo remoto (fase 5).** La protección del protocolo tiene que cubrir también `.claude/agents/`. La plantilla de PR puede llevar la sección «Revisión» y las casillas `[humano]` de la fase. Una fase en `ESPERA_EVIDENCIA` termina igualmente en su PR, y su evidencia llega después con un commit `…: evidence`: hay que decidir en qué rama, porque `cierre.md §Evidencia humana` sólo dice «la que diga el Tech Lead» si la de la fase ya se integró. El revisor necesita Bash para `git diff`; en la CI no corre: lo lanza `/phase` en la sesión.
   - **Las citas a una skill van con la ruta completa** (`.claude/skills/phase/SKILL.md §Estado de una fase`): el chequeo «secciones» valida `.claude/skills/*.md`, `.ai/rules/*.md` y `.ai/archive/*.md`. Una cita a `cierre.md` a secas no se valida.
   - **Las reglas por capas.** `.ai/RULES.md` es el núcleo y su `§Reglas por tema` indexa `.ai/rules/`. Los dos stacks tienen `arquitectura.md` y `tests.md` (el núcleo puede citarlos); Laravel tiene además `rendimiento.md` y Next.js, `contrato.md` (el núcleo no puede citarlos: `tests/structure.sh`). El revisor de la fase 4 lee el núcleo y los temas que cita la fase.
   - **Un solo reporte.** El RESULTADO es el reporte; el chat da cinco líneas (`cierre.md §Reporte final`). La sección «Revisión» que añade la fase 4 va en la plantilla de fase: un encabezado nuevo del RESULTADO hace fallar el guardián en las fases vivas escritas con la plantilla vieja (chequeo «fases»), así que conviene que vaya fuera del RESULTADO o que se diga en el CHANGELOG.
   - **La memoria tiene topes.** El chequeo 13 «memoria» del guardián exige que lo cerrado esté en `.ai/archive/`. Un estado nuevo (`ESPERA_EVIDENCIA`, fase 4) se añade también a las listas de estados del chequeo «puntero» y «fases», y a `.claude/skills/phase/SKILL.md §Estado de una fase`.
-  - **`tests/run.sh`.** Un caso con número en `provoke` es un fallo de la cabecera de `bin/check-docs.sh` (14 en Laravel; 13 en Next.js); uno con letra, una variante. `accept` prueba lo que tiene que pasar. El bloque `test_installer` usa `kit_copy` para simular un kit nuevo; `test_context` mide una instalación limpia contra `tests/context-baseline.txt`.
+  - **`tests/run.sh`.** Un caso con número en `provoke` es un fallo de la cabecera de `bin/check-docs.sh` (15 en Laravel; 14 en Next.js); uno con letra, una variante. `accept` prueba lo que tiene que pasar. La épica de prueba es 01-demo (CERRADA) y 02-paquete, creada desde `tests/fixtures/stages/E1.md` con helpers `task`, `header` y `criterion`; el puntero está en `02-paquete/03` (ligera) y `02-paquete/02` espera evidencia. El bloque `test_installer` usa `kit_copy` para simular un kit nuevo; `test_context` mide una instalación limpia contra `tests/context-baseline.txt`.
   - **Todo archivo nuevo entra en un manifiesto,** en `files` o en `seed`, o `tests/structure.sh` falla. Los manifiestos y el lock se leen sin jq: un valor por línea.
   - **`bin/verify.sh` mezcla kit y proyecto** (la baseline y `VERIFY_SERVICE`). Le toca a la fase 5 sacarlos a un archivo del proyecto.
   - **Duplicado pendiente (de la fase 1).** «No modificar `CLAUDE.md`, las reglas ni las skills desde una fase» sigue en `CLAUDE.md §Cosas que no se hacen`, `WORKFLOW.md §Documentación`, la cabecera de `RULES.md` y `PROTOCOL.md`. Le toca a la fase 5.
