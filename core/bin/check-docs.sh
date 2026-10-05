@@ -6,7 +6,8 @@
 #   0. instalación — no queda ningún «{{RELLENAR» en los documentos normativos
 #                    ni en la capa del proyecto (.ai/project/).
 #   1. puntero     — la cabecera de .ai/STATE.md apunta a la primera fila sin
-#                    HECHA del mapa (CLAUDE.md §Estado de una fase); sus seis
+#                    HECHA del mapa (.claude/skills/phase/SKILL.md §Estado de
+#                    una fase); sus seis
 #                    claves aparecen una vez y sin notas detrás; sólo la fase
 #                    activa está EN_CURSO; las filas de cada épica, en orden.
 #   2. fases       — cada phase-*.md: estado válido e igual al del mapa;
@@ -15,13 +16,16 @@
 #                    «Depende de» sólo cita fases anteriores; RESULTADO vacío si
 #                    no empezó, relleno si se cerró y con los encabezados de la
 #                    plantilla; una HECHA, con todas las casillas de «Criterios
-#                    de éxito» marcadas. Las secciones se buscan por su nombre,
-#                    con o sin número delante («## 5. Criterios de éxito»).
+#                    de éxito» marcadas; cada evidencia que enlaza
+#                    (`.ai/epics/<NN-slug>/evidence/…`) existe. Las secciones se
+#                    buscan por su nombre, con o sin número delante
+#                    («## 5. Criterios de éxito»).
 #   3. épicas      — cada epic-plan: estado válido y coherente con el mapa
 #                    (CERRADA = todas HECHA y criterio de cierre marcado); su
 #                    tabla «Fases», en orden y con las mismas fases que el
-#                    mapa; los ids D<n> que cita existen en DOMAIN.md; «Épica
-#                    activa» no es una CERRADA si queda otra abierta.
+#                    mapa; los ids D<n> que cita existen en DOMAIN.md o en
+#                    .ai/archive/DOMAIN.md; «Épica activa» no es una CERRADA si
+#                    queda otra abierta.
 #   4. referencias — «fase NN/FF», la columna «Bloquea» de DOMAIN.md, la
 #                    columna «Fase» del manifiesto y «fase FF» dentro de una
 #                    épica existen en la tabla de su epic-plan.
@@ -32,7 +36,8 @@
 #                    cita, o «> **Traspaso:** ninguno — <motivo>».
 #   7. contadores  — la cabecera de STATE.md, §Bloqueo activo y §Pendientes en
 #                    otros repos cuadran con DOMAIN.md y BACKLOG.md
-#                    (CLAUDE.md §Sincronización post-lectura).
+#                    (.claude/skills/phase/SKILL.md §Sincronización
+#                    post-lectura).
 #   8. destinos    — todo «Destino» de BACKLOG.md nombra una épica que existe.
 #   9. stack       — cada paquete de .ai/RULES.md §Stack tiene su versión en
 #                    .ai/project/DECISIONS.md §Stack, y cada versión de esa
@@ -42,6 +47,13 @@
 #  12. secciones   — toda referencia «archivo.md §Sección» cita la sección por
 #                    su nombre, no por su número, y el nombre es el de una
 #                    sección que existe (un número no sobrevive a renumerar).
+#  13. memoria     — la memoria activa sólo guarda lo vigente
+#                    (.claude/skills/phase/cierre.md §Archivo de la memoria):
+#                    ni filas cerradas o descartadas en BACKLOG.md, ni
+#                    decisiones reemplazadas o respondidas en DOMAIN.md, ni
+#                    mejoras aplicadas o descartadas en PROTOCOL.md, ni más de
+#                    10 líneas en «Últimos movimientos» de STATE.md; y ningún
+#                    id de BACKLOG.md o DOMAIN.md se repite en .ai/archive/.
 #
 #   11 y 12 son heurísticos (sacan rutas y secciones de la prosa): avisan, y
 #   sólo bloquean con --strict. El resto son comparaciones exactas y bloquean
@@ -66,6 +78,8 @@
 #   11. cita `bin/no-existe.sh` en CLAUDE.md.
 #   12. cita `.ai/RULES.md §No existe` en CLAUDE.md, o cita una que existe
 #       por su número: `.ai/WORKFLOW.md §3`.
+#   13. marca como «cerrado — 01/01» una fila de .ai/BACKLOG.md sin pasarla
+#       a .ai/archive/BACKLOG.md.
 #
 # ◆ PORTABILIDAD
 #   POSIX sh y awk/sed/grep sin extensiones GNU: corre igual en el host que en
@@ -91,12 +105,14 @@ export LC_ALL=C
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
 AI="$ROOT/.ai"
 CLAUDE_MD="$ROOT/CLAUDE.md"
+SKILLS="$ROOT/.claude/skills"
 RULES="$AI/RULES.md"
 STATE="$AI/STATE.md"
 DOMAIN="$AI/DOMAIN.md"
 PROJECT="$AI/project"
 DECISIONS="$PROJECT/DECISIONS.md"
 BACKLOG="$AI/BACKLOG.md"
+ARCHIVE="$AI/archive"
 TPL_PHASE="$AI/templates/phase.template.md"
 MANIFEST="$ROOT/docs/runbooks/release.md"
 TAB=$(printf '\t')
@@ -104,8 +120,8 @@ TAB=$(printf '\t')
 STRICT=0
 [ "${1:-}" = "--strict" ] && STRICT=1
 
-for f in "$CLAUDE_MD" "$RULES" "$AI/WORKFLOW.md" "$AI/PLANNING.md" "$STATE" "$DOMAIN" "$BACKLOG" "$TPL_PHASE" \
-         "$PROJECT/README.md" "$DECISIONS"; do
+for f in "$CLAUDE_MD" "$RULES" "$AI/WORKFLOW.md" "$SKILLS/phase/SKILL.md" "$SKILLS/phase/cierre.md" "$STATE" "$DOMAIN" \
+         "$BACKLOG" "$TPL_PHASE" "$PROJECT/README.md" "$DECISIONS"; do
     [ -f "$f" ] || { printf '✗ check-docs: falta %s\n' "${f#"$ROOT"/}"; exit 1; }
 done
 
@@ -213,7 +229,7 @@ grep -q '^> \*\*Migraciones:\*\*' "$TPL_PHASE" && TPL_HAS_MIG=1
 # ── 0. Instalación ──────────────────────────────────────────────────────────
 printf '◆ instalación (no queda ningún {{RELLENAR}} en los documentos normativos ni en .ai/project/)\n'
 
-for f in "$CLAUDE_MD" "$ROOT/AGENTS.md" "$AI"/*.md "$PROJECT"/*.md "$ROOT"/.claude/commands/*.md "$ROOT/docs/README.md"; do
+for f in "$CLAUDE_MD" "$ROOT/AGENTS.md" "$AI"/*.md "$AI"/rules/*.md "$PROJECT"/*.md "$SKILLS"/*/*.md "$ROOT/docs/README.md"; do
     [ -f "$f" ] || continue
     n=$(grep -c '{{RELLENAR' "$f")
     [ "$n" -eq 0 ] || bad "$(rel "$f"): $n marcador(es) {{RELLENAR}} sin completar; cada uno dice qué va"
@@ -252,7 +268,7 @@ else
     else want_p=$2; want_f=".ai/epics/$1/phase-$2.md"; fi
 fi
 { [ "$ACT_EPIC" = "$want_e" ] && [ "$ACT_PH" = "$want_p" ] && [ "$ACT_FILE" = "$want_f" ]; } \
-    || bad "STATE.md: la cabecera apunta a «$ACT_EPIC · $ACT_PH · $ACT_FILE»; según el mapa debe ser «$want_e · $want_p · $want_f» (CLAUDE.md §Estado de una fase)"
+    || bad "STATE.md: la cabecera apunta a «$ACT_EPIC · $ACT_PH · $ACT_FILE»; según el mapa debe ser «$want_e · $want_p · $want_f» (.claude/skills/phase/SKILL.md §Estado de una fase)"
 
 awk '$3 == "EN_CURSO" { print $1 "/" $2 }' "$MAP" | while read -r r; do
     [ "$r" = "$ACT_EPIC/$ACT_PH" ] || bad "STATE.md: $r está EN_CURSO, pero la fase activa es $ACT_EPIC/$ACT_PH; sólo una sesión ejecuta"
@@ -266,7 +282,7 @@ done
 report fail 'el puntero coincide con el mapa' 'el puntero de STATE.md no es fiable:'
 
 # ── 2. Fases ────────────────────────────────────────────────────────────────
-printf '◆ fases (estado igual al del mapa, cabecera, «Plan de commits», «Depende de», RESULTADO)\n'
+printf '◆ fases (estado igual al del mapa, cabecera, «Plan de commits», «Depende de», RESULTADO, evidencia)\n'
 
 TPL_HEADS="$TMPD/tpl-heads"
 awk '/^## RESULTADO DE LA EJECUCI/ { f = 1; next } f && /^### / { print }' "$TPL_PHASE" > "$TPL_HEADS"
@@ -287,7 +303,7 @@ for f in "$AI"/epics/*/phase-*.md; do
     if [ -z "$ms" ]; then
         bad "$r: no tiene fila «| $e | $p |» en STATE.md §Mapa de fases"
     elif [ "$fs" != "$ms" ]; then
-        bad "$r: dice $fs y el mapa dice $ms; se escriben a la vez (CLAUDE.md §Estado de una fase)"
+        bad "$r: dice $fs y el mapa dice $ms; se escriben a la vez (.claude/skills/phase/SKILL.md §Estado de una fase)"
     fi
 
     grep -qE '^> \*\*Contrato HTTP:\*\* *(\*\*)?(SIN CAMBIOS|CAMBIO AUTORIZADO)' "$f" \
@@ -310,6 +326,10 @@ for f in "$AI"/epics/*/phase-*.md; do
     done
 
     body=$(strip_comments "$f")
+    # shellcheck disable=SC2016  # las comillas invertidas son literales
+    printf '%s\n' "$body" | grep -oE '`\.ai/epics/[^`]+/evidence/[^`]+`' | tr -d '`' | sort -u | while read -r ev; do
+        [ -f "$ROOT/$ev" ] || bad "$r: enlaza la evidencia $ev, que no existe (.claude/skills/phase/cierre.md §Cierre de fase)"
+    done
     fecha=$(printf '%s\n' "$body" | sed -n 's/^\*\*Fecha:\*\* *//p' | head -n 1)
     case "$fs" in
         SIN_PLANIFICAR|LISTA_PARA_EJECUTAR)
@@ -347,7 +367,9 @@ report fail 'las fases están bien formadas y coinciden con el mapa' 'problemas 
 printf '◆ épicas (estado frente al mapa, tabla «Fases», ids de DOMAIN.md)\n'
 
 DOM_IDS="$TMPD/dom-ids"
-awk -F'|' '/^\| *D[0-9]+ *\|/ { i = $2; gsub(/[ \t]/, "", i); print i }' "$DOMAIN" | sort -u > "$DOM_IDS"
+# shellcheck disable=SC2046  # el archivo puede no existir todavía: entonces no cuenta
+awk -F'|' '/^\| *D[0-9]+ *\|/ { i = $2; gsub(/[ \t]/, "", i); print i }' "$DOMAIN" $(ls "$ARCHIVE/DOMAIN.md" 2>/dev/null) \
+    | sort -u > "$DOM_IDS"
 
 epic_state() { sed -n 's/.*\*\*Estado:\*\* *\([A-Z_]*\).*/\1/p' "$1" | head -n 1; }
 
@@ -375,7 +397,7 @@ for d in "$AI"/epics/*/; do
         CERRADA)
             { [ -n "$rows" ] && [ "$unfinished" -eq 0 ]; } || bad "$r: CERRADA, pero el mapa tiene fases suyas sin HECHA"
             n=$(section "$plan" 'Criterio de cierre' | grep -c '^- \[ \]')
-            [ "$n" -eq 0 ] || bad "$r: CERRADA con $n casilla(s) del «Criterio de cierre» sin marcar (CLAUDE.md §Cierre de épica)" ;;
+            [ "$n" -eq 0 ] || bad "$r: CERRADA con $n casilla(s) del «Criterio de cierre» sin marcar (.claude/skills/phase/cierre.md §Cierre de épica)" ;;
     esac
 
     seq=$(epic_table "$plan")
@@ -386,7 +408,7 @@ for d in "$AI"/epics/*/; do
         || bad "$r: la tabla «Fases» ($(inline "$seq")) y STATE.md §Mapa de fases ($(inline "$mseq")) no tienen las mismas fases"
 
     grep -oE '(^|[^A-Za-z0-9])D[0-9]+' "$plan" | sed 's/^[^D]*//' | sort -u | while read -r id; do
-        grep -qx "$id" "$DOM_IDS" || bad "$r: cita $id, que no existe en DOMAIN.md §Decisiones pendientes"
+        grep -qx "$id" "$DOM_IDS" || bad "$r: cita $id, que no existe en DOMAIN.md §Decisiones pendientes ni en .ai/archive/DOMAIN.md"
     done
 done
 awk '{ print $1 }' "$MAP" | sort -u | while read -r e; do
@@ -403,7 +425,7 @@ printf '◆ referencias a fases (existen en la tabla de su épica; las fases no 
 
 check_ref() { has_phase "${2%%/*}" "${2#*/}" || bad "$(rel "$1"): cita la fase $2, que no está en la tabla «Fases» de la épica ${2%%/*}"; }
 
-for f in "$DOMAIN" "$STATE" "$BACKLOG" "$MANIFEST" "$AI"/epics/*/*.md; do
+for f in "$DOMAIN" "$STATE" "$BACKLOG" "$MANIFEST" "$AI"/epics/*/*.md "$ARCHIVE"/*.md; do
     [ -f "$f" ] || continue
     grep -oE '[Ff]ases? [0-9][0-9]/[0-9][0-9][a-z]?' "$f" | sed 's/^[Ff]ases* //' | sort -u | while read -r x; do
         check_ref "$f" "$x"
@@ -467,7 +489,7 @@ else
                     r = $4; gsub(/[ \t`]/, "", r); if (r == a && match($0, re)) hit = 1 }
                 END { exit hit ? 0 : 1 }' "$BACKLOG" && found=1
         done
-        [ "$found" -eq 1 ] || bad "$(rel "$f"): cambia el contrato y nada lo traspasa: ni una fila de BACKLOG.md con Área $REPOS que diga «fase $x», ni «> **Traspaso:** ninguno — <motivo>» (CLAUDE.md §El otro repositorio)"
+        [ "$found" -eq 1 ] || bad "$(rel "$f"): cambia el contrato y nada lo traspasa: ni una fila de BACKLOG.md con Área $REPOS que diga «fase $x», ni «> **Traspaso:** ninguno — <motivo>» (.claude/skills/phase/cierre.md §Traspaso al otro repo)"
     done
     report fail 'toda fase que cambió el contrato tiene su traspaso' 'cambios de contrato sin traspaso:'
 fi
@@ -534,7 +556,7 @@ tbl_ids=$(section "$STATE" 'Pendientes en otros repos' | grep -oE '^\| *#[0-9]+'
 want_ids=$(awk '{ print $1 }' "$TMPD/xpend" | sort -u)
 [ "$tbl_ids" = "$want_ids" ] \
     || bad "STATE.md §Pendientes en otros repos lista «$(inline "$tbl_ids" '#')» y BACKLOG.md tiene abiertas «$(inline "$want_ids" '#')»"
-report fail "contadores al día (decisiones: $d_n/$d_m · otros repos: $x_n/$x_m)" 'STATE.md no está sincronizado (CLAUDE.md §Sincronización post-lectura):'
+report fail "contadores al día (decisiones: $d_n/$d_m · otros repos: $x_n/$x_m)" 'STATE.md no está sincronizado (.claude/skills/phase/SKILL.md §Sincronización post-lectura):'
 
 # ── 8. Destinos de BACKLOG.md ───────────────────────────────────────────────
 printf '◆ destinos (todo «Destino» de BACKLOG.md es una épica que existe)\n'
@@ -624,7 +646,7 @@ else
 fi
 
 # ── 11 y 12. Rutas y secciones citadas en los documentos normativos ─────────
-NORMATIVE="$CLAUDE_MD $ROOT/AGENTS.md $RULES $AI/WORKFLOW.md $AI/PLANNING.md $DOMAIN $PROJECT/*.md $AI/templates/*.md $ROOT/.claude/commands/*.md $ROOT/docs/README.md"
+NORMATIVE="$CLAUDE_MD $ROOT/AGENTS.md $RULES $AI/rules/*.md $AI/WORKFLOW.md $DOMAIN $PROJECT/*.md $AI/templates/*.md $SKILLS/*/*.md $ROOT/docs/README.md"
 
 printf '◆ rutas citadas en los documentos normativos (aviso; falla con --strict)\n'
 for src in $NORMATIVE; do
@@ -644,7 +666,7 @@ report warn 'todas las rutas citadas existen' 'rutas citadas que no existen:'
 printf '◆ referencias «archivo.md §Sección» (por su nombre; aviso, falla con --strict)\n'
 # «archivo<TAB>sección» por cada «X.md §Sección». La sección termina en una comilla invertida, una
 # puntuación, un punto seguido de espacio, «», », «—», «-->» u otro «§»; y sin un «y»/«o» final. Escribir la
-# referencia entre comillas invertidas (`CLAUDE.md §Cierre de fase`) la delimita sin ambigüedad.
+# referencia entre comillas invertidas (`CLAUDE.md §Orden de lectura`) la delimita sin ambigüedad.
 for src in $NORMATIVE; do
     [ -f "$src" ] || continue
     awk -v src="$(rel "$src")" '{
@@ -671,12 +693,12 @@ while IFS="$TAB" read -r src file sec; do
         CLAUDE.md) t="$CLAUDE_MD" ;;
         RULES.md|.ai/RULES.md) t="$RULES" ;;
         WORKFLOW.md|.ai/WORKFLOW.md) t="$AI/WORKFLOW.md" ;;
-        PLANNING.md|.ai/PLANNING.md) t="$AI/PLANNING.md" ;;
         DOMAIN.md|.ai/DOMAIN.md) t="$DOMAIN" ;;
         STATE.md|.ai/STATE.md) t="$STATE" ;;
         BACKLOG.md|.ai/BACKLOG.md) t="$BACKLOG" ;;
         docs/runbooks/release.md) t="$MANIFEST" ;;
-        .ai/project/*.md) t="$ROOT/${file#./}"; [ -f "$t" ] || { bad "$src: cita «$file», que no existe"; continue; } ;;
+        .ai/project/*.md|.ai/rules/*.md|.ai/archive/*.md|.claude/skills/*.md)
+            t="$ROOT/${file#./}"; [ -f "$t" ] || { bad "$src: cita «$file», que no existe"; continue; } ;;
         *) continue ;;
     esac
     case "$sec" in *'<'*|*'NN'*) continue ;; esac
@@ -687,6 +709,40 @@ while IFS="$TAB" read -r src file sec; do
     bad "$src: cita «$file §$sec», que no es ninguna sección de $file"
 done < "$TMPD/refs"
 report warn 'todas las referencias a secciones existen y van por su nombre' 'referencias a secciones que no existen o van por su número:'
+
+# ── 13. Memoria ─────────────────────────────────────────────────────────────
+printf '◆ memoria (lo cerrado está en .ai/archive/ y «Últimos movimientos» no pasa de 10 líneas)\n'
+
+# ids <archivo> <regex del id>: la primera columna de las filas de tabla cuyo id casa, una por línea.
+ids() { [ -f "$1" ] || return 0; awk -F'|' -v re="^ *$2 *$" '$1 == "" && $2 ~ re { i = $2; gsub(/[ \t]/, "", i); print i }' "$1"; }
+
+awk -F'|' '/^\| *[0-9]+ *\|/ { id = $2; gsub(/[ \t]/, "", id); st = $(NF - 1); sub(/^[ \t]+/, "", st)
+    if (st ~ /^(cerrado|descartado)/) print id }' "$BACKLOG" | while read -r id; do
+    bad "BACKLOG.md #$id está cerrada o descartada: va a .ai/archive/BACKLOG.md"
+done
+awk -F'|' '/^\| *D[0-9]+ *\|/ { id = $2; gsub(/[ \t]/, "", id); st = $(NF - 2); gsub(/[ \t]/, "", st)
+    if (st == "respondida") print id }' "$DOMAIN" | while read -r id; do
+    bad "DOMAIN.md §Decisiones pendientes: $id está respondida: va a .ai/archive/DOMAIN.md"
+done
+strip_comments "$DOMAIN" | grep -qF '**Reemplazada por:**' \
+    && bad 'DOMAIN.md §Decisiones tomadas: una decisión «**Reemplazada por:**» sigue aquí: va a .ai/archive/DOMAIN.md'
+if [ -f "$AI/PROTOCOL.md" ]; then
+    awk -F'|' '/^\| *[0-9]+ *\|/ { id = $2; gsub(/[ \t]/, "", id); st = $(NF - 1); sub(/^[ \t]+/, "", st)
+        if (st ~ /^(aplicada|descartada)/) print id }' "$AI/PROTOCOL.md" | while read -r id; do
+        bad "PROTOCOL.md #$id está aplicada o descartada: va a .ai/archive/PROTOCOL.md"
+    done
+fi
+n=$(strip_comments "$STATE" | awk 'index($0, "## Últimos movimientos") == 1 { f = 1; next } f && /^## / { exit } f' | grep -c '^- ')
+[ "$n" -le 10 ] || bad "STATE.md §Últimos movimientos tiene $n líneas; el tope es 10 (el detalle vive en el RESULTADO de cada fase)"
+for pair in "BACKLOG.md:[0-9]+" "DOMAIN.md:D[0-9]+"; do
+    file=${pair%%:*}; re=${pair#*:}
+    ids "$AI/$file" "$re" | sort > "$TMPD/active"
+    ids "$ARCHIVE/$file" "$re" | sort > "$TMPD/archived"
+    comm -12 "$TMPD/active" "$TMPD/archived" | while read -r id; do
+        bad "$file: el id $id ya está en .ai/archive/$file; los ids no se reutilizan"
+    done
+done
+report fail 'la memoria activa sólo guarda lo vigente' 'la memoria tiene algo por archivar (.claude/skills/phase/cierre.md §Archivo de la memoria):'
 
 # ── Veredicto ───────────────────────────────────────────────────────────────
 printf '\n'
