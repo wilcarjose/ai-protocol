@@ -5,13 +5,14 @@
 # ◆ CÓMO SE EJECUTA
 #   bash bin/verify.sh            todos los gates: el del cierre de una fase
 #   bash bin/verify.sh --fast     sólo los baratos (sin tests): el de cada
-#                                 commit de fila (CLAUDE.md §Commits durante la fase)
+#                                 commit de fila (.claude/skills/phase/SKILL.md
+#                                 §Commits durante la fase)
 #   Sirve igual `sh bin/verify.sh` o un script `"verify": "sh bin/verify.sh"`
 #   en package.json.
 #
 # ◆ CONTRATO
 #   Sale 0 si todo está en verde y != 0 si algo falla. Este script es la ÚNICA
-#   descripción de los gates, de su orden y de la baseline: CLAUDE.md y
+#   descripción de los gates, de su orden y de la baseline: la skill /phase y
 #   .ai/WORKFLOW.md remiten aquí sin repetirlos, así que se cambian aquí sin
 #   tocar documentación. Orden: barato primero (documentos, tipos, estilo), los
 #   tests al final.

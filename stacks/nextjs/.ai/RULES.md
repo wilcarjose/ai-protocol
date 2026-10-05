@@ -1,21 +1,17 @@
 # RULES — frontend Next.js
 
 > Las reglas de **cómo se escribe código** en este repositorio, para cualquier agente de IA y para cualquier humano.
-> Léelo completo antes de escribir una sola línea. Si algo aquí contradice tu instinto, gana este archivo.
+> Este archivo es el núcleo y se lee entero antes de escribir una línea; los temas de `.ai/rules/` se leen cuando la
+> fase los cita (§Reglas por tema). Si algo aquí contradice tu instinto, gana este archivo.
 >
-> Tres reglas que aplican a todo lo demás:
->
-> 1. Si crees que una regla está mal o desactualizada: **STOP & ASK** (`.ai/WORKFLOW.md §STOP & ASK`). Nadie edita este
->    archivo sin el visto bueno del Tech Lead, y nunca desde una fase.
-> 2. Las reglas de **cómo se trabaja** (qué reportar, cuándo parar, cómo verificar) viven en `.ai/WORKFLOW.md` y en
->    `CLAUDE.md`. Jerarquía si chocan: este archivo > `.ai/WORKFLOW.md` > `CLAUDE.md`.
-> 3. Lo que cambia con el estado del proyecto (decisiones de negocio, contrato vigente del backend, fase activa) vive
->    en `.ai/DOMAIN.md` y `.ai/STATE.md`. Aquí sólo hay reglas **estables**.
->
-> Son las reglas del stack del kit `ai-protocol`, y las actualiza `install.sh --upgrade`. Lo que decide cada proyecto
-> (versiones, alcance adicional, autorización, zonas sensibles, ámbitos del dominio) vive en `.ai/project/`, y aquí
-> se cita. Un proyecto puede cambiar este archivo, pero entonces el upgrade ya no lo actualiza solo: lo enseña como
-> conflicto.
+> 1. Si crees que una regla está mal o desactualizada: **STOP & ASK** (`.ai/WORKFLOW.md §STOP & ASK`). Nadie la edita
+>    sin el visto bueno del Tech Lead, y nunca desde una fase.
+> 2. Cómo se trabaja vive en `.ai/WORKFLOW.md` y en las skills; lo que cambia con el proyecto (decisiones, contrato
+>    vigente del backend, fase activa), en `.ai/DOMAIN.md`, `.ai/STATE.md` y `.ai/project/`. Aquí sólo hay reglas
+>    **estables**. Si chocan, gana este archivo.
+> 3. Son las reglas del stack del kit `ai-protocol`, y las actualiza `install.sh --upgrade`. Lo que decide cada
+>    proyecto vive en `.ai/project/`, y aquí se cita. Un proyecto puede cambiar este archivo, pero entonces el
+>    upgrade lo enseña como conflicto en vez de actualizarlo.
 
 ---
 
@@ -32,12 +28,12 @@ cada paquete de esta tabla y la compara con `package.json`. Una fila por paquete
 | `react` / `react-dom` | |
 | `typescript` | `strict: true` en `tsconfig.json` |
 | `zod` | Toda frontera se valida (§4) |
-| `@tanstack/react-query` | Datos del servidor en el cliente (§6) |
-| `zustand` | Estado de cliente compartido (§6) |
-| `vitest` | Tests unitarios (§11) |
+| `@tanstack/react-query` | Datos del servidor en el cliente (`.ai/rules/arquitectura.md §Estado`) |
+| `zustand` | Estado de cliente compartido (`.ai/rules/arquitectura.md §Estado`) |
+| `vitest` | Tests unitarios (`.ai/rules/tests.md`) |
 | `eslint` | Config plana, con la regla de capas (§5) |
 
-> **Antes de usar una API de cualquiera de estas librerías, lee `docs/vendor/INDEX.md`** (§8). Tu memoria de
+> **Antes de usar una API de cualquiera de estas librerías, lee `docs/vendor/INDEX.md`** (§7). Tu memoria de
 > entrenamiento corresponde probablemente a otra versión.
 
 ---
@@ -87,49 +83,12 @@ datos equivocados **sin error**.
 Cómo se autentica el cliente y qué cabeceras lleva toda petición: `.ai/project/CONTRACT.md §Autenticación y
 cabeceras`. Si hay un BFF (en `src/app/api/`), su lista blanca de rutas es la única puerta.
 
-### 3.2 Cómo se conoce el contrato
-
-Por este orden:
-
-1. **Los esquemas Zod** del contrato (`src/shared/api/` y los `api/` de cada feature o entidad). Se actualizan
-   **cuando cambia el backend**, no antes.
-2. **Los fixtures y snapshots** de respuestas reales anonimizadas (`tests/contract-snapshots/`).
-3. **`.ai/DOMAIN.md §Contrato con el otro repositorio`**: lo ya cambiado por el backend que este repo da por hecho.
-4. **`.ai/handoffs/`**: las entregas del backend, copiadas.
-5. **El código del backend**, cuando haga falta una clase, un método o un enum (`CLAUDE.md §El otro repositorio`).
-
-### 3.3 La forma de una respuesta NO se adivina
+### 3.2 La forma de una respuesta NO se adivina
 
 Se lee de los esquemas o de los snapshots. Si ninguno la fija: **detente y pregunta**
 (`.ai/WORKFLOW.md §Contrato`). No la infieras del código del frontend, que puede llevar formas equivocadas.
 
-### 3.4 Los errores son datos
-
-- El cliente **nunca lanza** hacia arriba: devuelve una unión discriminada (`{ ok: true, data } | { ok: false,
-  error }`), y los errores cruzan fronteras de módulo como datos.
-- Se discrimina por el **código de error** del envelope, nunca por el texto del mensaje.
-- Tres clases, tres comportamientos:
-
-| Clase | Status | Qué hacer | Reintentar |
-|---|---|---|---|
-| De usuario | 400, 403, 404, 409, 422 | Mostrar el mensaje **literal del backend**: no se reescribe ni se traduce | Nunca |
-| De sesión | 401 | Limpiar la sesión y llevar al login | Nunca |
-| De servidor o de red | 5xx, fallo de conexión | Mensaje genérico y reintento con espera creciente | Sí, salvo límite de peticiones (429) |
-
-### 3.5 Claves de caché: tenant y usuario, siempre
-
-**Toda clave de TanStack Query y todo `next.tags` empieza por el tenant (si lo hay:
-`.ai/project/CROSS-CUTTING.md §Tenant`) y, si la respuesta depende del usuario, por el usuario.** Se construyen con
-factorías en `src/shared/api/` y en el `api/` de cada feature, nunca a mano. Una clave que no discrimina usuario sirve los datos de uno a otro: es la misma fuga que un valor cacheado
-compartido en el backend, una capa más arriba.
-
-### 3.6 Lo que el backend manda de varias formas se lee en UN solo sitio
-
-Un backend PHP entrega una misma cosa con formas distintas según el dato o el motor: un JSON-objeto vacío llega como
-`{}`, `[]` o `null`; un booleano, como `true`/`false` o `1`/`0`. Cada **variación** se resuelve una vez, en
-`src/shared/api/`, con una función que acepta todas las formas y entrega una sola, y un único test guardián que
-sustituye cada campo de cada variación en los snapshots y comprueba que su esquema las acepta. Una variación nueva es
-una entrada más de ese registro, nunca un arreglo en el esquema que la sufre.
+Cómo se conoce el contrato, los errores, las claves de caché y las formas que varían: `.ai/rules/contrato.md`.
 
 ---
 
@@ -137,7 +96,7 @@ una entrada más de ese registro, nunca un arreglo en el esquema que la sufre.
 
 Cuando dos choquen, gana el de número menor.
 
-1. **El código es la fuente de verdad.** Ante una duda sobre la forma de un dato se lee el contrato (§3.2), no se
+1. **El código es la fuente de verdad.** Ante una duda sobre la forma de un dato se lee el contrato (`.ai/rules/contrato.md §Cómo se conoce el contrato`), no se
    adivina.
 2. **Ningún dato cruza una frontera sin validarse** con Zod: respuestas HTTP, `formData`, `searchParams`, variables
    de entorno, cookies.
@@ -149,7 +108,7 @@ Cuando dos choquen, gana el de número menor.
 7. **Un dominio es una carpeta** (§5).
 8. **Nada es global e implícito.** Tenant, idioma y usuario viajan explícitos por las firmas y por las claves de
    caché.
-9. **Los errores son datos** (§3.4).
+9. **Los errores son datos** (`.ai/rules/contrato.md §Los errores son datos`).
 10. **Todo cambio tiene una verificación ejecutable**: `bash bin/verify.sh`.
 
 ---
@@ -177,52 +136,20 @@ app  →  features  →  entities  →  shared
 
 ---
 
-## 6. Estado: qué herramienta y dónde vive
+## 6. Reglas por tema
 
-| Tipo de estado | Herramienta | Dónde vive |
+Cada tema vive en su archivo de `.ai/rules/` y es tan innegociable como este. La fase lista en «Contexto que debes
+leer antes» los que toca; si vas a tocar algo de un tema que la fase no cita, léelo igual antes de escribir.
+
+| Archivo | Qué cubre | Se lee si la fase toca |
 |---|---|---|
-| Datos del servidor en un Server Component | `fetch` del cliente único con `next.tags` | `src/shared/api/` y el `api/` de la feature |
-| Datos del servidor en el cliente | TanStack Query | `src/features/<dominio>/model/` |
-| Estado de cliente compartido | Zustand | `src/features/<dominio>/model/` |
-| Estado en la URL (filtros, página, fecha) | `searchParams` validados con Zod | la página |
-| Formulario | Server Action + `useActionState`, entrada validada con Zod | `src/features/<dominio>/` |
-| Estado efímero de un componente | `useState` | el propio componente |
-| Sesión y token | cookie HttpOnly, nunca `localStorage` | `src/shared/` y el BFF si lo hay |
-
-Una Server Action valida su entrada con Zod y, si cambia datos, invalida sus tags (con la firma de la versión de
-Next instalada: `docs/vendor/INDEX.md`).
+| `.ai/rules/contrato.md` | Cómo se conoce el contrato, errores como datos, claves de caché, formas variables del backend | `src/shared/api/`, el `api/` de una feature o entidad, o los datos del servidor |
+| `.ai/rules/arquitectura.md` | Qué herramienta de estado y dónde vive; componentes, textos, testids y nombres | Cualquier componente, hook, store o Server Action |
+| `.ai/rules/tests.md` | Vitest, tests de contrato y E2E con Playwright | `tests/` o `e2e/` (casi siempre) |
 
 ---
 
-## 7. Componentes, textos e identificadores
-
-- **Un componente de presentación renderiza**: recibe datos y callbacks. Prohibido dentro: red, WebSockets,
-  `document.cookie`, `localStorage`/`sessionStorage`, `window.location.href = …` (se usa el router) y cálculos de
-  negocio.
-- **Cero texto visible escrito a mano en JSX** si el proyecto tiene más de un idioma: toda cadena pasa por las
-  traducciones, y una clave nueva se añade a **todos** los idiomas a la vez. Los idiomas, la librería y dónde
-  viven los mensajes: `.ai/project/CROSS-CUTTING.md §Idiomas`.
-- **Todo elemento interactivo lleva `data-testid`** con el formato `<dominio>-<elemento>[-<variante>]`, en
-  kebab-case y en inglés (`auth-login-email`, `orders-row-${id}`). Cambiar uno rompe sus E2E: se cambian en el mismo
-  commit o no se cambia.
-
-| Elemento | Formato | Ejemplo |
-|---|---|---|
-| Carpeta de dominio | kebab-case | `features/order-history/` |
-| Componente | PascalCase, archivo igual al export, en `ui/` | `OrderCard.tsx` |
-| Hook | `use` + PascalCase | `useCreateOrder` |
-| Server Action | verbo + sustantivo + `Action` | `createOrderAction` |
-| Esquema Zod | camelCase + `Schema` | `orderSchema` |
-| Tipo derivado | PascalCase, sin sufijo | `type Order = z.infer<typeof orderSchema>` |
-| Store de Zustand | `use` + dominio + `Store` | `useCartStore` |
-| Factoría de claves | dominio + `Keys` | `orderKeys` |
-
-Identificadores y comentarios del código, en inglés; la documentación para agentes, en español. Lo que importa es que
-sea uno solo y esté escrito: la mezcla arbitraria es lo que hace alucinar a un agente.
-
----
-
-## 8. Documentación vendorizada
+## 7. Documentación vendorizada
 
 `docs/vendor/` guarda notas de las APIs de las librerías **en la versión instalada**, sacadas de sus `.d.ts` y de
 su documentación de esa versión, con un índice de preguntas en `docs/vendor/INDEX.md`. **Antes de usar una API de
@@ -231,7 +158,7 @@ añade la nota (y su fila en el índice) leyendo los tipos instalados.
 
 ---
 
-## 9. Frontera de seguridad en pagos
+## 8. Frontera de seguridad en pagos
 
 El frontend **nunca** maneja datos de tarjeta ni secretos de la pasarela de pago:
 
@@ -241,7 +168,7 @@ El frontend **nunca** maneja datos de tarjeta ni secretos de la pasarela de pago
 
 ---
 
-## 10. Zonas sensibles
+## 9. Zonas sensibles
 
 Tocar estas zonas de una forma que la fase no describe con precisión es motivo de parada
 (`.ai/WORKFLOW.md §Zona sensible`):
@@ -252,21 +179,7 @@ Tocar estas zonas de una forma que la fase no describe con precisión es motivo 
 
 ---
 
-## 11. Tests
-
-- **Unitarios con Vitest** en `tests/` o junto al código (`*.test.ts`). Sin red real: el cliente se sustituye por
-  fixtures.
-- **Contrato:** cada esquema se prueba contra los snapshots de `tests/contract-snapshots/` (§3.2, §3.6).
-- **E2E con Playwright** en `e2e/`: sólo `getByTestId()` (la interfaz cambia de idioma, los testids no), cero esperas
-  por tiempo (`waitForTimeout`), aserciones con reintento automático. Necesitan el backend levantado: sólo cuentan
-  si la fase lo pide, y su §5 dice quién provee el backend.
-- **No se modifica un test existente para que pase un cambio**: si falla, el cambio está mal o es una decisión del
-  Tech Lead (`.ai/WORKFLOW.md §Un test existente tendría que cambiar`). Nunca `test.skip()` condicional; para
-  retirar cobertura, `test.fixme()` con el motivo, y se nombra en el reporte.
-
----
-
-## 12. Verificación del stack
+## 10. Verificación del stack
 
 `bash bin/verify.sh` corre los gates en su orden (tipos, estilo, deuda de lint, tests); aquí sólo lo que no cabe en
 el script:
@@ -279,7 +192,7 @@ el script:
 
 ---
 
-## 13. Lista negra
+## 11. Lista negra
 
 Las prohibiciones que valen para cualquier stack no se repiten aquí: no arreglar de paso (`CLAUDE.md §Alcance`),
 dependencias nuevas (`.ai/WORKFLOW.md §Dependencia nueva`) y exenciones a un gate
@@ -290,7 +203,7 @@ dependencias nuevas (`.ai/WORKFLOW.md §Dependencia nueva`) y exenciones a un ga
 3. ⛔ **No uses `any`**, ni casts sobre datos externos.
 4. ⛔ **No traduzcas ni reescribas los mensajes de error del backend.**
 5. ⛔ **No compares códigos de error por su texto ni en otra capitalización** que la del contrato.
-6. ⛔ **No construyas claves de caché a mano** (§3.5).
+6. ⛔ **No construyas claves de caché a mano** (`.ai/rules/contrato.md §Claves de caché`).
 7. ⛔ **No guardes tokens en `localStorage` ni `sessionStorage`.**
 8. ⛔ **No escribas en el repo hermano** ni cites sus documentos (`CLAUDE.md §El otro repositorio`).
 9. ⛔ **No dejes llamadas de depuración**: `console.log`, `debugger`.
@@ -307,9 +220,9 @@ Ninguno todavía.
 
 ---
 
-## 14. Ámbitos de commit
+## 12. Ámbitos de commit
 
-Conventional Commits en inglés (`CLAUDE.md §Commits durante la fase`). Ámbitos:
+Conventional Commits en inglés (`.claude/skills/phase/SKILL.md §Commits durante la fase`). Ámbitos:
 
 - Transversales: `api`, `auth`, `i18n`, `e2e`, `ci`, `deps`, `docs`, `tests`, `planning`, `protocol`, y
   `phase-<NN>-<FF>` para los commits de arranque, reanudación y cierre de una fase.

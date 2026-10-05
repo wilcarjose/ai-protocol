@@ -32,8 +32,9 @@
 #                 (no se copió) cuenta igual. Sin lock (una instalación anterior
 #                 al instalador), todo archivo que difiere es un conflicto: hace
 #                 falta --stack.
-#     retirado    el kit ya no lo trae: se borra si el proyecto no lo tocó; si
-#                 lo tocó, se deja y se avisa en cada --upgrade.
+#     retirado    el kit ya no lo trae: se borra si el proyecto no lo tocó, con
+#                 las carpetas que deja vacías; si lo tocó, se deja y se avisa
+#                 en cada --upgrade.
 #   Las semillas («seed»: la memoria —STATE, DOMAIN, BACKLOG, PROTOCOL, las
 #   épicas—, la capa del proyecto .ai/project/ y los registros que llenan las
 #   fases) sólo se copian si faltan: el upgrade nunca las toca. Si nada cambia,
@@ -249,7 +250,8 @@ if [ -n "$OLD_LOCK" ]; then
             continue
         elif [ "$(sha "$dst")" = "$old" ]; then
             note - "$path" 'retirado del kit: se borra' change
-            [ "$DRY" -eq 1 ] || rm -f "$dst"
+            # Y las carpetas que deja vacías, sin salir del proyecto (la ruta es relativa a él).
+            [ "$DRY" -eq 1 ] || { rm -f "$dst"; ( cd "$TARGET" && rmdir -p "$(dirname "$path")" 2>/dev/null ); }
         else
             note '!' "$path" 'retirado del kit, pero el proyecto lo cambió: se deja; bórralo si ya no lo usas' conflict
             printf 'file %s %s %s\n' "$kind" "$old" "$path" >> "$TMPD/lock"

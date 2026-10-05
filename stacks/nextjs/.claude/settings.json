@@ -3,7 +3,7 @@
     "defaultMode": "dontAsk",
     "allow": [
       "Read", "Edit", "Write", "Glob", "Grep",
-      "Bash(sh bin/check-docs.sh*)", "Bash(bash bin/verify.sh*)", "Bash(sh bin/verify.sh*)",
+      "Bash(sh bin/check-docs.sh*)", "Bash(sh bin/handoff.sh*)", "Bash(sh bin/measure-context.sh*)", "Bash(bash bin/verify.sh*)", "Bash(sh bin/verify.sh*)",
       "Bash(npm run *)", "Bash(npm ls*)", "Bash(npm ci)",
       "Bash(npx tsc *)", "Bash(npx eslint *)", "Bash(npx vitest *)", "Bash(npx playwright test*)",
       "Bash(node -p *)", "Bash(node -e *)",

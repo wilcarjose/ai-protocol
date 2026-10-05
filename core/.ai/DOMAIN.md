@@ -6,7 +6,9 @@
      Este archivo describe DECISIONES, no el estado del código: antes de citar una línea de aquí como evidencia
      de que algo «vive en tal sitio», compruébalo en el código (.ai/WORKFLOW.md §El ciclo obligatorio).
 
-     Lo anterior no se reescribe: una decisión que cambia se escribe como enmienda nueva que cita la anterior. -->
+     Lo anterior no se reescribe: una decisión que cambia se escribe como enmienda nueva que cita la anterior, y la
+     anterior, con «**Reemplazada por:** <fecha> — <título>», pasa a .ai/archive/DOMAIN.md. Allí van también las
+     filas respondidas de §Decisiones pendientes (.claude/skills/phase/cierre.md §Archivo de la memoria). -->
 
 ## Qué es el proyecto
 

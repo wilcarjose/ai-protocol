@@ -3,15 +3,15 @@
 > **Slug:** `NN-slug`
 > **Estado:** SIN_EMPEZAR
 
-<!-- Cómo se rellena cada sección: .ai/PLANNING.md §Épica.
+<!-- Cómo se rellena cada sección: .claude/skills/planning/SKILL.md §Épica.
 
      Campos opcionales de la cabecera (bórralos si no aplican):
-     > **Rama base:** `epic/NN-slug`        ← .ai/PLANNING.md §Rama base de la épica; sólo mientras la épica
-                                               está SIN_EMPEZAR
+     > **Rama base:** `epic/NN-slug`        ← sólo mientras la épica está SIN_EMPEZAR
+                                               (.claude/skills/planning/SKILL.md §Rama base de la épica)
      > **Espejo de:** <repo hermano> <NN-slug>  ← si sigue a una épica del otro repo, y qué entrega éste antes
 
      El «Estado:» va solo en su línea y sin nada detrás: SIN_EMPEZAR | EN_CURSO | CERRADA. Lo mueve el ejecutor
-     (CLAUDE.md §Estado de una fase y §Cierre de épica). -->
+     (.claude/skills/phase/SKILL.md §Estado de una fase, .claude/skills/phase/cierre.md §Cierre de épica). -->
 
 ## Objetivo
 
@@ -48,8 +48,9 @@ Ninguna.
 
 ## Fases
 
-<!-- Reglas de corte: .ai/PLANNING.md §Reglas de corte. Numeración: .ai/PLANNING.md §Numeración (nunca se
-     renumera). Cada fila tiene su fila en .ai/STATE.md §Mapa de fases, en el mismo orden. -->
+<!-- Reglas de corte y numeración (nunca se renumera): .claude/skills/planning/SKILL.md §Reglas de corte y
+     .claude/skills/planning/SKILL.md §Numeración. Cada fila tiene su fila en .ai/STATE.md §Mapa de fases, en el
+     mismo orden. -->
 
 | Fase | Qué cubre | Depende de |
 |---|---|---|
@@ -64,8 +65,9 @@ Ninguna.
 
 ## Criterio de cierre
 
-<!-- Comandos que se pueden cumplir, probados contra el repo al escribirlos (.ai/PLANNING.md §Antes de dar el plan
-     por listo). Lo comprueba, casilla a casilla, quien cierra la última fase. -->
+<!-- Comandos que se pueden cumplir, probados contra el repo al escribirlos
+     (.claude/skills/planning/SKILL.md §Antes de dar el plan por listo). Lo comprueba, casilla a casilla, quien
+     cierra la última fase. -->
 
 - [ ] Todas las fases de la tabla en `HECHA`
 - [ ] `bash bin/verify.sh` en verde

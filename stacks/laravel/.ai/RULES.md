@@ -1,21 +1,16 @@
 # RULES — backend Laravel
 
 > Las reglas de **cómo se escribe código** en este repositorio, para cualquier agente de IA y para cualquier humano.
-> Léelo completo antes de escribir una sola línea. Si algo aquí contradice tu instinto, gana este archivo.
+> Este archivo es el núcleo y se lee entero antes de escribir una línea; los temas de `.ai/rules/` se leen cuando la
+> fase los cita (§Reglas por tema). Si algo aquí contradice tu instinto, gana este archivo.
 >
-> Tres reglas que aplican a todo lo demás:
->
-> 1. Si crees que una regla está mal o desactualizada: **STOP & ASK** (`.ai/WORKFLOW.md §STOP & ASK`). Nadie edita este
->    archivo sin el visto bueno del Tech Lead, y nunca desde una fase.
-> 2. Las reglas de **cómo se trabaja** (qué reportar, cuándo parar, cómo verificar) viven en `.ai/WORKFLOW.md` y en
->    `CLAUDE.md`. Jerarquía si chocan: este archivo > `.ai/WORKFLOW.md` > `CLAUDE.md`.
-> 3. Lo que cambia con el estado del proyecto (decisiones de negocio, fase activa) vive en `.ai/DOMAIN.md` y
->    `.ai/STATE.md`. Aquí sólo hay reglas **estables**.
->
-> Son las reglas del stack del kit `ai-protocol`, y las actualiza `install.sh --upgrade`. Lo que decide cada proyecto
-> (versiones, alcance adicional, autorización, zonas sensibles, ámbitos del dominio) vive en `.ai/project/`, y aquí
-> se cita. Un proyecto puede cambiar este archivo, pero entonces el upgrade ya no lo actualiza solo: lo enseña como
-> conflicto.
+> 1. Si crees que una regla está mal o desactualizada: **STOP & ASK** (`.ai/WORKFLOW.md §STOP & ASK`). Nadie la edita
+>    sin el visto bueno del Tech Lead, y nunca desde una fase.
+> 2. Cómo se trabaja vive en `.ai/WORKFLOW.md` y en las skills; lo que cambia con el proyecto, en `.ai/DOMAIN.md`,
+>    `.ai/STATE.md` y `.ai/project/`. Aquí sólo hay reglas **estables**. Si chocan, gana este archivo.
+> 3. Son las reglas del stack del kit `ai-protocol`, y las actualiza `install.sh --upgrade`. Lo que decide cada
+>    proyecto vive en `.ai/project/`, y aquí se cita. Un proyecto puede cambiar este archivo, pero entonces el
+>    upgrade lo enseña como conflicto en vez de actualizarlo.
 
 ---
 
@@ -28,7 +23,7 @@ cada paquete de esta tabla y la compara con `composer.json`. Una fila por paquet
 
 | Paquete | Nota |
 |---|---|
-| `php` | Property hooks y visibilidad asimétrica disponibles, con las restricciones de §10 |
+| `php` | Property hooks y visibilidad asimétrica disponibles, con las restricciones de `.ai/rules/arquitectura.md §PHP 8.4+` |
 | `laravel/framework` | Esqueleto slim: `bootstrap/app.php`, sin `Kernel.php` |
 | `pestphp/pest` | Pest, no PHPUnit clásico. Incluye el plugin de arquitectura |
 | `laravel/pint` | Estilo |
@@ -98,294 +93,25 @@ cerrar un agujero, requiere:
 Si el contrato no cambia, los tests de contrato pasan **sin modificarlos** y el baseline de rutas no se toca: son
 la red que salta cuando algo cambia sin querer.
 
-Reglas de forma, porque PHP y las bases de datos las rompen sin avisar:
-
-- **Una columna JSON-objeto sale siempre como objeto JSON**: `{}` si está vacía o es `NULL`, nunca `[]` ni `null`.
-  PHP serializa un array vacío como `[]`, así que la salida pasa por un único helper en `app/Http/Resources/`, también
-  en las respuestas que no usan un Resource. Ningún Resource escribe su propio `?: []` o `(object)`.
-- **Un booleano sale siempre como `true`/`false`**: toda columna booleana tiene cast `boolean` en su modelo, y la de
-  un pivote se convierte en su único punto de salida. MySQL la devuelve `0`/`1` si nadie la castea.
-- **El orden de una lista es parte de la respuesta.** Toda consulta que pagina o cuyo orden ve el cliente termina en
-  una columna única (la clave primaria): ordenar sólo por una fecha o un nombre deja los empates al motor, y no todos
-  los devuelven siempre igual.
-- **Un array de respuesta no cambia de tipo**: `[]` serializa como `[]` y una Collection vacía puede salir como `{}`.
-  No conviertas uno en otro en un valor que termine en JSON.
+Las reglas de forma de la salida (objetos JSON vacíos, booleanos, orden de las listas, tipo de los arrays) viven en
+`.ai/rules/arquitectura.md §Forma de las respuestas`: se leen siempre que la fase toca lo que sale por HTTP.
 
 ---
 
-## 4. Arquitectura objetivo
+## 4. Reglas por tema
 
-```
-app/
-├── Actions/          ← lógica de negocio: 1 clase = 1 caso de uso (§5)
-├── Contracts/        ← interfaces de todo lo que cruza el proceso: red, disco, reloj, servicios externos (§8)
-├── Data/             ← DTOs de configuración
-├── Enums/            ← enums backed string: estados y constantes de negocio
-├── Exceptions/       ← todas heredan de una ApiException base (§4.1)
-├── Http/
-│   ├── Controllers/Api/   ← delgados: validar → despachar una Action → responder
-│   ├── Middleware/
-│   ├── Requests/          ← FormRequest: autorización y validación, nada más
-│   └── Resources/         ← transformación de salida
-├── Models/
-├── Services/         ← orquestación y consultas de lectura. Nada de negocio nuevo
-└── ValueObjects/     ← objetos readonly que se validan al construirse (§6)
-```
+Cada tema vive en su archivo de `.ai/rules/` y es tan innegociable como este. La fase lista en «Contexto que debes
+leer antes» los que toca; si vas a tocar algo de un tema que la fase no cita, léelo igual antes de escribir.
 
-### Flujo obligatorio de una petición
-
-```
-Route → Middleware → FormRequest (authorize + rules) → Controller (sin lógica)
-      → Action::handle(ValueObject|Model, …): Model|ValueObject|array
-      → JsonResource | array
-```
-
-### 4.1 Excepciones
-
-- Toda excepción de negocio hereda de una `ApiException` base que lleva su `error_code` (mayúsculas, estable: es el
-  contrato), su status HTTP y un contexto. El render a JSON está en un solo sitio (`bootstrap/app.php`,
-  `withExceptions`), con un único envelope de error.
-- Toda subclase con status 4xx se registra en `dontReport`: sin eso, Laravel la reporta como `ERROR` y ensucia el
-  log en cada rechazo legítimo. Ojo: `bootstrap/app.php` no declara namespace, así que dentro del closure
-  `X::class` resuelve al namespace global si `X` no está importada con `use`.
-- Un `500` nunca expone el mensaje de la excepción: texto fijo y el detalle al log.
-
-### 4.2 Control de flujo — early returns
-
-Las condiciones de error se validan al principio y se retorna o se lanza de inmediato; el camino feliz no lleva
-indentación extra. Prohibido el código en flecha (`if (…) { if (…) { if (…) { /* lo útil */ } } }`). Aplica a
-Actions, Services, Controllers, FormRequests, Commands y Jobs.
-
-### 4.3 Estados — transiciones explícitas
-
-Una entidad con ciclo de vida (pedido, pago, suscripción, invitación, membresía) no cambia de estado con un
-`if/else` o un `match` anidado dentro de una Action:
-
-- Estados como **enums backed string** en `app/Enums/`. Al serializar, siempre `->value`.
-- **Una clase por transición** (`MarkPaymentAsCapturedTransition`), que encapsula precondiciones, efectos, eventos y
-  limpieza de caché. El primer caller que necesita una transición la crea; el segundo la reutiliza.
-- Un flujo nuevo es una transición nueva o registrada en la máquina existente, nunca una rama más.
-
-### 4.4 Borrado lógico
-
-Toda tabla principal del dominio (lo que el usuario referencia por identificador y cuyo borrado accidental sería un
-incidente) usa `SoftDeletes`, y su migración incluye `softDeletes()`. El borrado real (`forceDelete()`) es una
-operación administrativa explícita, en su propio comando o Action, nunca implícita en otra. Modelo de dominio
-nuevo: **con** `SoftDeletes` por defecto.
-
-### 4.5 Desactivación — `is_active`
-
-Una entidad que se desactiva y se reactiva sin perder su identidad lleva `is_active` (booleano, `true` por defecto),
-y las consultas públicas filtran por él. Desactivar no es borrar: la fila sigue editable por un administrador, y la
-desactivación es una transición (§4.3), no un toggle directo. `is_active` y `deleted_at` resuelven problemas
-distintos y no son intercambiables.
-
-### 4.6 Autorización
-
-Un solo mecanismo de autorización: dos conviviendo son una segunda fuente de verdad. Cuál es, lo dice
-`.ai/project/ARCHITECTURE.md §Autorización`.
-
----
-
-## 5. Patrón Action
-
-```php
-<?php
-
-declare(strict_types=1);
-
-namespace App\Actions\Orders;
-
-use App\Contracts\Payments\PaymentGateway;
-use App\Models\Order;
-use App\ValueObjects\Money;
-
-final readonly class CaptureOrderPaymentAction
-{
-    public function __construct(
-        private PaymentGateway $gateway,
-    ) {}
-
-    public function handle(Order $order, Money $amount): Order
-    {
-        // …
-    }
-}
-```
-
-1. `final readonly class` y `declare(strict_types=1)`.
-2. **Un solo método público: `handle()`.** Nada de `execute()` ni `run()` al lado, ni métodos públicos auxiliares.
-3. Métodos privados, sí; si pasan de tres, la Action hace demasiado: divídela.
-4. Dependencias por constructor, tipadas contra **interfaces** cuando el colaborador toca la red, el disco, el
-   reloj o un servicio externo (§8).
-5. **Sin facades de infraestructura** (`Http::`, `Mail::`, `Log::`, `Cache::`): se inyecta un contrato.
-   `DB::transaction()` sí.
-6. **Sin `request()`, `auth()`, `session()`, `env()` ni `now()`.** Todo llega por parámetro o por un contrato (el
-   reloj, también). Una Action se ejecuta igual desde un controlador, un comando o una cola.
-7. Tipo de retorno **siempre explícito**; nunca `mixed`.
-8. Nunca devuelve una respuesta HTTP: devuelve dominio (Model, Value Object, array). La forma HTTP es del
-   controlador y del Resource.
-9. Si escribe en más de una tabla, `DB::transaction()`. Sin excepción.
-10. Señala el error lanzando una `ApiException` con su `error_code` y su status, no devolviendo `null`.
-
-Nombre: `{Verbo}{Sustantivo}Action` (`StoreOrderAction`, `ApproveJoinRequestAction`). Un archivo, una clase, mismo
-nombre. Las reglas que se pueden comprobar sobre el código las comprueba `tests/Architecture/ArchitectureTest.php`.
-
----
-
-## 6. Tipado estricto y Value Objects
-
-- `declare(strict_types=1)` en todo archivo nuevo o tocado.
-- Todo parámetro, propiedad y retorno tipado. Un `array` lleva su forma en PHPDoc (`@param array<string, int>`).
-- `?Type` explícito; nada de `mixed` salvo en un límite del framework que lo imponga.
-- Constantes de clase de estado (`const STATUS_ACCEPTED = 'accepted'`) → enum backed string, con el mismo valor.
-
-### Value Objects
-
-```php
-final readonly class Quantity
-{
-    private function __construct(public int $value) {}
-
-    public static function from(int $value): self
-    {
-        if ($value < 1 || $value > 99) {
-            throw new OrderException('La cantidad debe estar entre 1 y 99.', OrderException::INVALID_QUANTITY, ['value' => $value], 422);
-        }
-
-        return new self($value);
-    }
-}
-```
-
-- `final readonly`, constructor privado, constructores con nombre (`from`, `fromArray`, `fromRequest`).
-- **Se valida al construirse**: si existe una instancia, es válida. Es lo que impide reinventar la validación en
-  cada capa. Los rangos reflejan exactamente las reglas del `FormRequest`; si divergen, gana el `FormRequest`, que
-  es el contrato.
-- Sin setters ni estado mutable.
-
-### 6.1 El nombre es el contrato
-
-El nombre de un constructor con nombre describe el **estado resultante**, no la intención de quien lo llama. Un
-`Window::closed()` que devuelve una ventana *abierta* cuesta una auditoría entera. Prohibidos los nombres que se leen
-en dos sentidos (`closed`, `disabled`, `locked`, `off`, `skip` sobre algo que *permite*). Si el nombre necesita un
-docblock de tres líneas para explicar que significa lo contrario de lo que parece, el nombre está mal.
-
-### 6.2 Un VO sin invariantes no es un VO
-
-- Si su constructor no puede fallar, es una tupla con nombre: o tiene invariantes o es un `array` con forma
-  documentada.
-- **Excepción declarada:** un VO construido desde datos ya persistidos no puede validar con la dureza de uno
-  construido desde la entrada del usuario, porque lanzaría en producción sobre filas históricas. Entonces valida
-  sólo el formato, lanza `InvalidArgumentException` (nunca una `ApiException`, que cambiaría el envelope) y lo dice
-  en el docblock de ese constructor.
-- Un campo que ningún consumidor lee es un campo fantasma: se borra, o un test documenta que hoy no tiene efecto.
-
----
-
-## 7. Tests
-
-- **Pest**, nunca clases de PHPUnit. **Test antes que implementación** para toda Action, excepción, Value Object o
-  contrato nuevos: el test se ve fallar por la causa correcta, se implementa, se ve pasar. En el mismo commit.
-- Dónde va cada uno:
-  - `tests/Unit/` — Actions y Value Objects, sin base de datos cuando se pueda.
-  - `tests/Feature/` — lo que necesita base de datos o el framework arrancado.
-  - `tests/Feature/Contract/` — el contrato HTTP: status y forma exactos (`assertExactJsonStructure`).
-  - `tests/Architecture/` — reglas sobre el código con el plugin de arquitectura de Pest; corre sin base de datos.
-- **La suite corre contra el mismo motor de base de datos que producción**, no contra SQLite en memoria: SQLite
-  convierte un identificador entrecomillado que no existe en un literal de cadena, y una consulta rota devuelve cero
-  filas en vez de fallar. La conexión de tests sale de `.env.testing` (que sustituye a `.env`, no se mezcla) contra
-  una base de datos **distinta** de la de desarrollo.
-- **Cuando un test falla por una diferencia de motor:** prohibido cambiar el código de producción para que pase y
-  prohibido mockear la base de datos. Si el fallo es del test (tipos, orden de `NULL`, colación), se arregla el test
-  sin relajar la aserción. Si destapa un bug de producción, va a `.ai/BACKLOG.md` (`CLAUDE.md §Alcance`).
-- **Fakes:** cada contrato tiene su Fake, que permite aserciones (`assertSent()`, `assertNothingSent()`,
-  `respondWith()`). Viven en `tests/Fakes/` y se enlazan en el entorno de test. Si un test necesita `Http::fake()`,
-  falta un contrato.
-- Ningún test llama a la red real: `Http::preventStrayRequests()` en el `setUp()` de `tests/TestCase.php`.
-
----
-
-## 8. Contratos e inyección de dependencias
-
-Todo lo que cruza el proceso —red, disco, reloj, correo, colas de terceros, proveedores externos— tiene su interfaz
-en `app/Contracts/<Dominio>/`, su implementación real y su Fake. Los bindings, en
-`AppServiceProvider::register()`.
-
-| Colaborador | Contrato | Implementaciones |
+| Archivo | Qué cubre | Se lee si la fase toca |
 |---|---|---|
-| Reloj | `App\Contracts\Time\Clock` (lo crea la primera Action que necesite la hora) | `SystemClock`, `FrozenClock` (tests) |
-
-<!-- Una fila por contrato, en la fase que lo crea. -->
-
-**Nunca instancies un colaborador externo con `new` dentro de una Action.** `new` sólo para Value Objects y
-excepciones.
+| `.ai/rules/arquitectura.md` | Estructura de `app/`, excepciones, estados, borrado lógico, autorización, Actions, tipado, Value Objects, contratos e inyección, PHP 8.4+, forma de las respuestas | Cualquier clase de `app/` |
+| `.ai/rules/tests.md` | Dónde va cada test, el motor de la suite, Fakes y red; cómo explorar la base de datos local | `tests/` (casi siempre), o consultas a la base de datos local |
+| `.ai/rules/rendimiento.md` | N+1, caché compartida, llamadas externas, serialización y colas | Consultas, caché, colas o servicios externos |
 
 ---
 
-## 9. Rendimiento y resiliencia
-
-- **Cero N+1.** Si iteras una colección y accedes a una relación: `with()` o `loadMissing()`.
-- **Nunca metas datos que dependen del usuario dentro de un valor cacheado compartido.** Un `is_current_user`
-  calculado dentro de un `Cache::rememberForever` filtra datos de un usuario a otro. Esos campos se calculan
-  **fuera** del closure de caché.
-- Las claves de caché incluyen **todas** las dimensiones que afectan al resultado (tenant, usuario, idioma, filtros).
-- Ninguna llamada HTTP saliente síncrona en el camino de la respuesta: a una cola o `dispatch()->afterResponse()`.
-- Toda llamada externa: `timeout()` explícito, `try/catch` de `ConnectionException` y una degradación definida.
-- `env()` **sólo** dentro de `config/**`: fuera devuelve `null` con `config:cache`.
-- A un job encolado se le pasa lo mínimo (identificadores), no colecciones hidratadas.
-
----
-
-## 10. PHP 8.4+ — dónde sí y dónde no
-
-Toda la capa de Actions y Value Objects es `final readonly class`. Los property hooks **con almacenamiento** no son
-compatibles con propiedades `readonly`; los hooks **virtuales** (calculados, sin almacenamiento) sí.
-
-| Característica | Actions | Value Objects | Models | Services, Resources |
-|---|---|---|---|---|
-| Property hooks con almacenamiento | ⛔ | ⛔ | ⚠️ probar primero | ✅ |
-| Property hooks virtuales | ⚠️ rara vez útil | ✅ valores derivados | ⚠️ probar primero | ✅ |
-| Visibilidad asimétrica `public private(set)` | ⛔ redundante | ⛔ redundante | ✅ | ✅ |
-| `array_find` / `array_any` / `array_all` | ✅ | ✅ | ✅ | ✅ |
-| `array_first` / `array_last` globales | ⛔ §15 | ⛔ | ⛔ | ⛔ |
-
-**Modelos Eloquent:** Eloquent resuelve atributos con su propio sistema (`__get`). Un hook sobre un modelo puede no
-integrarse con `toArray()`, el JSON ni `$appends`, y rompería el contrato sin avisar. Antes de migrar un accessor a
-hook: uno solo como prueba, un test que compare acceso directo, `toArray()` y el JSON del endpoint, y sólo entonces
-el resto. Una característica del lenguaje se aplica sólo si **elimina líneas** sin cambiar el comportamiento.
-
----
-
-## 11. Caché, serialización y colas
-
-- **Cachea arrays y escalares, no objetos.** Si `config/cache.php` declara una lista blanca de clases
-  deserializables (`serializable_classes`), un objeto de una clase que no está en ella falla al leerse en
-  producción, no en los tests con el driver `array`. Añadir una clase a la lista se justifica en el commit: cada
-  entrada es superficie de ataque.
-- **Trampa de tests:** el driver de caché `array` no serializa nada. Un test que dice probar la serialización corre
-  contra Redis, o declara que no la verifica.
-- **Los prefijos de caché, de Redis y la cookie de sesión no se cambian** una vez en producción: huerfanizan Redis
-  entero y cierran todas las sesiones a la vez, en el instante del despliegue. Lo mismo `session.serialization`.
-- Las claves y tags de caché que usan varios sitios son **contrato interno**: cambiar una invalida la caché de
-  producción sin que ningún test lo note.
-- Antes de desplegar un cambio mayor de framework, se drenan las colas: los payloads serializados por la versión
-  anterior se deserializan con la nueva.
-
----
-
-## 12. Exploración local
-
-1. **Nunca imprimas volcados masivos.** Consultas a la base de datos con `LIMIT 3` o `take(3)`.
-2. **Tinker antes que SQL**: `php artisan tinker` con Eloquent respeta scopes y casts.
-3. `curl` sólo contra `localhost`, con `-s` y filtrado con `jq`, para comparar la salida de un endpoint con su
-   contrato.
-4. **No destruyas el estado**: nada de `DELETE` ni `UPDATE` masivos a mano. Si hace falta estado limpio, pídeselo al
-   Tech Lead.
-
----
-
-## 13. Zonas sensibles
+## 5. Zonas sensibles
 
 Tocar estas zonas de una forma que la fase no describe con precisión es motivo de parada
 (`.ai/WORKFLOW.md §Zona sensible`):
@@ -396,7 +122,7 @@ Tocar estas zonas de una forma que la fase no describe con precisión es motivo 
 
 ---
 
-## 14. Verificación del stack
+## 6. Verificación del stack
 
 `bash bin/verify.sh` corre los gates en su orden (estilo, análisis estático, rutas, arquitectura, suite); aquí sólo
 lo que no cabe en el script:
@@ -407,13 +133,13 @@ lo que no cabe en el script:
   patrón quedó huérfano: regenera el baseline (`vendor/bin/phpstan analyse --generate-baseline`), revisa el diff
   línea por línea (cada patrón que desaparece corresponde a un error que de verdad se arregló; si protegía un error
   que sigue ahí, se restaura y se arregla el código) y va en su propio commit.
-- **Test de arquitectura** (`tests/Architecture/`): las reglas de §5 y §6 que se pueden comprobar sobre el código.
+- **Test de arquitectura** (`tests/Architecture/`): las reglas de `.ai/rules/arquitectura.md` que se pueden comprobar sobre el código.
   Una regla nueva de este archivo que se pueda comprobar, entra ahí.
 - **Rutas:** `docs/contract/routes-baseline.txt` se regenera sólo con un cambio de contrato autorizado (§3).
 
 ---
 
-## 15. Lista negra
+## 7. Lista negra
 
 Las prohibiciones que valen para cualquier stack no se repiten aquí: no arreglar de paso (`CLAUDE.md §Alcance`),
 dependencias nuevas (`.ai/WORKFLOW.md §Dependencia nueva`) y exenciones a un gate
@@ -448,9 +174,9 @@ dependencias nuevas (`.ai/WORKFLOW.md §Dependencia nueva`) y exenciones a un ga
 
 ---
 
-## 16. Ámbitos de commit
+## 8. Ámbitos de commit
 
-Conventional Commits en inglés (`CLAUDE.md §Commits durante la fase`). Ámbitos:
+Conventional Commits en inglés (`.claude/skills/phase/SKILL.md §Commits durante la fase`). Ámbitos:
 
 - Transversales: `api`, `auth`, `infra`, `deps`, `docs`, `tests`, `ci`, `planning`, `protocol`, y
   `phase-<NN>-<FF>` para los commits de arranque, reanudación y cierre de una fase.

@@ -1,7 +1,7 @@
 # Hallazgos fuera de alcance
 
 <!-- Lo que la IA encuentra mientras trabaja y NO debe arreglar en la fase activa. Sin esto, o lo arregla (y la
-     fase se descontrola) o lo olvida (y se pierde). Se revisa al planificar (.ai/PLANNING.md §Épica, triaje).
+     fase se descontrola) o lo olvida (y se pierde). Se revisa al planificar (.claude/skills/planning/SKILL.md §Épica, triaje).
 
      NO es un registro de decisiones: si un hallazgo pide una decisión de producto o de arquitectura, su pregunta
      va a .ai/DOMAIN.md §Decisiones pendientes y esta fila la cita.
@@ -23,7 +23,11 @@
        **Cambio:** (qué hacer allí), **Origen:** (fase NN/FF y commit) y, si condiciona el despliegue,
        **Despliegue:** (CLAUDE.md §El otro repositorio).
      · Cerrado por: la fase o el commit que lo cerró, o «—».
-     · Estado: abierto · planificado — NN/FF · cerrado — NN/FF · descartado — <motivo>. -->
+     · Estado: abierto · planificado — NN/FF · cerrado — NN/FF · descartado — <motivo>.
+
+     Aquí sólo viven las filas abiertas o planificadas. Al cerrar o descartar una, la fase que lo hace la pasa
+     entera a .ai/archive/BACKLOG.md (.claude/skills/phase/cierre.md §Archivo de la memoria); bin/check-docs.sh lo
+     exige. Su # no se reutiliza. -->
 
 | # | Fecha | Área | Impacto | Destino | Hallazgo | Cerrado por | Estado |
 |---|---|---|---|---|---|---|---|

@@ -13,22 +13,31 @@
 #   2. Crea desde las plantillas una épica de prueba: 01-demo, CERRADA, con dos
 #      fases HECHA; y 02-demo, con su fase 01 LISTA_PARA_EJECUTAR y el puntero
 #      de STATE.md en ella.
-#   3. Comprueba que `sh bin/check-docs.sh --strict` pasa sobre esa instalación.
-#   4. Provoca, cada uno en una copia limpia, los 13 fallos de «CÓMO PROVOCAR
-#      CADA FALLO» de la cabecera de bin/check-docs.sh, más tres variantes: una
-#      fase con las secciones sin número (2n), un paquete de RULES.md sin
-#      versión en .ai/project/DECISIONS.md (9n) y una cita de sección por su
-#      número (12n). Cada caso tiene que fallar con el mensaje de su chequeo,
-#      no con cualquier otro.
+#   3. Comprueba que `sh bin/check-docs.sh --strict` pasa sobre esa instalación,
+#      que bin/measure-context.sh la mide y que bin/handoff.sh imprime lo que
+#      una fase cerrada dejó para la siguiente (y falla con una sin cerrar).
+#   4. Provoca, cada uno en una copia limpia, los 14 fallos de «CÓMO PROVOCAR
+#      CADA FALLO» de la cabecera de bin/check-docs.sh, más sus variantes (los
+#      casos con letra): una fase con las secciones sin número (2n), una
+#      evidencia enlazada que no existe (2e), un id D<n> que no existe en
+#      ningún sitio (3n), un paquete de RULES.md sin versión en
+#      .ai/project/DECISIONS.md (9n), una cita de sección por su número (12n),
+#      y cada tope de la memoria (13a…13e). Cada caso tiene que fallar con el
+#      mensaje de su chequeo, no con cualquier otro. Y al revés, dos casos que
+#      tienen que pasar: una evidencia que sí existe (2f) y un epic-plan que
+#      cita una decisión archivada en .ai/archive/DOMAIN.md (3a).
 #   El fallo 5 (migraciones) sólo existe si la plantilla de fase declara
 #   «Migraciones:»; en un kit que no lo hace, se comprueba en su lugar que el
 #   guardián acepta fases sin ese campo.
-#   5. Prueba el instalador: el lock tiene la suma de cada archivo instalado;
+#   5. Comprueba que lo que lee cada sesión al arrancar no se aleja más de un
+#      3 % de tests/context-baseline.txt: falla si crece y avisa si baja, para
+#      que se actualice la línea base.
+#   6. Prueba el instalador: el lock tiene la suma de cada archivo instalado;
 #      --dry-run no escribe nada; instalar otra vez falla; un --upgrade sin
 #      cambios dice «sin cambios» y no toca ningún archivo; con un kit nuevo,
 #      actualiza lo que el proyecto no tocó, deja como conflicto lo que sí
-#      tocó y no toca la memoria; y no instala un stack incompatible con el
-#      núcleo.
+#      tocó, retira lo que ya no trae (con su carpeta si queda vacía) y no toca
+#      la memoria; y no instala un stack incompatible con el núcleo.
 #
 # ◆ ADEMÁS
 #   Provoca en una copia del repo un fallo de cada chequeo de
@@ -37,7 +46,9 @@
 # ◆ CÓMO SE AÑADE UN CASO
 #   Un chequeo nuevo del guardián trae su caso aquí: una rama en estropea()
 #   que mete el defecto en la instalación (corre en su raíz) y una línea
-#   `provoke` con el texto que el guardián tiene que imprimir.
+#   `provoke` con el texto que el guardián tiene que imprimir (o `accept`, si
+#   el caso tiene que pasar). Un caso con número es un fallo de la cabecera de
+#   bin/check-docs.sh; uno con letra, una variante.
 #
 # ◆ USO
 #   sh tests/run.sh             # los dos stacks
@@ -219,6 +230,21 @@ estropea() {
         11) printf '\nVer `bin/no-existe.sh`.\n' >> CLAUDE.md ;;
         12) printf '\nVer `.ai/RULES.md §No existe`.\n' >> CLAUDE.md ;;
         12n) printf '\nVer `.ai/WORKFLOW.md §3`.\n' >> CLAUDE.md ;;
+        # Una evidencia enlazada desde el RESULTADO: sin el archivo (2e) y con él (2f).
+        2e|2f) awk_edit .ai/epics/01-demo/phase-02.md '{ print } /^### Verificación$/ { print ""; print "Salida en `.ai/epics/01-demo/evidence/02-verify.txt`." }'
+            if [ "$1" = 2f ]; then mkdir -p .ai/epics/01-demo/evidence && echo ok > .ai/epics/01-demo/evidence/02-verify.txt; fi ;;
+        # Un epic-plan que cita una decisión: que no existe (3n) o que está archivada (3a).
+        3n) printf '\nVer D9.\n' >> .ai/epics/01-demo/epic-plan.md ;;
+        3a) printf '| D1 | Prueba. | otro | — | fase 01/01 | respondida | A — %s |\n' "$DATE" >> .ai/archive/DOMAIN.md
+            printf '\nVer D1.\n' >> .ai/epics/01-demo/epic-plan.md ;;
+        # La memoria: lo cerrado va a .ai/archive/ y «Últimos movimientos» tiene un tope.
+        13) printf '| 1 | %s | api | — | — | Prueba. | 01/01 | cerrado — 01/01 |\n' "$DATE" >> .ai/BACKLOG.md ;;
+        13a) for i in 1 2 3 4 5 6 7 8 9 10; do printf -- '- Movimiento %s.\n' "$i" >> .ai/STATE.md; done ;;
+        13b) printf '| 2 | %s | fase 01/01 | Prueba. | aplicada — %s |\n' "$DATE" "$DATE" >> .ai/PROTOCOL.md ;;
+        13c) printf '\n### %s — Prueba (fase 01/01)\n\n**Reemplazada por:** %s — Otra.\n' "$DATE" "$DATE" >> .ai/DOMAIN.md ;;
+        13d) printf '| D1 | Prueba. | otro | — | fase 01/01 | respondida | A — %s |\n' "$DATE" >> .ai/DOMAIN.md ;;
+        13e) printf '| 1 | %s | api | — | — | Prueba. | 01/01 | cerrado — 01/01 |\n' "$DATE" >> .ai/archive/BACKLOG.md
+             printf '| 1 | %s | api | interno | — | Prueba. | — | abierto |\n' "$DATE" >> .ai/BACKLOG.md ;;
         *)  return 1 ;;
     esac
 }
@@ -234,12 +260,48 @@ provoke() {
     rc=$?
     if [ "$rc" -ne 0 ] && printf '%s\n' "$out" | grep -qF -- "$3"; then
         printf '  ✓ %-3s %s\n' "$1" "$2"
-        DETECTED=$((DETECTED + 1))
+        case "$1" in *[!0-9]*) ;; *) DETECTED=$((DETECTED + 1)) ;; esac
     else
         printf '  ✗ %-3s %s: el guardián salió %s sin decir «%s»\n' "$1" "$2" "$rc" "$3"
         printf '%s\n' "$out" | grep -E '✗|⚠' | sed 's/^/        /'
         FAIL=1
     fi
+}
+
+# accept <caso> <qué se cambia>: en una copia limpia, un cambio que el guardián tiene que aceptar.
+accept() {
+    d="$WORK/$KIT-$1"
+    cp -R "$BASE" "$d"
+    ( cd "$d" && estropea "$1" ) || { printf '  ✗ %-3s %s: no se pudo preparar\n' "$1" "$2"; FAIL=1; return; }
+    if out=$(sh "$d/bin/check-docs.sh" --strict 2>&1); then printf '  ✓ %-3s %s\n' "$1" "$2"
+    else
+        printf '  ✗ %-3s %s: el guardián lo rechaza\n' "$1" "$2"
+        printf '%s\n' "$out" | grep -E '✗|⚠' | sed 's/^/        /'
+        FAIL=1
+    fi
+}
+
+# ── Lo que lee cada sesión, frente a tests/context-baseline.txt ─────────────
+# Sobre una instalación limpia: la de prueba tiene la épica y los marcadores rellenos, y mide otra cosa.
+test_context() {
+    clean="$WORK/$KIT-clean"
+    sh "$ROOT/install.sh" --stack "$KIT" --target "$clean" > /dev/null 2>&1 || { fail 'no se pudo instalar limpio'; return; }
+    sh "$clean/bin/measure-context.sh" > "$WORK/$KIT.context" || { fail 'bin/measure-context.sh falla'; return; }
+    awk -v k="$KIT" '$1 == k { print $2, $3 }' "$ROOT/tests/context-baseline.txt" | while read -r sess base; do
+        now=$(awk -v s="$sess" '$1 == s { print $2 }' "$WORK/$KIT.context")
+        if [ -z "$now" ]; then
+            printf '  ✗ contexto: bin/measure-context.sh no mide la sesión «%s»\n' "$sess"; echo x >> "$WORK/context-fail"
+        elif [ $((now * 100)) -gt $((base * 103)) ]; then
+            printf '  ✗ contexto: %s lee %s caracteres, más de un 3 %% sobre los %s de tests/context-baseline.txt\n' "$sess" "$now" "$base"
+            echo x >> "$WORK/context-fail"
+        elif [ $((now * 100)) -lt $((base * 97)) ]; then
+            printf '  ⚠ contexto: %s lee %s caracteres, más de un 3 %% bajo los %s de tests/context-baseline.txt: actualízala\n' "$sess" "$now" "$base"
+        else
+            printf '  ✓ contexto: %s lee %s caracteres (línea base %s, ±3 %%)\n' "$sess" "$now" "$base"
+        fi
+    done
+    [ ! -s "$WORK/context-fail" ] || FAIL=1
+    rm -f "$WORK/context-fail"
 }
 
 # ── El instalador, sobre la instalación de prueba ($BASE) ───────────────────
@@ -285,13 +347,15 @@ test_installer() {
         fail "--upgrade sin cambios salió $rc o tocó algo:"; printf '%s\n' "$out" | sed 's/^/      /'
     fi
 
-    # Un kit nuevo cambia WORKFLOW.md (el proyecto no lo tocó) y CLAUDE.md (el proyecto sí), y el proyecto
-    # cambió además su STATE.md, que es memoria.
+    # Un kit nuevo cambia WORKFLOW.md (el proyecto no lo tocó) y CLAUDE.md (el proyecto sí), y retira la skill
+    # /close; el proyecto cambió además su STATE.md, que es memoria.
     up="$WORK/$KIT-up"
     cp -R "$BASE" "$up"
     kit_copy "$WORK/$KIT-kit2"
     printf '\nNovedad del kit.\n' >> "$WORK/$KIT-kit2/core/.ai/WORKFLOW.md"
     printf '\nNovedad del kit.\n' >> "$WORK/$KIT-kit2/core/CLAUDE.md"
+    rm -r "$WORK/$KIT-kit2/core/.claude/skills/close"
+    edit "$WORK/$KIT-kit2/core/core.json" '\#"\.claude/skills/close/SKILL\.md",#d'
     printf '\nCambio del proyecto.\n' >> "$up/CLAUDE.md"
     state=$(sha "$up/.ai/STATE.md")
     out=$(sh "$WORK/$KIT-kit2/install.sh" --upgrade --target "$up" 2>&1)
@@ -307,6 +371,12 @@ test_installer() {
         ok '--upgrade no pisa lo que el proyecto cambió: conflicto con su diff, hasta que se resuelve'
     else
         fail '--upgrade no trató CLAUDE.md como conflicto:'; printf '%s\n' "$out" | sed 's/^/      /'
+    fi
+    if printf '%s\n' "$out" | grep -qE -- '- \.claude/skills/close/SKILL\.md +retirado' && [ ! -e "$up/.claude/skills/close" ] \
+       && [ -d "$up/.claude/skills/phase" ]; then
+        ok '--upgrade retira lo que el kit ya no trae, con la carpeta que deja vacía'
+    else
+        fail '--upgrade no retiró .claude/skills/close/:'; printf '%s\n' "$out" | sed 's/^/      /'
     fi
     if [ "$(sha "$up/.ai/STATE.md")" = "$state" ]; then ok '--upgrade no toca la memoria (.ai/STATE.md)'
     else fail '--upgrade modificó .ai/STATE.md'; fi
@@ -380,18 +450,30 @@ for KIT in $KITS; do
         printf '  ✗ bin/measure-context.sh falla sobre la instalación\n'; FAIL=1
     fi
 
+    if [ "$(sh "$BASE/bin/handoff.sh" 01-demo 01 2>&1)" = 'Fase de prueba.' ] \
+       && ! sh "$BASE/bin/handoff.sh" 02-demo 01 > /dev/null 2>&1; then
+        ok 'bin/handoff.sh imprime lo que dejó una fase cerrada, y falla con una sin cerrar'
+    else
+        fail 'bin/handoff.sh no imprime sólo «Lo que la siguiente fase necesita saber»'
+    fi
+    test_context
+
     DETECTED=0
-    TOTAL=13
+    TOTAL=14
     provoke 0  'instalación: un {{RELLENAR}} sin completar'          'marcador(es) {{RELLENAR}}'
     provoke 1  'puntero: «Fase activa» en una fase HECHA'            'la cabecera apunta a'
     provoke 2  'fases: una HECHA pasa a EN_CURSO sin tocar el mapa'  'dice EN_CURSO y el mapa dice HECHA'
     provoke 2n 'fases: una casilla sin marcar, con secciones sin número' 'casilla(s) de «Criterios de éxito» sin marcar'
+    provoke 2e 'fases: enlaza una evidencia que no existe'            'enlaza la evidencia .ai/epics/01-demo/evidence/02-verify.txt'
+    accept  2f 'fases: enlaza una evidencia que existe'
     provoke 3  'épicas: una CERRADA con su cierre sin marcar'        'casilla(s) del «Criterio de cierre» sin marcar'
+    provoke 3n 'épicas: cita una decisión que no existe'             'cita D9, que no existe'
+    accept  3a 'épicas: cita una decisión archivada en .ai/archive/DOMAIN.md'
     provoke 4  'referencias: «fase 01/99» en BACKLOG.md'             'cita la fase 01/99'
     if grep -q '^> \*\*Migraciones:\*\*' "$BASE/.ai/templates/phase.template.md"; then
         provoke 5 'despliegue: migraciones sin fila en el manifiesto' 'declara migraciones y no tiene fila'
     else
-        TOTAL=12
+        TOTAL=13
         if printf '%s\n' "$out" | grep -qF 'no declara migraciones: no aplica' \
            && ! grep -q '^> \*\*Migraciones:\*\*' "$BASE"/.ai/epics/*/phase-*.md; then
             printf '  ✓ 5   despliegue: no aplica; el guardián acepta fases sin «Migraciones:»\n'
@@ -410,10 +492,16 @@ for KIT in $KITS; do
     provoke 11 'rutas: cita bin/no-existe.sh'                        'cita `bin/no-existe.sh`, que no existe'
     provoke 12 'secciones: cita una sección que no existe'           'cita «.ai/RULES.md §No existe»'
     provoke 12n 'secciones: cita una sección por su número'          'cita «.ai/WORKFLOW.md §3» por su número'
-    # 2n, 9n y 12n son variantes de los chequeos 2, 9 y 12: no cuentan entre los 13 de la cabecera.
-    n=$((DETECTED - 3))
+    provoke 13 'memoria: una fila cerrada sigue en BACKLOG.md'        'BACKLOG.md #1 está cerrada o descartada'
+    provoke 13a 'memoria: 11 líneas en «Últimos movimientos»'       'tiene 11 líneas; el tope es 10'
+    provoke 13b 'memoria: una mejora aplicada sigue en PROTOCOL.md'  'PROTOCOL.md #2 está aplicada o descartada'
+    provoke 13c 'memoria: una decisión reemplazada sigue en DOMAIN.md' 'una decisión «**Reemplazada por:**» sigue aquí'
+    provoke 13d 'memoria: una decisión respondida sigue en DOMAIN.md' 'D1 está respondida'
+    provoke 13e 'memoria: un # de BACKLOG.md que ya está archivado'  'el id 1 ya está en .ai/archive/BACKLOG.md'
+    # Los casos con letra son variantes: no cuentan entre los de la cabecera.
+    n=$DETECTED
     note=''
-    [ "$TOTAL" -eq 13 ] || note=' (el 5 no aplica)'
+    [ "$TOTAL" -eq 14 ] || note=' (el 5 no aplica)'
     printf '  → %s/%s fallos de la cabecera provocados y detectados%s\n' "$n" "$TOTAL" "$note"
     [ "$n" -eq "$TOTAL" ] || FAIL=1
 

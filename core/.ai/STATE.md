@@ -5,8 +5,9 @@
 
      El formato exacto de las seis líneas de la cabecera lo lee bin/check-docs.sh: no las renombres, no las
      repitas y no escribas notas detrás del valor de «Épica activa», «Fase activa» ni «Archivo de la fase» (las
-     notas van en §Bloqueo activo). Cómo se mueve el puntero: CLAUDE.md §Estado de una fase. Cómo se regeneran
-     los contadores y las secciones derivadas: CLAUDE.md §Sincronización post-lectura.
+     notas van en §Bloqueo activo). Cómo se mueve el puntero: .claude/skills/phase/SKILL.md §Estado de una fase.
+     Cómo se regeneran los contadores y las secciones derivadas: .claude/skills/phase/SKILL.md §Sincronización
+     post-lectura.
 
      Este archivo no repite la baseline de la suite: vive en bin/verify.sh. -->
 
@@ -39,10 +40,11 @@
 <!-- Sección derivada de .ai/DOMAIN.md §Decisiones pendientes: las pendientes que bloquean la épica activa, una
      línea cada una con su id. Si no hay fase activa, qué hay que planificar. -->
 
-**Ninguno.** No hay épicas planificadas: el siguiente paso es planificar la primera (`.ai/PLANNING.md`).
+**Ninguno.** No hay épicas planificadas: el siguiente paso es planificar la primera (`/planning`).
 
 ## Últimos movimientos
 
-<!-- Lo más reciente arriba. Como mucho seis líneas por cierre: el detalle vive en el RESULTADO de la fase. -->
+<!-- Lo más reciente arriba, una línea por cierre y 10 como mucho (bin/check-docs.sh lo exige): las más viejas se
+     borran, porque el detalle vive en el RESULTADO de cada fase. -->
 
 - Protocolo instalado desde el kit `ai-protocol`.
