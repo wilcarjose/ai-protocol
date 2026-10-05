@@ -4,6 +4,9 @@
   "core": ">=2.0.0-dev <3.0.0",
   "files": [
     ".ai/RULES.md",
+    ".ai/rules/arquitectura.md",
+    ".ai/rules/rendimiento.md",
+    ".ai/rules/tests.md",
     ".ai/templates/epic-plan.template.md",
     ".ai/templates/phase.template.md",
     ".claude/settings.json",
