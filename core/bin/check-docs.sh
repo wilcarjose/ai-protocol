@@ -6,17 +6,25 @@
 #   0. instalación — no queda ningún «{{RELLENAR» en los documentos normativos
 #                    ni en la capa del proyecto (.ai/project/).
 #   1. puntero     — la cabecera de .ai/STATE.md apunta a la primera fila sin
-#                    HECHA del mapa (.claude/skills/phase/SKILL.md §Estado de
-#                    una fase); sus seis
-#                    claves aparecen una vez y sin notas detrás; sólo la fase
-#                    activa está EN_CURSO; las filas de cada épica, en orden.
+#                    HECHA ni ESPERA_EVIDENCIA del mapa
+#                    (.claude/skills/phase/SKILL.md §Estado de una fase); sus
+#                    seis claves aparecen una vez y sin notas detrás; sólo la
+#                    fase activa está EN_CURSO; las filas de cada épica, en
+#                    orden.
 #   2. fases       — cada phase-*.md: estado válido e igual al del mapa;
-#                    «Contrato HTTP» válido; los campos de cabecera propios del
-#                    stack que pida la plantilla; «Plan de commits» con filas;
+#                    «Contrato HTTP» válido; «Tipo» (si lo lleva: código,
+#                    operación o validación externa) y «Modo» (ligero: uno o
+#                    dos entregables, sin cambio de contrato ni migraciones);
+#                    los campos de cabecera propios del stack que pida la
+#                    plantilla; «Plan de commits» con filas;
 #                    «Depende de» sólo cita fases anteriores; RESULTADO vacío si
 #                    no empezó, relleno si se cerró y con los encabezados de la
 #                    plantilla; una HECHA, con todas las casillas de «Criterios
-#                    de éxito» marcadas; cada evidencia que enlaza
+#                    de éxito» marcadas; casillas «[humano]» sólo fuera del tipo
+#                    código; una ESPERA_EVIDENCIA, de operación o validación
+#                    externa, con sólo casillas «[humano]» abiertas; una HECHA o
+#                    ESPERA_EVIDENCIA con «Revisión», revisada y sin bloqueantes
+#                    abiertos; cada evidencia que enlaza
 #                    (`.ai/epics/<NN-slug>/evidence/…`) existe. Las secciones se
 #                    buscan por su nombre, con o sin número delante
 #                    («## 5. Criterios de éxito»).
@@ -35,7 +43,8 @@
 #                    tiene una fila de BACKLOG.md para un repo hermano que la
 #                    cita, o «> **Traspaso:** ninguno — <motivo>».
 #   7. contadores  — la cabecera de STATE.md, §Bloqueo activo y §Pendientes en
-#                    otros repos cuadran con DOMAIN.md y BACKLOG.md
+#                    otros repos cuadran con DOMAIN.md y BACKLOG.md, y
+#                    §Esperando evidencia con el mapa
 #                    (.claude/skills/phase/SKILL.md §Sincronización
 #                    post-lectura).
 #   8. destinos    — todo «Destino» de BACKLOG.md nombra una épica que existe.
@@ -54,6 +63,11 @@
 #                    mejoras aplicadas o descartadas en PROTOCOL.md, ni más de
 #                    10 líneas en «Últimos movimientos» de STATE.md; y ningún
 #                    id de BACKLOG.md o DOMAIN.md se repite en .ai/archive/.
+#  14. tareas      — toda «Tarea externa» de una fase es una fila de un paquete
+#                    de .ai/stages/, y su criterio de aceptación está, literal,
+#                    en «Criterios de éxito» de la fase
+#                    (.claude/skills/plan-epic/SKILL.md §Desde un paquete de
+#                    tareas).
 #
 #   11 y 12 son heurísticos (sacan rutas y secciones de la prosa): avisan, y
 #   sólo bloquean con --strict. El resto son comparaciones exactas y bloquean
@@ -80,6 +94,7 @@
 #       por su número: `.ai/WORKFLOW.md §3`.
 #   13. marca como «cerrado — 01/01» una fila de .ai/BACKLOG.md sin pasarla
 #       a .ai/archive/BACKLOG.md.
+#   14. pon «> **Tarea externa:** T9-99» en la cabecera de una fase.
 #
 # ◆ PORTABILIDAD
 #   POSIX sh y awk/sed/grep sin extensiones GNU: corre igual en el host que en
@@ -113,6 +128,7 @@ PROJECT="$AI/project"
 DECISIONS="$PROJECT/DECISIONS.md"
 BACKLOG="$AI/BACKLOG.md"
 ARCHIVE="$AI/archive"
+STAGES="$AI/stages"
 TPL_PHASE="$AI/templates/phase.template.md"
 MANIFEST="$ROOT/docs/runbooks/release.md"
 TAB=$(printf '\t')
@@ -172,7 +188,7 @@ state_field() { sed -n "s/^- \*\*$1:\*\* *//p" "$STATE" | head -n 1; }
 # Estado de la cabecera de un archivo de fase.
 phase_state() { sed -n 's/^> \*\*Estado:\*\* *\([A-Z_]*\).*/\1/p' "$1" | head -n 1; }
 
-# Quita los comentarios HTML (de una línea o de varias): son guía, no contenido.
+# Quita los comentarios HTML (de una línea o de varias): son guía, no contenido. «-» lee la entrada estándar.
 strip_comments() {
     awk '
         { line = $0 }
@@ -229,7 +245,8 @@ grep -q '^> \*\*Migraciones:\*\*' "$TPL_PHASE" && TPL_HAS_MIG=1
 # ── 0. Instalación ──────────────────────────────────────────────────────────
 printf '◆ instalación (no queda ningún {{RELLENAR}} en los documentos normativos ni en .ai/project/)\n'
 
-for f in "$CLAUDE_MD" "$ROOT/AGENTS.md" "$AI"/*.md "$AI"/rules/*.md "$PROJECT"/*.md "$SKILLS"/*/*.md "$ROOT/docs/README.md"; do
+for f in "$CLAUDE_MD" "$ROOT/AGENTS.md" "$AI"/*.md "$AI"/rules/*.md "$PROJECT"/*.md "$SKILLS"/*/*.md "$ROOT"/.claude/agents/*.md \
+         "$ROOT/docs/README.md"; do
     [ -f "$f" ] || continue
     n=$(grep -c '{{RELLENAR' "$f")
     [ "$n" -eq 0 ] || bad "$(rel "$f"): $n marcador(es) {{RELLENAR}} sin completar; cada uno dice qué va"
@@ -237,7 +254,7 @@ done
 report fail 'no queda nada por rellenar' 'la instalación del protocolo no está terminada:'
 
 # ── 1. Puntero de STATE.md ──────────────────────────────────────────────────
-printf '◆ puntero de STATE.md (la fase activa es la primera fila sin HECHA del mapa)\n'
+printf '◆ puntero de STATE.md (la fase activa es la primera fila sin HECHA ni ESPERA_EVIDENCIA del mapa)\n'
 
 for key in 'Épica activa' 'Fase activa' 'Archivo de la fase' 'Decisiones abiertas' 'Pendientes en otros repos' 'Última actualización'; do
     n=$(grep -c "^- \*\*$key:\*\*" "$STATE")
@@ -249,7 +266,7 @@ grep -qE '^- \*\*(Épica activa|Fase activa):\*\* *[^ ]+ +[^ ]' "$STATE" \
 grep -qE '^- \*\*Archivo de la fase:\*\* *(`[^`]+`|—) *$' "$STATE" \
     || bad 'STATE.md: «Archivo de la fase» lleva algo más que la ruta entre comillas invertidas (o «—»)'
 
-awk '$3 !~ /^(SIN_PLANIFICAR|LISTA_PARA_EJECUTAR|EN_CURSO|BLOQUEADA|VERIFICACION_ROJA|HECHA)$/ { print $1 "/" $2 " " $3 }' "$MAP" \
+awk '$3 !~ /^(SIN_PLANIFICAR|LISTA_PARA_EJECUTAR|EN_CURSO|BLOQUEADA|VERIFICACION_ROJA|ESPERA_EVIDENCIA|HECHA)$/ { print $1 "/" $2 " " $3 }' "$MAP" \
     | while read -r r s; do bad "STATE.md §Mapa de fases: $r tiene un estado que no existe («$s»)"; done
 
 while read -r e p s; do
@@ -257,7 +274,8 @@ while read -r e p s; do
         || bad "STATE.md §Mapa de fases: $e/$p está $s, pero no existe .ai/epics/$e/phase-$p.md"
 done < "$MAP"
 
-NEXT=$(awk '$3 != "HECHA" { print; exit }' "$MAP")
+# Una fase que espera la evidencia de la persona no retiene el puntero: lo que depende de ella para en su Paso A.
+NEXT=$(awk '$3 != "HECHA" && $3 != "ESPERA_EVIDENCIA" { print; exit }' "$MAP")
 if [ -z "$NEXT" ]; then
     want_e='—'; want_p='—'; want_f='—'
 else
@@ -282,7 +300,7 @@ done
 report fail 'el puntero coincide con el mapa' 'el puntero de STATE.md no es fiable:'
 
 # ── 2. Fases ────────────────────────────────────────────────────────────────
-printf '◆ fases (estado igual al del mapa, cabecera, «Plan de commits», «Depende de», RESULTADO, evidencia)\n'
+printf '◆ fases (estado igual al del mapa, cabecera, «Plan de commits», «Depende de», RESULTADO, revisión, evidencia)\n'
 
 TPL_HEADS="$TMPD/tpl-heads"
 awk '/^## RESULTADO DE LA EJECUCI/ { f = 1; next } f && /^### / { print }' "$TPL_PHASE" > "$TPL_HEADS"
@@ -294,7 +312,7 @@ for f in "$AI"/epics/*/phase-*.md; do
     p=$(basename "$f" .md); p=${p#phase-}
     fs=$(phase_state "$f")
     case "$fs" in
-        SIN_PLANIFICAR|LISTA_PARA_EJECUTAR|EN_CURSO|BLOQUEADA|VERIFICACION_ROJA|HECHA) ;;
+        SIN_PLANIFICAR|LISTA_PARA_EJECUTAR|EN_CURSO|BLOQUEADA|VERIFICACION_ROJA|ESPERA_EVIDENCIA|HECHA) ;;
         *) bad "$r: la cabecera no tiene un «> **Estado:**» válido"; continue ;;
     esac
     grep -qE '^> \*\*Estado:\*\* *[A-Z_]+ *$' "$f" || bad "$r: «Estado:» lleva algo más que el estado"
@@ -311,6 +329,28 @@ for f in "$AI"/epics/*/phase-*.md; do
     if [ "$TPL_HAS_MIG" -eq 1 ]; then
         grep -q '^> \*\*Migraciones:\*\* ' "$f" || bad "$r: la cabecera no tiene «Migraciones:» (la plantilla lo pide)"
     fi
+
+    # «Tipo» y «Modo» son opcionales: sin ellos, código y modo normal (las fases escritas antes de que existieran).
+    tipo=$(sed -n 's/^> \*\*Tipo:\*\* *//p' "$f" | head -n 1 | sed 's/ *$//')
+    case "$tipo" in
+        ''|código|operación|'validación externa') ;;
+        *) bad "$r: «Tipo:» es «$tipo»; tiene que ser código, operación o validación externa" ;;
+    esac
+    [ -n "$tipo" ] || tipo=código
+    modo=$(sed -n 's/^> \*\*Modo:\*\* *//p' "$f" | head -n 1 | sed 's/ *$//')
+    case "$modo" in
+        '') ;;
+        ligero)
+            n=$(phase_section "$f" 'Entregables' | strip_comments - | grep -cE '^[0-9]+\.')
+            { [ "$n" -ge 1 ] && [ "$n" -le 2 ]; } \
+                || bad "$r: es ligera y tiene $n entregable(s); una fase ligera tiene uno o dos (.claude/skills/plan-phase/SKILL.md §Fases ligeras)"
+            grep -qE '^> \*\*Contrato HTTP:\*\* *(\*\*)?SIN CAMBIOS' "$f" \
+                || bad "$r: es ligera y cambia el contrato; una fase ligera no lo cambia"
+            if [ "$TPL_HAS_MIG" -eq 1 ]; then
+                grep -qi '^> \*\*Migraciones:\*\* *ninguna' "$f" || bad "$r: es ligera y declara migraciones; una fase ligera no las tiene"
+            fi ;;
+        *) bad "$r: «Modo:» es «$modo»; el único modo que se declara es «ligero»" ;;
+    esac
 
     for sec in 'Criterios de éxito' 'Plan de commits'; do
         phase_section "$f" "$sec" > /dev/null || bad "$r: no tiene la sección «$sec» (la de la plantilla)"
@@ -338,7 +378,7 @@ for f in "$AI"/epics/*/phase-*.md; do
                 s && /^### / { h = 1; next } s && h && NF > 0 { print; exit }')
             [ -z "$txt" ] || bad "$r ($fs): el RESULTADO tiene contenido («$txt»); una fase que no ha empezado lo deja vacío"
             ;;
-        HECHA|BLOQUEADA|VERIFICACION_ROJA)
+        HECHA|ESPERA_EVIDENCIA|BLOQUEADA|VERIFICACION_ROJA)
             printf '%s' "$fecha" | grep -qE '^[0-9]{4}-[0-9]{2}-[0-9]{2}' \
                 || bad "$r ($fs): el RESULTADO no tiene «Fecha:» (AAAA-MM-DD); el cierre la rellena siempre"
             for h in 'Qué se hizo' 'Lo que la siguiente fase necesita saber'; do
@@ -347,6 +387,32 @@ for f in "$AI"/epics/*/phase-*.md; do
                 [ -n "$txt" ] || bad "$r ($fs): «$h» está vacío"
             done
             ;;
+    esac
+
+    # La evidencia que sólo puede dar la persona («- [ ] [humano] …») es de operación o de validación externa, y
+    # es lo único que una ESPERA_EVIDENCIA deja abierto (.claude/skills/phase/cierre.md §Evidencia humana).
+    crit=$(phase_section "$f" 'Criterios de éxito' | strip_comments -)
+    hum=$(printf '%s\n' "$crit" | grep -c '^- \[[ x]\] \[humano\]')
+    hum_open=$(printf '%s\n' "$crit" | grep -c '^- \[ \] \[humano\]')
+    auto_open=$(printf '%s\n' "$crit" | grep '^- \[ \]' | grep -vc '^- \[ \] \[humano\]')
+    [ "$tipo" != código ] || [ "$hum" -eq 0 ] \
+        || bad "$r: tiene casillas [humano] y es de tipo código; la evidencia humana es de operación o validación externa"
+    if [ "$fs" = ESPERA_EVIDENCIA ]; then
+        [ "$tipo" != código ] || bad "$r: ESPERA_EVIDENCIA es de operación o validación externa, y esta fase es de tipo código"
+        [ "$hum_open" -gt 0 ] || bad "$r (ESPERA_EVIDENCIA): no tiene ninguna casilla [humano] abierta; sin evidencia que esperar, se cierra HECHA"
+        [ "$auto_open" -eq 0 ] || bad "$r (ESPERA_EVIDENCIA): $auto_open casilla(s) sin [humano] sin marcar; sólo se espera la evidencia de la persona"
+    fi
+
+    # La revisión (.claude/skills/review/SKILL.md): una fase que la IA dio por terminada pasó por /review y no deja
+    # bloqueantes abiertos. Las fases escritas antes de que la plantilla tuviera «Revisión» no la llevan.
+    case "$fs" in HECHA|ESPERA_EVIDENCIA)
+        if rev=$(phase_section "$f" 'Revisión'); then
+            rev=$(printf '%s\n' "$rev" | strip_comments -)
+            printf '%s\n' "$rev" | grep -q '^\*\*Revisión [0-9]' \
+                || bad "$r ($fs): «Revisión» no tiene ninguna revisión; la fase no pasó por /review"
+            n=$(printf '%s\n' "$rev" | grep -c '^- \[ \] \*\*B[0-9]')
+            [ "$n" -eq 0 ] || bad "$r ($fs): $n hallazgo(s) bloqueante(s) de «Revisión» sin resolver"
+        fi ;;
     esac
 
     if [ "$fs" = HECHA ]; then
@@ -556,6 +622,19 @@ tbl_ids=$(section "$STATE" 'Pendientes en otros repos' | grep -oE '^\| *#[0-9]+'
 want_ids=$(awk '{ print $1 }' "$TMPD/xpend" | sort -u)
 [ "$tbl_ids" = "$want_ids" ] \
     || bad "STATE.md §Pendientes en otros repos lista «$(inline "$tbl_ids" '#')» y BACKLOG.md tiene abiertas «$(inline "$want_ids" '#')»"
+# Las fases que esperan la evidencia de la persona: el puntero las salta, así que STATE.md las nombra. Una
+# instalación anterior a ESPERA_EVIDENCIA no tiene la sección: sólo hace falta cuando hay alguna.
+want_w=$(awk '$3 == "ESPERA_EVIDENCIA" { print $1 "/" $2 }' "$MAP" | sort -u)
+if grep -q '^## Esperando evidencia' "$STATE"; then
+    esp=$(strip_comments "$STATE" | awk 'index($0, "## Esperando evidencia") == 1 { f = 1; next } f && /^## / { exit } f')
+    have_w=$(printf '%s\n' "$esp" | grep -oE '[0-9][0-9]-[a-z0-9-]+/[0-9][0-9][a-z]?' | sort -u)
+    [ "$have_w" = "$want_w" ] \
+        || bad "STATE.md §Esperando evidencia nombra «$(inline "$have_w")» y las fases en ESPERA_EVIDENCIA del mapa son «$(inline "$want_w")»"
+    [ -n "$want_w" ] || printf '%s\n' "$esp" | grep -q 'Ninguna' \
+        || bad 'STATE.md §Esperando evidencia: ninguna fase espera evidencia y la sección no dice «**Ninguna.**»'
+elif [ -n "$want_w" ]; then
+    bad "STATE.md no tiene §Esperando evidencia y el mapa tiene fases en ESPERA_EVIDENCIA ($(inline "$want_w"))"
+fi
 report fail "contadores al día (decisiones: $d_n/$d_m · otros repos: $x_n/$x_m)" 'STATE.md no está sincronizado (.claude/skills/phase/SKILL.md §Sincronización post-lectura):'
 
 # ── 8. Destinos de BACKLOG.md ───────────────────────────────────────────────
@@ -646,7 +725,7 @@ else
 fi
 
 # ── 11 y 12. Rutas y secciones citadas en los documentos normativos ─────────
-NORMATIVE="$CLAUDE_MD $ROOT/AGENTS.md $RULES $AI/rules/*.md $AI/WORKFLOW.md $DOMAIN $PROJECT/*.md $AI/templates/*.md $SKILLS/*/*.md $ROOT/docs/README.md"
+NORMATIVE="$CLAUDE_MD $ROOT/AGENTS.md $RULES $AI/rules/*.md $AI/WORKFLOW.md $DOMAIN $PROJECT/*.md $AI/templates/*.md $SKILLS/*/*.md $ROOT/.claude/agents/*.md $STAGES/README.md $ROOT/docs/README.md"
 
 printf '◆ rutas citadas en los documentos normativos (aviso; falla con --strict)\n'
 for src in $NORMATIVE; do
@@ -697,7 +776,7 @@ while IFS="$TAB" read -r src file sec; do
         STATE.md|.ai/STATE.md) t="$STATE" ;;
         BACKLOG.md|.ai/BACKLOG.md) t="$BACKLOG" ;;
         docs/runbooks/release.md) t="$MANIFEST" ;;
-        .ai/project/*.md|.ai/rules/*.md|.ai/archive/*.md|.claude/skills/*.md)
+        .ai/project/*.md|.ai/rules/*.md|.ai/archive/*.md|.ai/stages/*.md|.claude/skills/*.md|.claude/agents/*.md)
             t="$ROOT/${file#./}"; [ -f "$t" ] || { bad "$src: cita «$file», que no existe"; continue; } ;;
         *) continue ;;
     esac
@@ -743,6 +822,36 @@ for pair in "BACKLOG.md:[0-9]+" "DOMAIN.md:D[0-9]+"; do
     done
 done
 report fail 'la memoria activa sólo guarda lo vigente' 'la memoria tiene algo por archivar (.claude/skills/phase/cierre.md §Archivo de la memoria):'
+
+# ── 14. Tareas externas ─────────────────────────────────────────────────────
+printf '◆ tareas externas (cada «Tarea externa» está en un paquete de .ai/stages/, con su criterio literal en la fase)\n'
+
+# Las tareas de los paquetes, «id<TAB>criterio»: las filas de la tabla «| ID | Tarea | Repo | Criterio de
+# aceptación | Depende de |» (.ai/stages/README.md).
+: > "$TMPD/tasks"
+for s in "$STAGES"/*.md; do
+    [ -f "$s" ] || continue
+    [ "${s##*/}" = README.md ] && continue
+    awk -F'|' '/^\|/ && !/^\| *-/ { id = $2; c = $5; gsub(/[ \t`]/, "", id); sub(/^[ \t]+/, "", c); sub(/[ \t]+$/, "", c)
+        if (id != "" && id != "ID") print id "\t" c }' "$s" >> "$TMPD/tasks"
+done
+for f in "$AI"/epics/*/phase-*.md; do
+    [ -f "$f" ] || continue
+    t=$(sed -n 's/^> \*\*Tarea externa:\*\* *//p' "$f" | head -n 1 | tr -d '`' | awk '{ print $1 }')
+    [ -n "$t" ] || continue
+    r=$(rel "$f")
+    if ! cut -f 1 "$TMPD/tasks" | grep -qxF "$t"; then
+        bad "$r: «Tarea externa» es $t, que no es una fila de ningún paquete de .ai/stages/"
+        continue
+    fi
+    c=$(awk -F'\t' -v t="$t" '$1 == t { print $2; exit }' "$TMPD/tasks")
+    if [ -z "$c" ]; then
+        bad "$r: la tarea $t no tiene criterio de aceptación en su paquete"
+    elif ! phase_section "$f" 'Criterios de éxito' | grep -qF -- "$c"; then
+        bad "$r: el criterio de $t no está, literal, en «Criterios de éxito» («$c»)"
+    fi
+done
+report fail 'toda tarea externa está en un paquete y su criterio, en su fase' 'tareas externas que no cuadran con su paquete (.claude/skills/plan-epic/SKILL.md §Desde un paquete de tareas):'
 
 # ── Veredicto ───────────────────────────────────────────────────────────────
 printf '\n'

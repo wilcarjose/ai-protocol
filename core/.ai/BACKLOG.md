@@ -1,7 +1,7 @@
 # Hallazgos fuera de alcance
 
 <!-- Lo que la IA encuentra mientras trabaja y NO debe arreglar en la fase activa. Sin esto, o lo arregla (y la
-     fase se descontrola) o lo olvida (y se pierde). Se revisa al planificar (.claude/skills/planning/SKILL.md §Épica, triaje).
+     fase se descontrola) o lo olvida (y se pierde). Se revisa al planificar (.claude/skills/plan-epic/SKILL.md §Épica, triaje).
 
      NO es un registro de decisiones: si un hallazgo pide una decisión de producto o de arquitectura, su pregunta
      va a .ai/DOMAIN.md §Decisiones pendientes y esta fila la cita.

@@ -221,7 +221,7 @@ baseline (conteo de tests, deuda congelada) nunca empeora: si un cierre la empeo
 | Archivo | Contiene | Quién escribe |
 |---|---|---|
 | `CLAUDE.md` | Orientación: lectura en frío, alcance, prohibiciones y punteros | Sólo el Tech Lead |
-| `.claude/skills/` | `/phase` (ciclo, ramas, commits y cierre), `/close` (rescate) y `/planning` | Sólo el Tech Lead |
+| `.claude/` | Las skills (`/phase`, `/close`, `/plan-epic`, `/plan-phase`, `/review`) y el revisor | Sólo el Tech Lead |
 | `.ai/RULES.md` | El núcleo de las reglas de código: stack, alcance, contrato, lista negra | Sólo el Tech Lead |
 | `.ai/rules/` | Las reglas de código por tema, que la fase cita cuando las toca | Sólo el Tech Lead |
 | `.ai/WORKFLOW.md` | Este protocolo | Sólo el Tech Lead |
@@ -231,6 +231,7 @@ baseline (conteo de tests, deuda congelada) nunca empeora: si un cierre la empeo
 | `.ai/PROTOCOL.md` | Mejoras del protocolo que propone cada fase | La IA añade al cerrar; el Tech Lead las aplica |
 | `.ai/archive/` | Lo cerrado de la memoria: backlog, decisiones reemplazadas, mejoras aplicadas | La IA, al cerrar (`.claude/skills/phase/cierre.md §Archivo de la memoria`) |
 | `.ai/project/` | Lo que decide este proyecto y las reglas citan: contexto, versiones, alcance, contrato, zonas sensibles | El Tech Lead, o la fase que lo lista en su §4 |
+| `.ai/stages/` | Paquetes de tareas de un plan externo | La persona |
 | `.ai/epics/` | Épicas y fases: el encargo y el registro de lo que pasó; su `evidence/`, las salidas largas | Quien planifica; el ejecutor rellena el RESULTADO |
 | `.ai/handoffs/` | Entregas del otro repo, copiadas | La sesión de planificación |
 | `docs/` | Lo que no es protocolo: arquitectura, runbooks, contrato… (`docs/README.md`) | Según `docs/README.md` |

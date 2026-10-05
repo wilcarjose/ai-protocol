@@ -8,7 +8,8 @@ disable-model-invocation: true
 # /phase — ejecutar una fase
 
 Argumentos: `$ARGUMENTS`. Sin argumentos, la fase activa de `.ai/STATE.md`. Con argumentos, `<epica>` (el slug de su
-carpeta, `01-auth`) y `<FF>` (`01`, o `03b` si es una fase insertada): tiene que ser la activa; si no, dilo y para.
+carpeta, `01-auth`) y `<FF>` (`01`, o `03b` si es una fase insertada): la activa o una en `ESPERA_EVIDENCIA`; si
+no, dilo y para.
 El archivo de la fase es `.ai/epics/<epica>/phase-<FF>.md`.
 
 Una sesión por fase: rama → orientación → visto bueno → ejecución → verificación → cierre. Una fase sin cerrar no ha
@@ -34,7 +35,8 @@ mecánico lo corriges en el archivo de la fase (entra en el commit de arranque);
 Responde con tres viñetas de lo que vas a construir, los archivos que crearás y modificarás, lo que la fase da por
 hecho y ya no es cierto, y las preguntas abiertas. **Para y espera el visto bueno.** Lo que está en `.ai/DOMAIN.md`
 ya está decidido; lo que no determinan ni el código ni `DOMAIN.md` no se inventa: STOP & ASK
-(`.ai/WORKFLOW.md §STOP & ASK`), escrito también en la fase. Una pregunta en el Paso A no cambia el estado.
+(`.ai/WORKFLOW.md §STOP & ASK`), escrito también en la fase. Una pregunta en el Paso A no cambia el estado. Una fase
+ligera sin preguntas ni supuestos rotos no espera: da las viñetas y sigue.
 
 ## Paso B — Ejecución (sólo con visto bueno explícito)
 
@@ -55,8 +57,9 @@ ya está decidido; lo que no determinan ni el código ni `DOMAIN.md` no se inven
 | `LISTA_PARA_EJECUTAR` | Desde el Paso A. Si su «Depende de» no está `HECHA` en el mapa, dilo y para. |
 | `EN_CURSO` | Otra sesión la dejó a medias: no la retomes; remite a `/close`. |
 | `BLOQUEADA` o `VERIFICACION_ROJA` | Si el motivo es una pregunta suya sin respuesta en `.ai/DOMAIN.md`, muéstrala y para. Si no, **reanúdala**. |
+| `ESPERA_EVIDENCIA` | Con argumentos: `.claude/skills/phase/cierre.md §Evidencia humana`. |
 | `HECHA` | El puntero no avanzó al cerrarla: STOP & ASK. |
-| `—` | Nada listo: di qué épica sigue en el mapa y que hay que planificarla (`/planning`). |
+| `—` | Nada listo: di qué épica sigue en el mapa y que hay que planificarla (`/plan-epic`). |
 
 **Reanudar** es un Paso A abreviado: revalida la fase contra el código, di qué filas de «Plan de commits» ya tienen
 commit en la rama y cuáles faltan, y espera el visto bueno. Con él, `EN_CURSO` (y `Cerrada` a `—`), commit de
@@ -69,7 +72,7 @@ código de esa rama.
 
 - **Ya estás en ella:** sigue. **Existe y estás en otra:** pregunta si cambias.
 - **No existe:** pregunta desde qué rama se crea, con la recomendada primero. Candidatas, en este orden: la rama base
-  de la épica (`.claude/skills/planning/SKILL.md §Rama base de la épica`), `main`, la de la fase anterior y la
+  de la épica (`.claude/skills/plan-epic/SKILL.md §Rama base de la épica`), `main`, la de la fase anterior y la
   actual. **Sólo valen las ramas cuyo `git show <rama>:.ai/STATE.md` apunta ya a esta fase.** Si no vale ninguna,
   dilo y para.
 
@@ -79,15 +82,18 @@ push. Los merges los decide el Tech Lead; si la épica declara rama base, las fa
 
 ## Estado de una fase
 
-`SIN_PLANIFICAR` · `LISTA_PARA_EJECUTAR` · `EN_CURSO` · `BLOQUEADA` · `VERIFICACION_ROJA` · `HECHA`. Vive en la
-cabecera `> **Estado:**` de la fase y en su fila de `.ai/STATE.md §Mapa de fases`, que se escriben siempre juntas.
+`SIN_PLANIFICAR` · `LISTA_PARA_EJECUTAR` · `EN_CURSO` · `BLOQUEADA` · `VERIFICACION_ROJA` · `ESPERA_EVIDENCIA` ·
+`HECHA`. Vive en la cabecera `> **Estado:**` de la fase y en su fila de `.ai/STATE.md §Mapa de fases`, que se
+escriben siempre juntas.
 
 - **Al iniciar:** `EN_CURSO` y la fecha en `Última actualización`. Con la primera fase de la épica, su epic-plan
   pasa de `SIN_EMPEZAR` a `EN_CURSO`.
 - **Al bloquear** (desde `EN_CURSO`): `BLOQUEADA`; con la respuesta, vuelve a `EN_CURSO`.
-- **Al cerrar:** `HECHA`, `BLOQUEADA` o `VERIFICACION_ROJA`, con la fecha en `Cerrada`.
-- **El puntero** (`Épica activa`, `Fase activa`, `Archivo de la fase`) es la **primera fila sin `HECHA` del mapa**,
-  aunque sea de otra épica. Si está `SIN_PLANIFICAR`, las dos últimas quedan en `—`; sin filas pendientes, las tres.
+- **Al cerrar:** `HECHA`, `ESPERA_EVIDENCIA` (sólo quedan casillas `[humano]`), `BLOQUEADA` o `VERIFICACION_ROJA`,
+  con la fecha en `Cerrada`.
+- **El puntero** (`Épica activa`, `Fase activa`, `Archivo de la fase`) es la **primera fila sin `HECHA` ni
+  `ESPERA_EVIDENCIA` del mapa**, aunque sea de otra épica. Si está `SIN_PLANIFICAR`, las dos últimas quedan en `—`;
+  sin filas pendientes, las tres.
 - **La épica** pasa a `CERRADA` sólo por `.claude/skills/phase/cierre.md §Cierre de épica`.
 
 Si el estado no coincide en los dos sitios, el guardián falla: no toques nada y pregunta. La recomendación por
@@ -104,6 +110,8 @@ idempotente, y el chequeo «contadores» de `bin/check-docs.sh` las recalcula ig
   hay que planificar.
 - **`Pendientes en otros repos: N (M condicionan el despliegue)` y su sección.** Las filas abiertas de
   `.ai/BACKLOG.md` cuya Área es un repo hermano; `M`, las que llevan `**Despliegue:**`.
+- **`§Esperando evidencia`.** Las fases `ESPERA_EVIDENCIA`, con `NN-slug/FF` y lo que falta; si no hay,
+  `**Ninguna.**`
 
 ## Commits durante la fase
 
@@ -114,7 +122,8 @@ La **única** regla sobre commits; los demás archivos la citan.
   línea dice qué cambia; el porqué que no es obvio, en el cuerpo. Termina con la atribución que pida la herramienta.
 - **Arranque**, `chore(phase-<NN>-<FF>): start`, con `EN_CURSO`, `STATE.md` y lo escrito en el Paso A.
   **Reanudación**, `chore(phase-<NN>-<FF>): resume`. **Cierre**, `chore(phase-<NN>-<FF>): close`
-  (`.claude/skills/phase/cierre.md §Cierre de fase`). Ninguno de los tres va en «Plan de commits».
+  (`.claude/skills/phase/cierre.md §Cierre de fase`), y `…: evidence` al completar la evidencia humana. Ninguno va
+  en «Plan de commits».
 - **Una fila, un commit**, en cuanto pasa `bash bin/verify.sh --fast`. **Atómico:** `git add` sólo con sus archivos;
   si se coló algo, `git reset --soft HEAD~1` y rehazlo.
 - **Retoques** que necesita un entregable, y cada `fix(...)` tras un `verify` rojo: su propio commit, listado en el

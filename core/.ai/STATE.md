@@ -29,18 +29,24 @@
 ## Mapa de fases
 
 <!-- Una fila por fase. El orden de las filas es el orden de ejecución. Estados: SIN_PLANIFICAR ·
-     LISTA_PARA_EJECUTAR · EN_CURSO · BLOQUEADA · VERIFICACION_ROJA · HECHA. «Cerrada» lleva la fecha del cierre,
+     LISTA_PARA_EJECUTAR · EN_CURSO · BLOQUEADA · VERIFICACION_ROJA · ESPERA_EVIDENCIA · HECHA. «Cerrada» lleva la fecha del cierre,
      sea cual sea el estado final, o «—». -->
 
 | Épica | Fase | Estado | Cerrada |
 |---|---|---|---|
+
+## Esperando evidencia
+
+<!-- Derivada del mapa: las fases en ESPERA_EVIDENCIA, que el puntero salta, con su NN-slug/FF y lo que falta. -->
+
+**Ninguna.**
 
 ## Bloqueo activo
 
 <!-- Sección derivada de .ai/DOMAIN.md §Decisiones pendientes: las pendientes que bloquean la épica activa, una
      línea cada una con su id. Si no hay fase activa, qué hay que planificar. -->
 
-**Ninguno.** No hay épicas planificadas: el siguiente paso es planificar la primera (`/planning`).
+**Ninguno.** No hay épicas planificadas: el siguiente paso es planificar la primera (`/plan-epic`).
 
 ## Últimos movimientos
 
