@@ -10,8 +10,8 @@
 | Fase | Objetivo | Depende de | Estado | PR |
 |---|---|---|---|---|
 | 1 | Base de verificación e inconsistencias | — | hecha | #1 |
-| 2 | Núcleo, stacks e instalador | 1 | en revisión | #2 |
-| 3 | Menos tokens | 2 | pendiente | — |
+| 2 | Núcleo, stacks e instalador | 1 | hecha | #2 |
+| 3 | Menos tokens | 2 | en revisión | #3 |
 | 4 | Planificador, revisor y tipos de tarea | 3 | pendiente | — |
 | 5 | Modo remoto y CI de los proyectos | 4 | pendiente | — |
 | 6 | Stack Laravel modular por defecto | 5 | pendiente | — |
@@ -234,6 +234,19 @@ Criterios de aceptación:
   Después de la fase 1, las citas por nombre son más largas que las numéricas: cualquiera 21 189, ejecutor 76 911, planificador 90 170 y rescate 48 424. El objetivo de la fase 3 (53 300 para el ejecutor) sigue calculado sobre la línea base.
 
   Después de la fase 2 (`sh bin/measure-context.sh` sobre `install.sh --stack laravel`): cualquiera 21 017, ejecutor 78 762, planificador 92 021 y rescate 48 425. El ejecutor y el planificador leen además `.ai/project/README.md` (9 y 11 archivos), porque el contexto operativo y los repos hermanos salieron de `CLAUDE.md`.
+
+  Después de la fase 3, sobre una instalación limpia:
+
+  ```
+  Sesión         laravel   nextjs
+  cualquiera        4028     4028
+  ejecutor         51830    52805
+  cierre            5931     5931
+  planificador     60375    61220
+  rescate          35479    35473
+  ```
+
+  El ejecutor de Laravel baja un 32 % respecto a la línea base (76 196). «cierre» es lo que el ejecutor añade en el Paso C (`.claude/skills/phase/cierre.md`) y no cuenta en el arranque. Los valores del ejecutor y de `CLAUDE.md` están en `tests/context-baseline.txt`.
 - **Fases divididas:** —
 - **Decisiones tomadas durante el plan:**
   - 2026-10-04 (fase 1): el fallo 5 del guardián (migraciones) solo se provoca en kits cuya plantilla de fase declara «Migraciones:». En Next.js no aplica, y `tests/run.sh` comprueba en su lugar que el guardián acepta fases sin ese campo. El criterio de la fase 1 pasa a «13 fallos en Laravel; 12 en Next.js, con el 5 como no aplicable».
@@ -243,16 +256,24 @@ Criterios de aceptación:
   - 2026-10-05 (fase 2): hasta la fase 8, los tres paquetes van en `2.0.0-dev`, y cada stack pide el núcleo `>=2.0.0-dev <3.0.0`. Los CHANGELOG acumulan en «Sin publicar».
   - 2026-10-05 (fase 2): en `--upgrade`, un archivo del kit que el proyecto cambió no se pisa: se enseña el diff como conflicto. El lock conserva la suma anterior, así que el conflicto se repite en cada upgrade hasta que el archivo coincide con el kit.
   - 2026-10-05 (fase 2): el núcleo tiene su manifiesto, `core/core.json`, con el formato de `stack.json`. Cada manifiesto separa `files` (del kit, se actualizan) de `seed` (se copian si faltan y después son del proyecto: memoria, `.ai/project/`, `docs/runbooks/release.md`, `docs/vendor/INDEX.md`).
+  - 2026-10-05 (fase 3): la fase va en un solo PR.
+  - 2026-10-05 (fase 3): el cierre (de fase y de épica, traspaso, archivo de la memoria y reporte final) vive en `.claude/skills/phase/cierre.md`, que la skill lee en el Paso C. `measure-context.sh` lo mide en su propia fila, «cierre», fuera del arranque del ejecutor; `/close` también lo usa.
+  - 2026-10-05 (fase 3): no hay skill con `paths` para cargar `.ai/rules/`. La fase los cita en su §2, que funciona en cualquier herramienta; la carga por rutas queda pendiente hasta que se verifique cómo se comporta.
+  - 2026-10-05 (fase 3): `tests/context-baseline.txt` guarda lo que leen al arrancar el ejecutor de cada stack y `CLAUDE.md`. `tests/run.sh` falla si una sesión supera su línea base en más de un 3 % y avisa si baja más de un 3 %. Subir la línea base es cambiar ese archivo en un PR que diga por qué.
+  - 2026-10-05 (fase 3): al archivo de `DOMAIN.md` van, además de las decisiones con `**Reemplazada por:**`, las filas `respondida` de §Decisiones pendientes. Lo que sobra de «Últimos movimientos» se borra, sin archivarlo: el detalle vive en el RESULTADO de cada fase.
+  - 2026-10-05 (fase 3): la evidencia de una fase vive en `.ai/epics/<NN-slug>/evidence/<FF>-<nombre>.txt`, fuera del patrón `phase-*.md` que recorre el guardián.
+  - 2026-10-05 (fase 3): reglas que cambian de casa con `CLAUDE.md` mínimo. Commits y `git push`: `.claude/skills/phase/SKILL.md §Commits durante la fase`. Traspaso: `.claude/skills/phase/cierre.md §Traspaso al otro repo`. No arreglar de paso: sigue en `CLAUDE.md §Alcance`.
   - 2026-10-04 (fase 1): dónde vive cada regla que estaba repetida. Exenciones a un gate: `WORKFLOW.md §Obediencia arquitectónica`. No arreglar de paso: `CLAUDE.md §Alcance`. Dependencias nuevas: `WORKFLOW.md §Dependencia nueva`. `git push`: `CLAUDE.md §Commits durante la fase`. Las listas negras de `RULES.md` quedan solo con lo propio del stack.
 - **Lo que la siguiente fase necesita saber:**
-  - **Dónde vive cada cosa.** El núcleo, en `core/` (manifiesto `core/core.json`); cada stack, en `stacks/<stack>/` (`stack.json`). Instalados, los archivos conservan sus rutas de siempre (`CLAUDE.md`, `.ai/…`, `bin/…`). `install.sh` está en la raíz; `check-kits.sh` ya no existe.
-  - **Todo archivo nuevo entra en un manifiesto,** en `files` o en `seed`, o `tests/structure.sh` falla. Un archivo que se mueve, se cambia también en el manifiesto. Si su `--upgrade` no lo trae, `install.sh` lo retira del proyecto cuando el proyecto no lo tocó. Así, mover `/phase` y `/close` a skills en la fase 3 es: crear `core/.claude/skills/…`, quitar `.claude/commands/*` de `core/core.json` y ajustar las listas de `core/bin/measure-context.sh`. `.ai/archive/` es memoria, así que va en `seed`.
-  - **El núcleo no puede citar lo que no traen todos los stacks,** ni un stack lo de otro: `tests/structure.sh` lo comprueba con una búsqueda literal de la ruta. Un `rules/` por stack (fase 3) va en el `stack.json` de cada uno.
-  - **Los manifiestos y el lock se leen sin jq:** un valor por línea en los JSON. El lock tiene líneas `package <nombre> <versión>` y `file <kit|seed> <sha256|-> <ruta>`.
-  - **La capa del proyecto.** `.ai/project/README.md` entra en `CLAUDE.md §Orden de lectura`. Los demás archivos de la capa (`DECISIONS`, `ARCHITECTURE`, `CONTRACT`, `SENSITIVE-ZONES`, `CROSS-CUTTING`, `COMMIT-SCOPES`) solo se leen cuando una regla los cita. El guardián lee los repos hermanos de `.ai/project/README.md §Repos hermanos`. Ningún archivo del kit tiene ya `{{RELLENAR}}`: solo la capa del proyecto, `STATE.md` y `DOMAIN.md`.
-  - **`bin/verify.sh` mezcla kit y proyecto.** La baseline (`MIN_TESTS`, `MAX_*`) que mueven las fases y `VERIFY_SERVICE` hacen que el upgrade lo trate como modificado por el proyecto (conflicto) en cuanto un proyecto los cambia. La fase 5, que toca los gates de `verify.sh`, debería sacar esos valores a un archivo del proyecto.
-  - **Cómo se prueba el instalador.** El bloque `test_installer` de `tests/run.sh` usa `kit_copy` para simular un kit nuevo (o incompatible) en un directorio temporal y lo aplica con su propio `install.sh`. Un caso de `tests/structure.sh` es una rama en `breaks()`.
-  - **El contexto creció un poco.** El ejecutor está en 78 762 caracteres, frente a los 76 196 de la línea base. El objetivo de la fase 3 sigue siendo 53 300.
-  - **Duplicado pendiente (de la fase 1).** «No modificar `CLAUDE.md`, `RULES.md` ni `WORKFLOW.md` desde una fase» sigue en `CLAUDE.md §Cosas que no se hacen`, `WORKFLOW.md §Documentación`, la cabecera de `RULES.md` y `PROTOCOL.md`. Le toca a la fase 5.
-  - **Cada cambio va al `CHANGELOG.md` de su paquete,** en «Sin publicar».
-  - **Shellcheck.** La CI usa `shellcheck-py==0.11.0.1` sobre `install.sh core/bin/*.sh stacks/*/bin/*.sh tests/*.sh`.
+  - **Dónde vive cada cosa.** El núcleo, en `core/` (manifiesto `core/core.json`); cada stack, en `stacks/<stack>/` (`stack.json`). Instalados, los archivos conservan sus rutas (`CLAUDE.md`, `.ai/…`, `.claude/skills/…`, `bin/…`). `install.sh` está en la raíz.
+  - **Las skills.** `/phase` es `.claude/skills/phase/SKILL.md` (pasos, rama, estados, sincronización, commits, verificación) más `phase/cierre.md` (cierre, épica, archivo de la memoria, traspaso, reporte final). `/close` y `/planning` son una `SKILL.md` cada una; `/phase` y `/close` llevan `disable-model-invocation: true`. La fase 4 parte `/planning` en `/plan-epic` y `/plan-phase` y añade `/review`: cada skill nueva entra en `core/core.json` (`files`) y en las listas de `core/bin/measure-context.sh`, y si la lee el ejecutor al arrancar, mueve su línea en `tests/context-baseline.txt`. Si `/planning` desaparece, el upgrade la retira sola.
+  - **Las citas a una skill van con la ruta completa** (`.claude/skills/phase/SKILL.md §Estado de una fase`): el chequeo «secciones» valida `.claude/skills/*.md`, `.ai/rules/*.md` y `.ai/archive/*.md`. Una cita a `cierre.md` a secas no se valida.
+  - **Las reglas por capas.** `.ai/RULES.md` es el núcleo y su `§Reglas por tema` indexa `.ai/rules/`. Los dos stacks tienen `arquitectura.md` y `tests.md` (el núcleo puede citarlos); Laravel tiene además `rendimiento.md` y Next.js, `contrato.md` (el núcleo no puede citarlos: `tests/structure.sh`). El revisor de la fase 4 lee el núcleo y los temas que cita la fase.
+  - **Un solo reporte.** El RESULTADO es el reporte; el chat da cinco líneas (`cierre.md §Reporte final`). La sección «Revisión» que añade la fase 4 va en la plantilla de fase: un encabezado nuevo del RESULTADO hace fallar el guardián en las fases vivas escritas con la plantilla vieja (chequeo «fases»), así que conviene que vaya fuera del RESULTADO o que se diga en el CHANGELOG.
+  - **La memoria tiene topes.** El chequeo 13 «memoria» del guardián exige que lo cerrado esté en `.ai/archive/`. Un estado nuevo (`ESPERA_EVIDENCIA`, fase 4) se añade también a las listas de estados del chequeo «puntero» y «fases», y a `.claude/skills/phase/SKILL.md §Estado de una fase`.
+  - **`tests/run.sh`.** Un caso con número en `provoke` es un fallo de la cabecera de `bin/check-docs.sh` (14 en Laravel; 13 en Next.js); uno con letra, una variante. `accept` prueba lo que tiene que pasar. El bloque `test_installer` usa `kit_copy` para simular un kit nuevo; `test_context` mide una instalación limpia contra `tests/context-baseline.txt`.
+  - **Todo archivo nuevo entra en un manifiesto,** en `files` o en `seed`, o `tests/structure.sh` falla. Los manifiestos y el lock se leen sin jq: un valor por línea.
+  - **`bin/verify.sh` mezcla kit y proyecto** (la baseline y `VERIFY_SERVICE`). Le toca a la fase 5 sacarlos a un archivo del proyecto.
+  - **Duplicado pendiente (de la fase 1).** «No modificar `CLAUDE.md`, las reglas ni las skills desde una fase» sigue en `CLAUDE.md §Cosas que no se hacen`, `WORKFLOW.md §Documentación`, la cabecera de `RULES.md` y `PROTOCOL.md`. Le toca a la fase 5.
+  - **Proyectos que suben a 2.0.** El upgrade no toca la memoria: lo cerrado que ya tuvieran se mueve a mano a `.ai/archive/` (README.md §Actualizar un proyecto). La fase 8 lo prueba con una instalación 1.x.
+  - **Cada cambio va al `CHANGELOG.md` de su paquete,** en «Sin publicar». La CI usa `shellcheck-py==0.11.0.1` sobre `install.sh core/bin/*.sh stacks/*/bin/*.sh tests/*.sh`.
