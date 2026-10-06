@@ -138,5 +138,5 @@ Criterios de aceptación:
     Su enlace se anota aquí cuando la persona lo aporte.
   - (fase 3) `docs/guia.md` resume y enlaza: el detalle sigue en el README y en `docs/modos.md`. Si cambia una ruta o
     un script que la guía cita, `tests/run.sh` falla hasta que se corrige la guía.
-  - (fase 3) Queda abierta la casilla `[humano]` de la fase 3: la persona confirma que la guía responde sus siete
+  - (fase 3) Casilla `[humano]` cumplida: el 2026-10-06, la persona confirma que la guía responde sus siete
     preguntas.
