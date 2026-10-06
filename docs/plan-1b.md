@@ -7,7 +7,7 @@
 
 | Fase | Objetivo | Depende de | Estado | PR |
 |---|---|---|---|---|
-| 1 | Retroalimentación de la persona en cada cierre | — | pendiente | — |
+| 1 | Retroalimentación de la persona en cada cierre | — | en revisión | — |
 | 2 | Modo VPS por defecto | 1 | pendiente | — |
 | 3 | Guía práctica de inicio a fin | 2 | pendiente | — |
 
@@ -91,5 +91,19 @@ Criterios de aceptación:
 
 ## Registro
 
-- **Decisiones tomadas durante el plan:** —
-- **Lo que la siguiente fase necesita saber:** —
+- **Decisiones tomadas durante el plan:**
+  - **Versión (fase 1).** Mientras dura el plan, los paquetes que cambian llevan el sufijo `-dev` (`core` está en
+    `2.1.0-dev`) y su `CHANGELOG.md` acumula en «Sin publicar». Al cerrar la fase 3 pasan a `2.1.0`, con su
+    etiqueta (README.md §Versiones y etiquetas).
+  - **Proveedor (fase 1).** Claude Code es la herramienta por defecto, pero el protocolo debe poder usarse con
+    agentes de otros proveedores: lenguaje neutro y lo propio de Claude Code como nota entre paréntesis («una
+    pregunta con opciones (en Claude Code, `AskUserQuestion`)»), sin adaptadores nuevos. Vive en README.md
+    §Principios y se aplica a todo lo que se toque.
+- **Lo que la siguiente fase necesita saber:**
+  - La pregunta de retroalimentación vive en el paso 7 de `core/.claude/skills/phase/cierre.md §Cierre de fase`;
+    `/close` la hereda porque sigue el cierre desde su paso 3, y el cierre ligero la incluye. No cuenta en el
+    arranque del ejecutor (el de Laravel sigue a 73 caracteres de su línea base).
+  - Las filas de la persona llevan `De` = `persona — fase NN/FF`; el guardián no mira esa columna, y
+    `tests/lib.sh` lo prueba con el caso `accept 13p`.
+  - `core` está en `2.1.0-dev`. La fase 2 sigue en «Sin publicar» de cada `CHANGELOG.md` que toque; si toca un
+    stack, ese `stack.json` también pasa a `2.1.0-dev`.
