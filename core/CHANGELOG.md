@@ -14,6 +14,12 @@ etiqueta `core-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, ar
 - `.ai/PROTOCOL.md` (semilla): su cabecera dice quién escribe cada fila (`fase NN/FF` o `persona — fase NN/FF`).
   Sólo cambia en las instalaciones nuevas; en las que ya existen, la tabla sirve igual.
 
+### Cambiado
+
+- `bin/check-protocol.sh`: sin `PROTOCOL_BASE` ni la CI, la base es `origin/epic/<NN-slug>` u `origin/main` antes que
+  la rama local del mismo nombre. En un worktree (el modo VPS de `docs/modos.md` del kit), el `main` local del
+  checkout principal suele ir por detrás, y el gate «protocolo» marcaba commits ya fusionados de otras fases.
+
 ## [2.0.0] — 2026-10-06
 
 ### Añadido
