@@ -38,7 +38,8 @@ stacks/nextjs/            El stack de Next.js.
 stacks/expo/              Sólo un README que anuncia el stack.
 install.sh                Instala o actualiza núcleo + stack en un proyecto.
 tests/                    Las pruebas del kit: structure.sh, run.sh, los e2e de cada stack y sus fixtures.
-docs/                     Documentación del propio kit: modos de ejecución y planes.
+docs/                     Documentación del propio kit: modos de ejecución, planes y, en vps/, el doctor y la unidad
+                          de systemd del modo VPS.
 ```
 
 ### Lo que queda en el proyecto
@@ -101,8 +102,8 @@ El kit da por hecho el stack de `.ai/RULES.md §Stack y versiones exactas`. Si e
 paquetes, quitar su fila de `RULES.md` es un cambio local que `install.sh --upgrade` enseñará como conflicto.
 
 En cualquier stack hacen falta `git`, [gitleaks](https://github.com/gitleaks/gitleaks#installing) (gates «protocolo»
-y «secretos») y `gh`, para que la fase abra su PR. En la nube los instala el script de preparación
-([`docs/modos.md`](docs/modos.md)).
+y «secretos») y `gh`, para que la fase abra su PR. En el VPS, `docs/vps/doctor.sh` dice qué falta; en la nube, los
+instala el script de preparación ([`docs/modos.md`](docs/modos.md)).
 
 **Laravel**
 
@@ -302,11 +303,13 @@ escrita en la fase y, si sobrevive a ella, en `.ai/DOMAIN.md`.
 
 ## Modos de ejecución
 
-Una fase corre en la nube por defecto (Claude Code en claude.ai/code, la app o `claude --cloud`), o en local, con
-Docker Compose o con Remote Control. Termina siempre igual: rama `phase/<NN-slug>/<FF>` en GitHub, PR y la CI del
-proyecto repitiendo `bin/verify.sh` completo; la persona revisa y fusiona. El agente sólo empuja la rama de la fase:
-nunca a `main`, nunca forzado, y nunca fusiona. Qué hace falta en cada modo, el script de preparación de la nube y
-cómo proteger `main`: [`docs/modos.md`](docs/modos.md).
+Una fase corre por defecto en un VPS propio, con Remote Control en modo servidor (`claude remote-control --spawn
+worktree`): cada sesión, en su worktree, y se maneja desde la app de Claude. La nube (claude.ai/code, la app o
+`claude --cloud`) queda de respaldo y el local, con Docker Compose o con Remote Control, como opción. Termina siempre
+igual: rama `phase/<NN-slug>/<FF>` en GitHub, PR y la CI del proyecto repitiendo `bin/verify.sh` completo; la persona
+revisa y fusiona. El agente sólo empuja la rama de la fase: nunca a `main`, nunca forzado, y nunca fusiona. Qué hace
+falta en cada modo, cómo preparar el VPS (y aislarlo de staging), el script de la nube y cómo proteger `main`:
+[`docs/modos.md`](docs/modos.md).
 
 **La protección del protocolo.** Una fase no cambia los archivos del kit (`.ai/WORKFLOW.md §Archivos del
 protocolo`): en una rama de fase, el gate «protocolo» de `bin/verify.sh` (`bin/check-protocol.sh`) falla si un commit
@@ -390,7 +393,8 @@ separan igual, con `--path core/ --path install.sh`).
   - `shellcheck -s sh` sobre los scripts y `actionlint` sobre sus workflows y los de cada stack.
   - `sh tests/structure.sh`, y `sh tests/run.sh` en el host y en Alpine (busybox, con git): instala cada stack con
     la épica de prueba, provoca cada fallo del guardián, prueba el instalador (también el upgrade de una instalación
-    1.x sin tocar su memoria), la protección del protocolo y el contexto de arranque.
+    1.x sin tocar su memoria), la protección del protocolo (también dentro de un git worktree), el contexto de
+    arranque y `docs/vps/doctor.sh` con un `PATH` de stubs.
   - `e2e-laravel` y `e2e-nextjs` (`sh tests/e2e-<stack>.sh`): crean un proyecto nuevo de verdad, instalan el stack,
     generan la épica de prueba desde el paquete `tests/fixtures/stages/E1.md`, pasan el guardián y `bin/verify.sh`
     completo (Laravel, con la suite contra PostgreSQL con PostGIS; Next.js, con `next build` y Lighthouse CI), y

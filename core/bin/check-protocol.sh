@@ -15,8 +15,10 @@
 # ◆ LA RAMA Y SU BASE
 #   La rama es GITHUB_HEAD_REF en la CI de un PR; si no, la actual. La base,
 #   por orden: PROTOCOL_BASE; origin/$GITHUB_BASE_REF en la CI de un PR;
-#   epic/<NN-slug> u origin/epic/<NN-slug> si existe; main u origin/main. Se
-#   compara desde su merge-base con HEAD.
+#   origin/epic/<NN-slug> o epic/<NN-slug> si existe; origin/main o main. La
+#   del remoto va primero porque es la base del PR: en un worktree, la rama
+#   local del checkout principal suele ir por detrás. Se compara desde su
+#   merge-base con HEAD.
 #
 # ◆ CÓMO PROVOCAR EL FALLO
 #   En una rama phase/01-demo/01, commitea un cambio de CLAUDE.md con el
@@ -60,7 +62,7 @@ base=${PROTOCOL_BASE:-}
 [ -n "$base" ] || [ -z "${GITHUB_BASE_REF:-}" ] || base=origin/$GITHUB_BASE_REF
 if [ -z "$base" ]; then
     epic=epic/$(printf '%s' "$branch" | cut -d / -f 2)
-    for c in "$epic" "origin/$epic" main origin/main; do
+    for c in "origin/$epic" "$epic" origin/main main; do
         if has_commit "$c"; then base=$c; break; fi
     done
 fi

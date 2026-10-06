@@ -1,0 +1,33 @@
+# remote-control@.service — el servidor de Remote Control de un proyecto, como servicio de systemd (docs/modos.md
+# §VPS). %i es la carpeta del proyecto en el home del usuario de los agentes (/home/agentes/<proyecto>).
+#
+#   sudo cp remote-control@.service /etc/systemd/system/
+#   sudo systemctl enable --now remote-control@mi-proyecto
+#
+# El servidor necesita un terminal: corre dentro de tmux, con un socket por proyecto. Para ver su URL y su QR:
+#   sudo -iu agentes tmux -L mi-proyecto attach        (Ctrl+b d para salir sin pararlo)
+#
+# Antes de habilitarlo, lánzalo una vez a mano en la carpeta del proyecto para aceptar la confianza en el directorio
+# y la confirmación de Remote Control: sin terminal, no puede preguntarlas. Si el servidor se cierra (un corte de red
+# de más de unos diez minutos lo cierra), systemd lo arranca otra vez y recupera las sesiones que servía.
+
+[Unit]
+Description=Remote Control de Claude Code para %i
+Wants=network-online.target
+After=network-online.target postgresql.service
+
+[Service]
+Type=forking
+User=agentes
+WorkingDirectory=/home/agentes/%i
+Environment=PATH=/home/agentes/.local/bin:/usr/local/bin:/usr/bin:/bin
+# La base de datos de los tests, con el rol de los agentes (docs/modos.md §Aislamiento con staging). Ganan a los
+# valores de .env.testing.
+Environment=DB_USERNAME=agentes DB_PASSWORD=agentes
+ExecStart=/usr/bin/tmux -L %i new-session -d -s %i 'claude remote-control --spawn worktree --name %i'
+ExecStop=/usr/bin/tmux -L %i kill-server
+Restart=always
+RestartSec=30
+
+[Install]
+WantedBy=multi-user.target

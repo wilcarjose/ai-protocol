@@ -7,8 +7,8 @@
 
 | Fase | Objetivo | Depende de | Estado | PR |
 |---|---|---|---|---|
-| 1 | Retroalimentación de la persona en cada cierre | — | en revisión | #9 |
-| 2 | Modo VPS por defecto | 1 | pendiente | — |
+| 1 | Retroalimentación de la persona en cada cierre | — | hecha | #9 |
+| 2 | Modo VPS por defecto | 1 | en revisión | #10 |
 | 3 | Guía práctica de inicio a fin | 2 | pendiente | — |
 
 La guía va al final para describir el kit ya con la retroalimentación y el modo VPS.
@@ -99,6 +99,19 @@ Criterios de aceptación:
     agentes de otros proveedores: lenguaje neutro y lo propio de Claude Code como nota entre paréntesis («una
     pregunta con opciones (en Claude Code, `AskUserQuestion`)»), sin adaptadores nuevos. Vive en README.md
     §Principios y se aplica a todo lo que se toque.
+  - **Base de datos de los tests en el VPS (fase 2).** Un rol `agentes` sin superusuario, dueño sólo de `testing`,
+    con PostGIS creado una vez como `postgres`. Sus credenciales van en `DB_USERNAME` y `DB_PASSWORD` de la unidad
+    de systemd, que ganan a `.env.testing`: el stack no cambia. Con `postgres`/`postgres`, los agentes llegarían a la
+    base de staging. `docs/vps/doctor.sh` avisa si el rol es superusuario.
+  - **`/phase` no cambia (fase 2).** Por la decisión 5. En un worktree de Remote Control ya funciona: la rama del
+    worktree sale de `origin/main` y «la actual» es una candidata válida en §Rama de la fase. Lo que fallaba era la
+    base del gate «protocolo», que tomaba el `main` local del checkout principal, casi siempre atrasado: ahora
+    `bin/check-protocol.sh` prueba antes `origin/…` (`core/CHANGELOG.md`, «Cambiado»).
+  - **Los gates no esquivan `.claude/worktrees/` (fase 2).** La sesión que el servidor crea en la carpeta del repo
+    no ejecuta fases (`docs/modos.md §El día a día desde el teléfono`); así no hace falta tocar el guardián, ESLint
+    ni Vitest.
+  - **El servicio, dentro de tmux (fase 2).** El servidor de Remote Control necesita un terminal y, la primera vez,
+    aceptar la confianza en el directorio a mano; la unidad lanza tmux y systemd la reinicia si el servidor se cierra.
 - **Lo que la siguiente fase necesita saber:**
   - La pregunta de retroalimentación vive en el paso 7 de `core/.claude/skills/phase/cierre.md §Cierre de fase`;
     `/close` la hereda porque sigue el cierre desde su paso 3, y el cierre ligero la incluye. No cuenta en el
@@ -107,3 +120,10 @@ Criterios de aceptación:
     `tests/lib.sh` lo prueba con el caso `accept 13p`.
   - `core` está en `2.1.0-dev`. La fase 2 sigue en «Sin publicar» de cada `CHANGELOG.md` que toque; si toca un
     stack, ese `stack.json` también pasa a `2.1.0-dev`.
+  - (fase 2) `docs/modos.md` tiene `§VPS` (con `§Preparación`, `§Arranque`, `§El día a día desde el teléfono` y
+    `§Aislamiento con staging`), `§Nube`, `§Local` y `§Qué elegir`. La guía los cita; no los repite.
+  - (fase 2) `docs/vps/doctor.sh` y `docs/vps/remote-control@.service` son del kit y no se instalan en el proyecto.
+    El chequeo de rutas de la guía (fase 3) tiene que distinguir las del kit de las de una instalación.
+  - (fase 2) Ningún stack cambió: siguen en `2.0.0`. El arranque del ejecutor sigue igual (Laravel, 53227).
+  - (fase 2) Queda abierta la casilla `[humano]`: una fase arrancada desde el teléfono en el VPS que llegue al PR.
+    Su enlace se anota aquí cuando la persona lo aporte.

@@ -52,11 +52,16 @@
 #      CLAUDE.md, o el propio script, en un commit que no es de ámbito protocol
 #      falla; el mismo cambio en un commit chore(protocol) pasa, y también los
 #      cambios en archivos del proyecto (la memoria, .ai/project/verify.conf)
-#      y cualquier cambio fuera de una rama de fase. Necesita git.
+#      y cualquier cambio fuera de una rama de fase. Y lo mismo dentro de un
+#      git worktree, como los del VPS (docs/modos.md): el guardián pasa y la
+#      protección compara con origin/main aunque el main local vaya por
+#      detrás. Necesita git.
 #
 # ◆ ADEMÁS
 #   Provoca en una copia del repo un fallo de cada chequeo de
-#   tests/structure.sh y comprueba que lo detecta.
+#   tests/structure.sh y comprueba que lo detecta. Y corre docs/vps/doctor.sh
+#   con un PATH de stubs: con todo, pasa; sin gitleaks, con Node 20 o con un
+#   .env de staging legible, lo reporta.
 #
 # ◆ CÓMO SE AÑADE UN CASO
 #   Un chequeo nuevo del guardián trae su caso en tests/lib.sh: una rama en
@@ -326,6 +331,44 @@ test_protocol() {
         'un archivo «project» del lock (.ai/project/verify.conf) es del proyecto'
     protect feature/demo CLAUDE.md 'docs(demo): edit CLAUDE.md' pasa \
         'fuera de una rama de fase no aplica'
+    test_worktree
+}
+
+# w <args de git>: git en el worktree de prueba, como g.
+w() { git -C "$WT" -c user.name=kit -c user.email=kit@example.invalid -c commit.gpgsign=false -c core.hooksPath=/dev/null "$@"; }
+
+# in_worktree <pasa|falla> <qué se prueba> [texto que tiene que imprimir]: bin/check-protocol.sh en el worktree.
+in_worktree() {
+    out=$(GITHUB_HEAD_REF='' GITHUB_BASE_REF='' PROTOCOL_BASE='' sh "$WT/bin/check-protocol.sh" 2>&1)
+    rc=$?
+    if { [ "$1" = pasa ] && [ "$rc" -eq 0 ]; } || { [ "$1" = falla ] && [ "$rc" -ne 0 ] && printf '%s\n' "$out" | grep -qF -- "$3"; }; then
+        ok "worktree: $2"
+    else
+        fail "worktree: $2 (salió $rc)"; printf '%s\n' "$out" | sed 's/^/      /'
+    fi
+}
+
+# Una fase en un git worktree, como los que crea Claude Code en el VPS (docs/modos.md §VPS): en .claude/worktrees/,
+# desde origin/main. El main local del checkout principal se queda atrás: origin/main trae una fase ya fusionada con
+# squash, en un commit que no es de ámbito protocol y tocó CLAUDE.md. La base tiene que ser origin/main.
+test_worktree() {
+    WT="$REPO/.claude/worktrees/demo"
+    if ! { g switch -q -c merged main && printf '\nFase fusionada.\n' >> "$REPO/CLAUDE.md" \
+           && g commit -q -am 'feat(demo): merged phase' && g update-ref refs/remotes/origin/main merged \
+           && g switch -q main && g branch -q -D merged \
+           && g worktree add -q -b phase/02-paquete/07 "$WT" origin/main; }; then
+        fail 'worktree: no se pudo preparar'; return
+    fi
+    if out=$(sh "$WT/bin/check-docs.sh" --strict 2>&1); then ok 'worktree: el guardián pasa (--strict)'
+    else fail 'worktree: el guardián no pasa'; printf '%s\n' "$out" | grep -E '✗|⚠' | sed 's/^/      /'; fi
+    printf '\nCambio.\n' >> "$WT/.ai/project/verify.conf"
+    w commit -q -am 'chore(phase-02-07): close'
+    in_worktree pasa 'la protección compara con origin/main, no con el main local que va por detrás'
+    printf '\nCambio.\n' >> "$WT/CLAUDE.md"
+    w commit -q -am 'docs(demo): edit CLAUDE.md'
+    in_worktree falla 'editar CLAUDE.md fuera de un commit (protocol) falla' 'toca CLAUDE.md'
+    w commit -q --amend -m 'chore(protocol): edit CLAUDE.md'
+    in_worktree pasa 'el mismo cambio en un commit chore(protocol) pasa'
 }
 
 # ── tests/structure.sh, frente a un fallo de cada chequeo ───────────────────
@@ -357,6 +400,42 @@ test_structure() {
     breaks gates   'corre el gate «types», que stack.json no declara'
     breaks stacks  'cita «phpstan.neon», que es de otro stack'
     breaks nucleo  'cita «docs/vendor/INDEX.md», que no traen todos los stacks'
+}
+
+# ── docs/vps/doctor.sh, con un PATH de stubs ────────────────────────────────
+# El PATH sólo tiene stubs de las herramientas del VPS, que responden como un VPS preparado (STUB_NODE cambia la
+# versión de Node), y las utilidades que usa el script.
+# shellcheck disable=SC2016  # el stub se escribe tal cual
+test_doctor() {
+    printf '◆ docs/vps/doctor.sh\n'
+    stubs="$WORK/doctor-path"
+    mkdir -p "$stubs"
+    printf '%s\n' '#!/bin/sh' 'case "${0##*/} $*" in' \
+        "    'php -r'*) printf 8.4.1 ;;" \
+        "    'php -m') echo pdo_pgsql ;;" \
+        '    "node --version") echo "${STUB_NODE:-v22.3.0}" ;;' \
+        "    'claude auth status') echo '{\"loggedIn\": true, \"authMethod\": \"claude.ai\"}' ;;" \
+        "    'psql '*) echo '1|f' ;;" \
+        'esac' > "$stubs/stub"
+    chmod +x "$stubs/stub"
+    for c in git gh claude tmux gitleaks php composer node npm psql; do ln -s stub "$stubs/$c"; done
+    for u in sed grep id; do ln -s "$(command -v "$u")" "$stubs/$u"; done
+    shell=$(command -v sh)
+    doctor() { PATH="$stubs" STUB_NODE=${STUB_NODE:-} "$shell" "$ROOT/docs/vps/doctor.sh" "$@" 2>&1; }
+
+    if out=$(doctor) && printf '%s\n' "$out" | grep -qF 'no falta nada'; then ok 'con todo, no falta nada'
+    else fail 'con todo, dice que falta algo:'; printf '%s\n' "$out" | grep '✗' | sed 's/^/      /'; fi
+    rm "$stubs/gitleaks"
+    if ! out=$(doctor) && printf '%s\n' "$out" | grep -qF 'gitleaks: falta'; then ok 'sin gitleaks en el PATH, lo reporta'
+    else fail 'sin gitleaks en el PATH, no lo reporta'; printf '%s\n' "$out" | sed 's/^/      /'; fi
+    ln -s stub "$stubs/gitleaks"
+    if ! out=$(STUB_NODE=v20.1.0 doctor) && printf '%s\n' "$out" | grep -qF 'node v20.1.0: hace falta 22'; then
+        ok 'con Node 20, pide 22'
+    else fail 'con Node 20, no pide 22'; printf '%s\n' "$out" | sed 's/^/      /'; fi
+    echo 'APP_KEY=x' > "$WORK/staging.env"
+    if ! out=$(doctor --env "$WORK/staging.env") && printf '%s\n' "$out" | grep -qF "puede leer $WORK/staging.env"; then
+        ok 'un .env de staging que el usuario de los agentes puede leer falla'
+    else fail 'un .env de staging legible no falla'; printf '%s\n' "$out" | sed 's/^/      /'; fi
 }
 
 # ── Por kit ─────────────────────────────────────────────────────────────────
@@ -407,6 +486,7 @@ for KIT in $KITS; do
 done
 
 test_structure
+test_doctor
 
 printf '\n'
 if [ "$FAIL" -eq 0 ]; then echo '✓ tests/run.sh: todo en verde'; else echo '✗ tests/run.sh: hay fallos'; fi
