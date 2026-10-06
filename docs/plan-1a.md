@@ -13,9 +13,9 @@
 | 2 | Núcleo, stacks e instalador | 1 | hecha | #2 |
 | 3 | Menos tokens | 2 | hecha | #3 |
 | 4 | Planificador, revisor y tipos de tarea | 3 | hecha | #4 |
-| 5 | Modo remoto y CI de los proyectos | 4 | en revisión | #5 |
+| 5 | Modo remoto y CI de los proyectos | 4 | hecha | #5 |
 | 6 | Stack Laravel modular por defecto | 5 | pendiente | — |
-| 7 | Stack Next.js completo | 5 | pendiente | — |
+| 7 | Stack Next.js completo | 5 | en revisión | #6 |
 | 8 | Validación de punta a punta y versión 2.0.0 | 6, 7 | pendiente | — |
 
 ## Cómo se ejecuta una fase
@@ -277,6 +277,21 @@ Criterios de aceptación:
   ```
 
   El ejecutor de Laravel sube 175 caracteres y queda a 45 del tope de 53 300: `WORKFLOW.md §Archivos del protocolo` es nueva, y se compensa con lo que sale de `CLAUDE.md` y de la tabla de `WORKFLOW.md §Documentación: dónde va cada cosa`. «cierre» sube 1 038 por `cierre.md §Entrega`. `tests/context-baseline.txt` tiene los valores nuevos.
+
+  Después de la fase 7, sobre una instalación limpia (Laravel no cambia):
+
+  ```
+  Sesión         laravel   nextjs
+  cualquiera        4112     4112
+  ejecutor         53255    54755
+  cierre           11377    11377
+  plan-epica       53436    54812
+  plan-fase        55526    57026
+  revisor          33309    34815
+  rescate          39525    39519
+  ```
+
+  El ejecutor de Next.js sube 515 caracteres (+0,95 %) por las filas nuevas de `RULES.md §Stack y versiones exactas`, la copia del contrato en §Alcance, los principios 2 y 4 y los gates de §Verificación del stack. El detalle (cliente, problem+json, Playwright, Lighthouse) va a `.ai/rules/contrato.md` y `.ai/rules/tests.md`, que no cuentan en el arranque. `tests/context-baseline.txt` tiene el valor nuevo.
 - **Fases divididas:** —
 - **Decisiones tomadas durante el plan:**
   - 2026-10-04 (fase 1): el fallo 5 del guardián (migraciones) solo se provoca en kits cuya plantilla de fase declara «Migraciones:». En Next.js no aplica, y `tests/run.sh` comprueba en su lugar que el guardián acepta fases sin ese campo. El criterio de la fase 1 pasa a «13 fallos en Laravel; 12 en Next.js, con el 5 como no aplicable».
@@ -308,6 +323,14 @@ Criterios de aceptación:
   - 2026-10-06 (fase 5): la fase empuja su rama al cerrar en cualquier estado, y abre el PR con `gh pr create`, en borrador si cierra `BLOQUEADA` o `VERIFICACION_ROJA`. Nunca lo fusiona. `settings.json` permite empujar sólo `phase/*` y bloquea el push a `main`, con `:` en el refspec, forzado y con borrado.
   - 2026-10-06 (fase 5): en la nube, el proxy de GitHub de Claude Code no limita a qué rama se empuja (sólo rechaza borrados y etiquetas), y una regla de permisos no es una barrera de seguridad. `docs/modos.md` pide un *ruleset* de GitHub sobre `main`. Las releases de GitHub de un repo que no está en la sesión dan 403, así que el script de preparación instala gitleaks con `go install`.
   - 2026-10-04 (fase 1): dónde vive cada regla que estaba repetida. Exenciones a un gate: `WORKFLOW.md §Obediencia arquitectónica`. No arreglar de paso: `CLAUDE.md §Alcance`. Dependencias nuevas: `WORKFLOW.md §Dependencia nueva`. `git push`: `CLAUDE.md §Commits durante la fase`. Las listas negras de `RULES.md` quedan solo con lo propio del stack.
+  - 2026-10-06 (fase 7): la fase va en un solo PR. Son unos 12 archivos con lógica, pero casi todos son configuraciones cortas.
+  - 2026-10-06 (fase 7): `eslint-plugin-boundaries` 7.2.0 sólo trae el resolver de Node y no entiende el alias `@/`, así que se añade `eslint-import-resolver-typescript`, que el plan no listaba (aprobado en el Paso A). Los dos van en la misma fila de `RULES.md §Stack y versiones exactas` que `eslint`. La regla va entera en `boundaries/dependencies`: `boundaries/entry-point` está obsoleta en la 7, y la entrada por `index.ts` se expresa con `fileInternalPath`.
+  - 2026-10-06 (fase 7): `eslint.layers.mjs` es del kit (protegido) y `eslint.config.mjs`, semilla que lo importa. El gate «capas» lee la configuración efectiva (`eslint --print-config`) de un archivo de una feature y falla si `boundaries/dependencies` no está como error: un proyecto que ya tenía su `eslint.config.mjs` (el instalador no lo pisa) se entera.
+  - 2026-10-06 (fase 7): Playwright no corre en `verify.sh`. El verify completo sólo corre `playwright test --list --pass-with-no-tests` (gate «e2e»), y los E2E los corre la fase que los pide, porque necesitan el backend.
+  - 2026-10-06 (fase 7): el gate «dependencias» de Next.js pasa a `npm audit --audit-level=high --omit=dev` (aprobado). GHSA-vfj7-8cjw-p6xm (`braces`, sin arreglo publicado) entra por `eslint-config-next`, que trae el propio create-next-app, y por eslint-plugin-boundaries, y dejaba en rojo cualquier proyecto nuevo. Con `--omit=dev` da 0.
+  - 2026-10-06 (fase 7): la copia del OpenAPI vive en `docs/contract/openapi.json` (la misma ruta que el baseline del backend de la fase 6) y los tipos en `src/shared/api/schema.d.ts`; los dos se versionan y sus rutas se pueden cambiar en `.ai/project/verify.conf` (`CONTRACT_SPEC`, `CONTRACT_TYPES`). La semilla trae un OpenAPI sin rutas y sus tipos ya generados: el proyecto compila nada más instalarse y el chequeo «rutas» del guardián no avisa. Si otra versión de openapi-typescript genera distinto, el gate «contrato» pide regenerar.
+  - 2026-10-06 (fase 7): los presupuestos de Lighthouse son semilla en `.ai/project/lighthouse.json` (la configuración de LHCI entera: URL, `startServerCommand`, aserciones). `CROSS-CUTTING.md` es del núcleo y no puede citarlo, así que es `.ai/rules/tests.md` quien une los dos.
+  - 2026-10-06 (fase 7): el e2e es `tests/e2e-nextjs.sh`, propio del stack, y usa `tests/lib.sh` para rellenar la capa del proyecto como `tests/run.sh`.
 - **Lo que la siguiente fase necesita saber:**
   - **Dónde vive cada cosa.** El núcleo, en `core/` (manifiesto `core/core.json`); cada stack, en `stacks/<stack>/` (`stack.json`). Instalados, los archivos conservan sus rutas (`CLAUDE.md`, `.ai/…`, `.claude/skills/…`, `bin/…`). `install.sh` está en la raíz.
   - **Las skills.** `/phase` es `.claude/skills/phase/SKILL.md` (pasos, rama, estados, sincronización, commits, verificación) más `phase/cierre.md` (cierre con revisión, cierre ligero, evidencia humana, épica, archivo de la memoria, traspaso, reporte final). `/close`, `/plan-epic`, `/plan-phase` y `/review` son una `SKILL.md` cada una; `/phase` y `/close` llevan `disable-model-invocation: true`, y `/review` no, para que `/phase` la invoque. El revisor es `.claude/agents/reviewer.md` (Read, Grep, Glob y Bash sólo para git y el guardián). Una skill o un agente nuevo entra en `core/core.json` (`files`) y en las listas de `core/bin/measure-context.sh`, y si la lee el ejecutor al arrancar, mueve su línea en `tests/context-baseline.txt`. El upgrade desde la fase 3 retira `/planning` sola (probado).
@@ -324,4 +347,9 @@ Criterios de aceptación:
   - **Todo archivo nuevo entra en un manifiesto,** en `files` o en `seed`, o `tests/structure.sh` falla. Los manifiestos y el lock se leen sin jq: un valor por línea.
   - **El contexto del ejecutor de Laravel está a 45 caracteres del tope de 53 300.** Lo que se añada a `CLAUDE.md`, a `.claude/skills/phase/SKILL.md`, a `WORKFLOW.md`, a `RULES.md` o a la plantilla de fase hay que compensarlo. Lo que sólo hace falta al cerrar va en `cierre.md`, que no cuenta en el arranque.
   - **Proyectos que suben a 2.0.** El upgrade no toca la memoria: lo cerrado que ya tuvieran se mueve a mano a `.ai/archive/` (README.md §Actualizar un proyecto). La fase 8 lo prueba con una instalación 1.x.
+  - **El e2e de Next.js (fases 6 y 8).** `tests/e2e-nextjs.sh` fija las versiones (create-next-app 16.3.8 y los paquetes del stack), borra los `AGENTS.md`, `CLAUDE.md` y `eslint.config.mjs` que crea create-next-app antes de instalar, rellena la capa con `tests/lib.sh` (`fill_stack`, `fill_markers`), versiona el proyecto en git y corre `bin/verify.sh` completo. Después provoca los dos fallos del criterio. En la CI corre además Lighthouse (`E2E_LIGHTHOUSE=1`; el runner trae Chrome; en Docker, Chrome necesita `--no-sandbox`). La fase 6 puede escribir `tests/e2e-laravel.sh` con la misma forma, y la fase 8 añade a los dos la épica de prueba. En local se probó dentro de `node:22` con gitleaks 8.30.1.
+  - **npm 10 y las peers de Vite 8.** Con el `@types/node@^20` de create-next-app, `npm install vitest@4.1.x` revienta (`Cannot read properties of null (reading 'edgesOut')`) por la cadena de peers opcionales de Vite 8. Con `@types/node@22` (el proyecto declara Node 22) y Vitest 5.0.3, instala. Vitest 4.0.0 instala, pero no arranca con Vite 8.
+  - **Next 16.3 y `AGENTS.md`.** create-next-app crea `AGENTS.md` y `CLAUDE.md`, y `next dev`, lanzado por un agente, vuelve a escribir su bloque en `AGENTS.md` (`node_modules/next/dist/server/lib/generate-agent-files.js`), que es del kit. `RULES.md §Alcance` pide `agentRules: false` en `next.config.*`, y `stacks/nextjs/CHANGELOG.md` dice qué hacer al actualizar un proyecto que ya los tiene. La fase 8 lo lleva al README (migración).
+  - **`composer audit` (fase 6).** El mismo problema puede salir en Laravel: `composer audit` incluye las dependencias de desarrollo salvo con `--no-dev`. Next.js audita sólo producción; si la fase 6 decide otra cosa, que lo diga en el Registro.
+  - **Los tipos de rutas de Next.** `tsc --noEmit` falla en un clon limpio (`LayoutProps`, `PageProps`) hasta que `next typegen` los genera en `.next/types`; el gate «tipos» lo corre antes. Un script que compile fuera de `verify.sh` tiene que hacer lo mismo.
   - **Cada cambio va al `CHANGELOG.md` de su paquete,** en «Sin publicar». La CI usa `shellcheck-py==0.11.0.1` sobre `install.sh core/bin/*.sh stacks/*/bin/*.sh tests/*.sh`, y `actionlint-py==1.7.12.25`.
