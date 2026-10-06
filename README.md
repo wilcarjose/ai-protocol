@@ -6,6 +6,9 @@ primer día. El trabajo se planifica en **épicas** partidas en **fases**. Cada 
 (`bin/check-docs.sh`) comprueba que esa memoria no miente, y un único árbitro (`bin/verify.sh`) decide si el código
 está sano, en la sesión y en la CI.
 
+**¿Empiezas?** Lee la [guía práctica](docs/guia.md): qué es el protocolo, cómo se arranca un proyecto, el ciclo de
+una fase al cierre de la épica, para qué sirve cada pieza y un ejemplo de inicio a fin. Este README es la referencia.
+
 ## Principios
 
 - **Simple:** sólo lo necesario. Antes de añadir una pieza se busca lo mínimo que cumple el objetivo.
@@ -38,8 +41,8 @@ stacks/nextjs/            El stack de Next.js.
 stacks/expo/              Sólo un README que anuncia el stack.
 install.sh                Instala o actualiza núcleo + stack en un proyecto.
 tests/                    Las pruebas del kit: structure.sh, run.sh, los e2e de cada stack y sus fixtures.
-docs/                     Documentación del propio kit: modos de ejecución, planes y, en vps/, el doctor y la unidad
-                          de systemd del modo VPS.
+docs/                     Documentación del propio kit: la guía práctica, los modos de ejecución, los planes y, en
+                          vps/, el doctor y la unidad de systemd del modo VPS.
 ```
 
 ### Lo que queda en el proyecto
@@ -394,7 +397,7 @@ separan igual, con `--path core/ --path install.sh`).
   - `sh tests/structure.sh`, y `sh tests/run.sh` en el host y en Alpine (busybox, con git): instala cada stack con
     la épica de prueba, provoca cada fallo del guardián, prueba el instalador (también el upgrade de una instalación
     1.x sin tocar su memoria), la protección del protocolo (también dentro de un git worktree), el contexto de
-    arranque y `docs/vps/doctor.sh` con un `PATH` de stubs.
+    arranque, `docs/vps/doctor.sh` con un `PATH` de stubs y que cada ruta que cita `docs/guia.md` existe.
   - `e2e-laravel` y `e2e-nextjs` (`sh tests/e2e-<stack>.sh`): crean un proyecto nuevo de verdad, instalan el stack,
     generan la épica de prueba desde el paquete `tests/fixtures/stages/E1.md`, pasan el guardián y `bin/verify.sh`
     completo (Laravel, con la suite contra PostgreSQL con PostGIS; Next.js, con `next build` y Lighthouse CI), y
