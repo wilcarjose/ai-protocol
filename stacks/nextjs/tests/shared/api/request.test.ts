@@ -16,13 +16,13 @@ describe("request", () => {
   });
 
   it("reads problem+json and keeps the code and the literal detail", async () => {
-    const problem = { type: "https://example.test/problems/demo-not-found", title: "Not Found", status: 404, detail: "No existe la demo 7.", code: "demo_not_found" };
+    const problem = { type: "https://example.test/problems/demo-not-found", title: "Not Found", status: 404, detail: "No existe la demo 7.", code: "DEMO_NOT_FOUND" };
 
     const result = await request(failed(404, problem));
 
     expect(result).toEqual({
       ok: false,
-      error: { class: "user", status: 404, code: "demo_not_found", detail: "No existe la demo 7.", problem, retry: false },
+      error: { class: "user", status: 404, code: "DEMO_NOT_FOUND", detail: "No existe la demo 7.", problem, retry: false },
     });
   });
 

@@ -1,8 +1,8 @@
-// eslint.config.mjs — la configuración de ESLint del proyecto.
+// eslint.config.mjs — the project's ESLint config.
 //
-// Es del proyecto: install.sh la crea si falta y --upgrade no la toca. Puede añadir reglas, nunca bajarlas
-// (.ai/RULES.md §Verificación del stack). La regla de capas viene del kit en eslint.layers.mjs y no se quita: el gate
-// «capas» de bin/verify.sh falla si deja de estar activa.
+// It belongs to the project: install.sh creates it when missing and --upgrade leaves it alone. It may add rules,
+// never lower them (.ai/RULES.md §Verificación del stack). The layer rule comes from the kit in eslint.layers.mjs and
+// stays: the «capas» gate of bin/verify.sh fails if it is no longer active.
 import { defineConfig, globalIgnores } from "eslint/config";
 import nextVitals from "eslint-config-next/core-web-vitals";
 import nextTs from "eslint-config-next/typescript";
