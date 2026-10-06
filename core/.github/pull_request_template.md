@@ -1,5 +1,7 @@
-<!-- PR de una fase (.claude/skills/phase/cierre.md §Entrega). El RESULTADO de la fase es el reporte: aquí sólo el
-     resumen y los enlaces. Sin tarea externa, «—». Lo que no aplica, «—», sin borrar la línea. -->
+<!-- PR de una fase (.claude/skills/phase/cierre.md §Entrega). El título, en inglés y en Conventional Commits
+     («feat(listings): publish listings with photos»): al fusionar con squash es el mensaje del commit. Esta
+     descripción, en español. El RESULTADO de la fase es el reporte: aquí sólo el resumen y los enlaces. Sin tarea
+     externa, «—». Lo que no aplica, «—», sin borrar la línea. -->
 
 ## Fase
 
