@@ -9,14 +9,19 @@
 #   2. Instala el stack con install.sh, rellena la capa del proyecto como
 #      tests/run.sh (tests/lib.sh), copia la funcionalidad de ejemplo
 #      (tests/fixtures/laravel-e2e/: la Action App\Actions\Demo\ShowDemo, su
-#      endpoint, sus tests y una migración que activa PostGIS), genera los
-#      baselines del contrato y lo versiona todo en un repo git.
-#   3. Comprueba que `sh bin/verify.sh` completo termina en verde, con la
-#      suite contra PostgreSQL con PostGIS.
+#      endpoint, sus tests y una migración que activa PostGIS), crea la épica
+#      de prueba desde el paquete de tareas tests/fixtures/stages/E1.md
+#      (make_test_epics), genera los baselines del contrato y lo versiona todo
+#      en un repo git.
+#   3. Comprueba que el guardián pasa con esa épica y que `sh bin/verify.sh`
+#      completo termina en verde, con la suite contra PostgreSQL con PostGIS.
 #   4. Provoca los dos fallos que el stack promete detectar: una Action que usa
 #      Illuminate\Http\Request hace fallar las pruebas de arquitectura, y un
 #      endpoint que cambia sin actualizar el baseline hace fallar el gate
 #      «contrato».
+#   5. Provoca sobre el proyecto cada fallo de la cabecera de
+#      bin/check-docs.sh, como tests/run.sh (guardian_cases), y uno a través
+#      de `bin/verify.sh --fast`, que tiene que caer en su gate «docs».
 #
 # ◆ LO QUE CAMBIA DE LO QUE DEJA create-project
 #   Borra su AGENTS.md y su CLAUDE.md antes de instalar, porque el instalador
@@ -36,8 +41,8 @@
 #   sh tests/e2e-laravel.sh       (E2E_KEEP=1 conserva el proyecto y dice dónde)
 #
 # ◆ CONTRATO
-#   Sale 0 si verify.sh pasa y los dos fallos provocados se detectan; != 0 si
-#   no. No toca el repo: trabaja en un directorio temporal.
+#   Sale 0 si el guardián y verify.sh pasan y todos los fallos provocados se
+#   detectan; != 0 si no. No toca el repo: trabaja en un directorio temporal.
 # ─────────────────────────────────────────────────────────────────────────────
 set -u
 
@@ -53,6 +58,7 @@ WORK=$(mktemp -d)
 if [ "${E2E_KEEP:-0}" = 1 ]; then trap 'echo "proyecto: $WORK/demo"' EXIT; else trap 'rm -rf "$WORK"' EXIT; fi
 APP=$WORK/demo
 FAIL=0
+SIBLING=frontend
 export COMPOSER_NO_INTERACTION=1
 # laravel/pao cambia la salida de Pest por JSON cuando detecta un agente; aquí se lee la de siempre.
 export PAO_DISABLE=1
@@ -70,8 +76,9 @@ quiet() {
 }
 # g <args de git>: git en el proyecto, sin depender de la configuración de quien lo ejecuta.
 g() { git -C "$APP" -c user.name=kit -c user.email=kit@example.invalid -c commit.gpgsign=false -c core.hooksPath=/dev/null "$@"; }
-# gate_fails <log> <gate>: el gate falló en esa salida de verify.sh.
-gate_fails() { awk -v g="▸ $2" 'index($0, g) == 1 { c = 1; next } c && /^▸/ { exit } c && /✗$/ { f = 1 } END { exit !f }' "$1"; }
+# fresh <caso>: el proyecto, de vuelta al commit inicial para provocar ese caso (guardian_cases). git no toca
+# vendor/ ni node_modules/, que ignora.
+fresh() { g checkout -q -- . && g clean -qfd && printf '%s' "$APP"; }
 
 step "proyecto nuevo (laravel/laravel $SKELETON_VERSION)"
 # shellcheck disable=SC2086  # las listas de paquetes se parten a propósito
@@ -94,7 +101,8 @@ cp -R "$ROOT/tests/fixtures/laravel-e2e/." "$APP/"
     cd "$APP" || exit 1
     fill_stack .ai/RULES.md .ai/project/DECISIONS.md composer.json
     find . -path ./vendor -prune -o -path ./node_modules -prune -o -type f -name '*.md' -exec grep -lF '{{RELLENAR' {} + \
-        | while read -r f; do fill_markers "$f" frontend; done
+        | while read -r f; do fill_markers "$f" "$SIBLING"; done
+    make_test_epics
     quiet "$WORK/key.log" php artisan key:generate --env=testing \
         && quiet "$WORK/contract.log" sh bin/contract.sh \
         && php scripts/normalize-routes.php > docs/contract/routes-baseline.txt
@@ -104,7 +112,15 @@ if ! quiet "$WORK/git.log" git init -q -b main "$APP" || ! g add -A \
     fail 'no pude versionar el proyecto'
     exit 1
 fi
-ok 'stack instalado, capa del proyecto rellena, funcionalidad de ejemplo y baselines del contrato'
+ok 'stack instalado, capa del proyecto rellena, épica de prueba, funcionalidad de ejemplo y baselines del contrato'
+
+step 'el guardián, con la épica de prueba'
+if (cd "$APP" && sh bin/check-docs.sh --strict > "$WORK/guardian.log" 2>&1); then
+    ok 'bin/check-docs.sh --strict pasa con 01-demo y con 02-paquete, la épica desde el paquete E1'
+else
+    sed 's/^/      /' "$WORK/guardian.log"
+    fail 'el guardián no pasa con la épica de prueba'
+fi
 
 step 'bin/verify.sh completo'
 if (cd "$APP" && sh bin/verify.sh > "$WORK/verify.log" 2>&1); then
@@ -142,6 +158,20 @@ else
     fail 'contrato: el gate «contrato» no detecta el endpoint cambiado'
 fi
 g checkout -q -- app/Actions/Demo/ShowDemo.php
+
+step 'fallos del guardián, sobre el proyecto'
+guardian_cases "$APP"
+# Y uno a través de verify.sh: el guardián es su gate «docs», y su fallo deja el verify en rojo.
+d=$(fresh 0) && (cd "$d" && estropea 0)
+(cd "$APP" && sh bin/verify.sh --fast > "$WORK/docs-gate.log" 2>&1)
+rc=$?
+if [ "$rc" -ne 0 ] && gate_fails "$WORK/docs-gate.log" docs; then
+    ok 'verify.sh: un {{RELLENAR}} sin completar hace fallar el gate «docs» y el verify'
+else
+    sed 's/^/      /' "$WORK/docs-gate.log"
+    fail 'verify.sh: el gate «docs» no detecta el fallo del guardián'
+fi
+fresh 0 > /dev/null
 
 printf '\n'
 if [ "$FAIL" -eq 0 ]; then echo '✓ tests/e2e-laravel.sh: todo en verde'; else echo '✗ tests/e2e-laravel.sh: hay fallos'; fi

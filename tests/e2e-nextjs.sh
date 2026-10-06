@@ -7,13 +7,17 @@
 #      .ai/RULES.md §Stack y versiones exactas, en las versiones de abajo.
 #   2. Instala el stack con install.sh, rellena la capa del proyecto como
 #      tests/run.sh (tests/lib.sh), copia el OpenAPI de ejemplo y la feature que
-#      lo usa (tests/fixtures/nextjs-e2e/), genera el cliente y lo versiona todo
-#      en un repo git.
-#   3. Comprueba que `sh bin/verify.sh` completo, con `next build`, termina en
-#      verde.
+#      lo usa (tests/fixtures/nextjs-e2e/), crea la épica de prueba desde el
+#      paquete de tareas tests/fixtures/stages/E1.md (make_test_epics), genera
+#      el cliente y lo versiona todo en un repo git.
+#   3. Comprueba que el guardián pasa con esa épica y que `sh bin/verify.sh`
+#      completo, con `next build`, termina en verde.
 #   4. Provoca los dos fallos que el stack promete detectar: un import que
 #      rompe las capas hace fallar ESLint, y un cambio en el OpenAPI sin
 #      regenerar el cliente hace fallar el gate «contrato».
+#   5. Provoca sobre el proyecto cada fallo de la cabecera de
+#      bin/check-docs.sh, como tests/run.sh (guardian_cases), y uno a través
+#      de `bin/verify.sh --fast`, que tiene que caer en su gate «docs».
 #   Con E2E_LIGHTHOUSE=1 corre además Lighthouse CI con los presupuestos de
 #   .ai/project/lighthouse.json, como el job «lighthouse» del workflow del
 #   stack (necesita Chrome).
@@ -31,8 +35,8 @@
 #   sh tests/e2e-nextjs.sh       (E2E_KEEP=1 conserva el proyecto y dice dónde)
 #
 # ◆ CONTRATO
-#   Sale 0 si verify.sh pasa y los dos fallos provocados se detectan; != 0 si
-#   no. No toca el repo: trabaja en un directorio temporal.
+#   Sale 0 si el guardián y verify.sh pasan y todos los fallos provocados se
+#   detectan; != 0 si no. No toca el repo: trabaja en un directorio temporal.
 # ─────────────────────────────────────────────────────────────────────────────
 set -u
 
@@ -49,6 +53,7 @@ WORK=$(mktemp -d)
 if [ "${E2E_KEEP:-0}" = 1 ]; then trap 'echo "proyecto: $WORK/demo"' EXIT; else trap 'rm -rf "$WORK"' EXIT; fi
 APP=$WORK/demo
 FAIL=0
+SIBLING=backend
 export NEXT_TELEMETRY_DISABLED=1
 
 ok()   { printf '  ✓ %s\n' "$1"; }
@@ -64,6 +69,9 @@ quiet() {
 }
 # g <args de git>: git en el proyecto, sin depender de la configuración de quien lo ejecuta.
 g() { git -C "$APP" -c user.name=kit -c user.email=kit@example.invalid -c commit.gpgsign=false -c core.hooksPath=/dev/null "$@"; }
+# fresh <caso>: el proyecto, de vuelta al commit inicial para provocar ese caso (guardian_cases). git no toca
+# vendor/ ni node_modules/, que ignora.
+fresh() { g checkout -q -- . && g clean -qfd && printf '%s' "$APP"; }
 
 step "proyecto nuevo (create-next-app@$NEXT_VERSION)"
 # shellcheck disable=SC2086  # las listas de paquetes se parten a propósito
@@ -85,7 +93,8 @@ cp -R "$ROOT/tests/fixtures/nextjs-e2e/." "$APP/"
     cd "$APP" || exit 1
     fill_stack .ai/RULES.md .ai/project/DECISIONS.md package.json
     find . -path ./node_modules -prune -o -type f -name '*.md' -exec grep -lF '{{RELLENAR' {} + \
-        | while read -r f; do fill_markers "$f" backend; done
+        | while read -r f; do fill_markers "$f" "$SIBLING"; done
+    make_test_epics
     quiet "$WORK/contract.log" sh bin/contract.sh
 ) || { fail 'no pude preparar la instalación'; exit 1; }
 if ! quiet "$WORK/git.log" git init -q -b main "$APP" || ! g add -A \
@@ -93,7 +102,15 @@ if ! quiet "$WORK/git.log" git init -q -b main "$APP" || ! g add -A \
     fail 'no pude versionar el proyecto'
     exit 1
 fi
-ok 'stack instalado, capa del proyecto rellena y cliente generado del OpenAPI de ejemplo'
+ok 'stack instalado, capa del proyecto rellena, épica de prueba y cliente generado del OpenAPI de ejemplo'
+
+step 'el guardián, con la épica de prueba'
+if (cd "$APP" && sh bin/check-docs.sh --strict > "$WORK/guardian.log" 2>&1); then
+    ok 'bin/check-docs.sh --strict pasa con 01-demo y con 02-paquete, la épica desde el paquete E1'
+else
+    sed 's/^/      /' "$WORK/guardian.log"
+    fail 'el guardián no pasa con la épica de prueba'
+fi
 
 step 'bin/verify.sh completo'
 if (cd "$APP" && sh bin/verify.sh > "$WORK/verify.log" 2>&1); then
@@ -130,13 +147,27 @@ rm -rf "$APP/src/features/other"
 # Una ruta nueva en el OpenAPI, sin regenerar el cliente: el gate «contrato».
 edit "$APP/docs/contract/openapi.json" 's#"/demos/{id}": {#"/demos": { "get": { "responses": { "204": { "description": "Empty" } } } },\n    "/demos/{id}": {#'
 (cd "$APP" && sh bin/verify.sh --fast > "$WORK/contract-gate.log" 2>&1)
-if awk '/^▸ contrato/ { c = 1; next } c && /^▸/ { exit } c && /✗$/ { f = 1 } END { exit !f }' "$WORK/contract-gate.log"; then
+if gate_fails "$WORK/contract-gate.log" contrato; then
     ok 'contrato: un cambio en el OpenAPI sin regenerar el cliente hace fallar el gate «contrato»'
 else
     sed 's/^/      /' "$WORK/contract-gate.log"
     fail 'contrato: el gate «contrato» no detecta el OpenAPI cambiado'
 fi
 g checkout -q -- docs/contract/openapi.json
+
+step 'fallos del guardián, sobre el proyecto'
+guardian_cases "$APP"
+# Y uno a través de verify.sh: el guardián es su gate «docs», y su fallo deja el verify en rojo.
+d=$(fresh 0) && (cd "$d" && estropea 0)
+(cd "$APP" && sh bin/verify.sh --fast > "$WORK/docs-gate.log" 2>&1)
+rc=$?
+if [ "$rc" -ne 0 ] && gate_fails "$WORK/docs-gate.log" docs; then
+    ok 'verify.sh: un {{RELLENAR}} sin completar hace fallar el gate «docs» y el verify'
+else
+    sed 's/^/      /' "$WORK/docs-gate.log"
+    fail 'verify.sh: el gate «docs» no detecta el fallo del guardián'
+fi
+fresh 0 > /dev/null
 
 printf '\n'
 if [ "$FAIL" -eq 0 ]; then echo '✓ tests/e2e-nextjs.sh: todo en verde'; else echo '✗ tests/e2e-nextjs.sh: hay fallos'; fi

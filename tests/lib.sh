@@ -55,6 +55,9 @@ fill_markers() {
         }' "$1" > "$1.tmp" && mv "$1.tmp" "$1"
 }
 
+# gate_fails <log> <gate>: el gate falló en esa salida de bin/verify.sh.
+gate_fails() { awk -v g="▸ $2" 'index($0, g) == 1 { c = 1; next } c && /^▸/ { exit } c && /✗$/ { f = 1 } END { exit !f }' "$1"; }
+
 # ── La épica de prueba ──────────────────────────────────────────────────────
 # Lo que sigue corre en la raíz de una instalación con la capa del proyecto rellena. Quien carga este archivo
 # define ROOT (la raíz del kit) y SIBLING (el repo hermano que declaró al rellenar).
