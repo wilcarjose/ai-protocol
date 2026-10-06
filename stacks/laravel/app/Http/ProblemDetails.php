@@ -17,23 +17,25 @@ use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Throwable;
 
 /**
- * Los errores de la API en application/problem+json (RFC 9457): `type`, `title`, `status`, `detail` y la extensión
- * `code`, por la que discrimina el cliente (.ai/rules/arquitectura.md §Excepciones). Es el único sitio que da forma a
- * un error.
+ * API errors as application/problem+json (RFC 9457): `type`, `title`, `status`, `detail` and the `code` extension,
+ * which the client branches on (.ai/rules/arquitectura.md §Excepciones). It is the only place that shapes an error.
  *
- * Se registra en bootstrap/app.php, con `use App\Http\ProblemDetails;`:
+ * `detail` is user-facing text: an ApiException message is a translation key, translated here with the exception
+ * context as parameters; the fixed texts below go through the translator too (lang/<locale>.json).
+ *
+ * Registered in bootstrap/app.php, with `use App\Http\ProblemDetails;`:
  *
  *     ->withExceptions(function (Exceptions $exceptions): void {
  *         ProblemDetails::register($exceptions);
  *     })
  *
- * Es una semilla del kit ai-protocol: después de instalarla es del proyecto. Los códigos de abajo son contrato.
+ * Seeded by the ai-protocol kit: once installed, it belongs to the project. The codes below are contract.
  */
 final class ProblemDetails
 {
     public const string CONTENT_TYPE = 'application/problem+json';
 
-    /** Los códigos de los errores que no son de negocio, por status. */
+    /** The codes of the errors that are not business errors, by status. */
     private const array CODES = [
         401 => 'UNAUTHENTICATED',
         403 => 'FORBIDDEN',
@@ -48,7 +50,7 @@ final class ProblemDetails
 
     public static function register(Exceptions $exceptions): void
     {
-        // Un rechazo legítimo (4xx) no es un error de la aplicación: no se reporta.
+        // A legitimate rejection (4xx) is not an application error: it is not reported.
         $exceptions->report(static fn (ApiException $e): ?bool => $e->status >= 500 ? null : false);
 
         $exceptions->render(static fn (Throwable $e, Request $request): ?JsonResponse => self::applies($request) ? self::render($e) : null);
@@ -63,33 +65,44 @@ final class ProblemDetails
     {
         return match (true) {
             $e instanceof HttpResponseException => null,
-            $e instanceof ApiException => self::response($e->status, $e->errorCode, $e->getMessage()),
+            $e instanceof ApiException => self::response($e->status, $e->errorCode, self::translate($e->getMessage(), $e->context)),
             $e instanceof ValidationException => self::response(422, self::CODES[422], $e->getMessage(), ['errors' => $e->errors()]),
-            $e instanceof AuthenticationException => self::response(401, self::CODES[401], 'Unauthenticated.'),
+            $e instanceof AuthenticationException => self::response(401, self::CODES[401], self::translate('Unauthenticated.')),
             $e instanceof HttpExceptionInterface => self::response(
                 $e->getStatusCode(),
                 self::CODES[$e->getStatusCode()] ?? 'HTTP_'.$e->getStatusCode(),
                 self::detail($e),
                 headers: $e->getHeaders(),
             ),
-            // Un 500 nunca expone el mensaje de la excepción: texto fijo, y el detalle al log.
-            default => self::response(500, self::CODES[500], self::title(500).'.'),
+            // A 500 never exposes the exception message: a fixed text, and the details go to the log.
+            default => self::response(500, self::CODES[500], self::translate(self::title(500).'.')),
         };
     }
 
     /**
-     * El mensaje de un abort(403, '…') es para el cliente; el de un 5xx o un modelo que no existe (nombra la clase),
-     * no.
+     * The message of an abort(403, '…') is for the client; the one of a 5xx or of a missing model (it names the
+     * class) is not.
      */
     private static function detail(HttpExceptionInterface $e): string
     {
         $status = $e->getStatusCode();
 
         if ($status >= 500 || $e->getMessage() === '' || $e->getPrevious() instanceof ModelNotFoundException) {
-            return self::title($status).'.';
+            return self::translate(self::title($status).'.');
         }
 
-        return $e->getMessage();
+        return self::translate($e->getMessage());
+    }
+
+    /**
+     * @param  array<string, mixed>  $context
+     */
+    private static function translate(string $key, array $context = []): string
+    {
+        $replace = array_filter($context, static fn (mixed $value): bool => is_scalar($value));
+        $text = __($key, $replace);
+
+        return is_string($text) ? $text : $key;
     }
 
     /**

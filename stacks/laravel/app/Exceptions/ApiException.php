@@ -8,12 +8,13 @@ use RuntimeException;
 use Throwable;
 
 /**
- * Base de toda excepción de negocio (.ai/rules/arquitectura.md §Excepciones).
+ * Base of every business exception (.ai/rules/arquitectura.md §Excepciones).
  *
- * Su `errorCode` (mayúsculas, estable) es el contrato: el cliente discrimina por él. El mensaje es el `detail` de la
- * respuesta problem+json que escribe App\Http\ProblemDetails; el contexto va al log, nunca a la respuesta.
+ * Its `errorCode` (upper case, stable) is the contract: the client branches on it. The message is a translation key
+ * (`listings.not_found`); App\Http\ProblemDetails translates it into the problem+json `detail`, with the context as
+ * its parameters. The context goes to the log, never to the response.
  *
- * Es una semilla del kit ai-protocol: después de instalarla es del proyecto.
+ * Seeded by the ai-protocol kit: once installed, it belongs to the project.
  */
 class ApiException extends RuntimeException
 {

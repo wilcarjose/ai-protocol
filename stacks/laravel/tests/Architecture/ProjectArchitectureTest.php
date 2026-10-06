@@ -4,19 +4,19 @@ declare(strict_types=1);
 
 /*
 |--------------------------------------------------------------------------
-| Reglas de arquitectura del proyecto
+| Project architecture rules
 |--------------------------------------------------------------------------
 |
-| Las que este proyecto añade a las del kit (`ArchitectureTest.php`, que está
-| protegido y no se toca): una por regla de `.ai/project/ARCHITECTURE.md` que
-| se pueda comprobar sobre el código. Corren en el mismo gate y con las
-| mismas prohibiciones (`.ai/RULES.md §Lista negra`).
+| The rules this project adds to the kit's (`ArchitectureTest.php`, which is
+| protected and never edited): one per rule of `.ai/project/ARCHITECTURE.md`
+| that can be checked on the code. They run in the same gate and under the
+| same bans (`.ai/RULES.md §Lista negra`).
 |
-| Es una semilla del kit `ai-protocol`: después de instalarla es del proyecto.
+| Seeded by the ai-protocol kit: once installed, it belongs to the project.
 |
-| Ejemplo: una funcionalidad no usa las Actions de otra.
+| Example: a feature does not use another feature's Actions.
 |
-|     arch('Anuncios no depende de Pagos')
-|         ->expect('App\Actions\Anuncios')
-|         ->not->toUse('App\Actions\Pagos');
+|     arch('Listings does not depend on Payments')
+|         ->expect('App\Actions\Listings')
+|         ->not->toUse('App\Actions\Payments');
 */
