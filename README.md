@@ -21,7 +21,6 @@ stacks/<stack>/           Lo que añade cada stack: reglas, plantillas, verify.s
   stack.json              Su versión, sus archivos, el rango del núcleo con el que es compatible y sus gates.
 stacks/expo/              Sólo un README que anuncia el stack.
 install.sh                Instala o actualiza núcleo + stack en un proyecto.
-ci/                       Workflows de CI para los proyectos (todavía vacía).
 tests/                    Las pruebas del kit: structure.sh, run.sh y sus fixtures.
 docs/                     Planes y documentación del propio kit.
 ```
@@ -42,11 +41,12 @@ AGENTS.md                 Redirección a CLAUDE.md para Cursor, Codex, aider… 
   PROTOCOL.md             Mejoras del protocolo que propone cada fase, pendientes de aplicar.        [núcleo · semilla]
   archive/                Lo cerrado de la memoria: backlog, decisiones reemplazadas, mejoras.      [núcleo · semilla]
   project/                La capa del proyecto: contexto, versiones, alcance, contrato, zonas…      [núcleo · semilla]
+  project/verify.conf     La baseline de bin/verify.sh y, en Laravel, el servicio de Docker Compose. [stack · semilla]
   templates/              Plantillas de épica y de fase.                                             [stack · kit]
   stages/                 Paquetes de tareas de un plan externo; su README dice el formato.         [núcleo · kit]
   epics/                  Las épicas y sus fases, con su evidence/ (vacía al instalar).             [núcleo · semilla]
   handoffs/               Entregas del repo hermano, copiadas.                                       [núcleo · kit]
-  protocol.lock           Lo que instaló install.sh: versiones y suma de cada archivo.               [install.sh]
+  protocol.lock           Lo que instaló install.sh: versiones, suma y «kit» o «project» por archivo. [install.sh]
 .claude/
   skills/phase/           /phase — ejecuta la fase activa: rama, pasos, commits; cierre.md, el cierre. [núcleo · kit]
   skills/close/           /close — documenta una fase que otra sesión dejó a medias.                 [núcleo · kit]
@@ -54,21 +54,26 @@ AGENTS.md                 Redirección a CLAUDE.md para Cursor, Codex, aider… 
   skills/plan-phase/      /plan-phase — crea o cambia una fase: corte, tipo de tarea, coherencia.    [núcleo · kit]
   skills/review/          /review — lanza el revisor y escribe sus hallazgos en la fase.             [núcleo · kit]
   agents/reviewer.md      El revisor IA: subagente de solo lectura que compara el diff con la fase.  [núcleo · kit]
-  settings.json           Permisos del agente (qué puede ejecutar sin preguntar y qué nunca).        [stack · kit]
+  settings.json           Permisos del agente: qué ejecuta sin preguntar y qué nunca (push a main…). [stack · kit]
+.github/
+  pull_request_template.md  La plantilla del PR de cada fase.                                       [núcleo · kit]
+  workflows/verify.yml    La CI: bin/verify.sh completo en cada PR.                                   [stack · kit]
 bin/
   check-docs.sh           El guardián: 15 chequeos sobre la coherencia de la memoria.                [núcleo · kit]
+  check-protocol.sh       En una rama de fase, el protocolo sólo cambia en commits (protocol).       [núcleo · kit]
   handoff.sh              Lo que una fase dejó dicho para la siguiente, y nada más.                  [núcleo · kit]
   measure-context.sh      Cuántos caracteres lee cada tipo de sesión al arrancar.                    [núcleo · kit]
   verify.sh               El único árbitro: gates, su orden y la baseline que nunca empeora.         [stack · kit]
 docs/
-  README.md               Qué va en cada carpeta de docs/.                                           [stack · kit]
+  README.md               Qué va en cada carpeta de docs/.                                           [stack · semilla]
   runbooks/release.md     Manifiesto de despliegue: lo que cada fase deja por hacer en producción.   [núcleo · semilla]
 ```
 
 Además, propios de cada stack:
 
 - **Laravel:** `tests/Architecture/ArchitectureTest.php` (las reglas de Actions y Value Objects, con el plugin de
-  arquitectura de Pest), `scripts/normalize-routes.php` (baseline de rutas del contrato HTTP) y `phpstan.neon`.
+  arquitectura de Pest), `scripts/normalize-routes.php` (baseline de rutas del contrato HTTP) y `phpstan.neon`
+  (semilla: el proyecto lo ajusta).
 - **Next.js:** `docs/vendor/INDEX.md` (índice de notas de las librerías en la versión instalada; semilla).
 
 ## Instalación en un proyecto nuevo
@@ -79,6 +84,10 @@ El kit da por hecho el stack de su `RULES.md` (`.ai/RULES.md §Stack y versiones
 no usa alguno de esos paquetes, quitar su fila de `RULES.md` es un cambio local que `install.sh --upgrade` enseñará
 como conflicto.
 
+Además, en cualquier stack: `git` y [gitleaks](https://github.com/gitleaks/gitleaks#installing), que usan los
+gates «protocolo» y «secretos» de `bin/verify.sh`, y `gh` para que la fase abra su PR. En la nube los instala el
+script de preparación (`docs/modos.md`).
+
 **Laravel**
 
 ```bash
@@ -86,6 +95,7 @@ laravel new mi-proyecto --pest        # o composer create-project; con Pest, no 
 cd mi-proyecto && git init
 composer require --dev larastan/larastan
 php artisan install:api               # si expone una API
+echo 8.4 > .php-version               # la versión de PHP de la CI (.github/workflows/verify.yml)
 ```
 
 En `tests/TestCase.php`, que ningún test llame a la red real (`.ai/RULES.md §Tests`):
@@ -109,7 +119,8 @@ npm i -D vitest eslint-plugin-boundaries
 ```
 
 La regla de capas de `.ai/RULES.md §Estructura y regla de dependencias` (`app → features → entities → shared`) se
-configura en `eslint.config.mjs` con `eslint-plugin-boundaries`, y `tsconfig.json` lleva `"strict": true`.
+configura en `eslint.config.mjs` con `eslint-plugin-boundaries`, y `tsconfig.json` lleva `"strict": true`. La CI toma
+la versión de Node de `"engines": { "node": "…" }` en `package.json`.
 
 ### 2. Instalar el kit
 
@@ -148,10 +159,10 @@ El guardián no deja pasar `bin/verify.sh` mientras quede un marcador o una vers
 php scripts/normalize-routes.php > docs/contract/routes-baseline.txt
 ```
 
-Si el proyecto corre en Docker Compose, pon el nombre del servicio de PHP en `VERIFY_SERVICE`, en la sección
-«CONFIGURACIÓN DEL PROYECTO» de `bin/verify.sh`: desde el host, el script se relanza dentro del contenedor. Ese
-cambio, como la baseline que mueven las fases, hace que `install.sh --upgrade` trate `bin/verify.sh` como modificado
-por el proyecto.
+Si el proyecto corre en Docker Compose, pon el nombre del servicio de PHP en `VERIFY_SERVICE`, en
+`.ai/project/verify.conf`: desde el host, `bin/verify.sh` se relanza dentro del contenedor, que necesita `git` y
+gitleaks. Ese archivo es del proyecto, como la baseline que mueven las fases (`MIN_TESTS` y la deuda congelada), así
+que `bin/verify.sh` queda entero del kit.
 
 ### 5. Primer verde y primer commit
 
@@ -159,6 +170,9 @@ por el proyecto.
 bash bin/verify.sh
 git add -A && git commit -m "chore(protocol): install ai-protocol"
 ```
+
+En GitHub, un *ruleset* sobre `main` que exija PR y el check `verify`, y bloquee el push forzado y el borrado
+(`docs/modos.md §Proteger main en GitHub`).
 
 ### 6. La primera épica
 
@@ -184,8 +198,9 @@ Toma el stack del lock y compara cada archivo del kit con la suma que guardó la
 | `+` copiado | El kit trae un archivo nuevo | Lo copia |
 | `-` retirado | El kit ya no lo trae | Lo borra si el proyecto no lo tocó; si lo tocó, avisa |
 
-Nunca toca las semillas: la memoria (`STATE`, `DOMAIN`, `BACKLOG`, `PROTOCOL`, las épicas), `.ai/project/` ni los
-registros que llenan las fases. Si no hay nada que hacer, dice «sin cambios» y no escribe nada.
+Nunca toca las semillas, que el lock marca `project`: la memoria (`STATE`, `DOMAIN`, `BACKLOG`, `PROTOCOL`, las
+épicas), `.ai/project/` (con `verify.conf`), los registros que llenan las fases y la configuración que el proyecto
+ajusta (`phpstan.neon`, `docs/README.md`). Si no hay nada que hacer, dice «sin cambios» y no escribe nada.
 
 Un proyecto instalado con el kit 1.x (copiado con `cp`, sin lock) se actualiza con `--upgrade --stack <stack>`: sin
 sumas anteriores, todo archivo que difiere del kit sale como conflicto.
@@ -198,7 +213,9 @@ mejoras aplicadas de `PROTOCOL.md` —la n.º 1, «Protocolo instalado», tambi�
 `.ai/PLANNING.md` a las skills `/plan-epic` y `/plan-phase`: el upgrade retira los viejos si el proyecto no los
 cambió. Las fases escritas con la plantilla anterior no llevan «Tipo» ni «Revisión»: cuentan como de código y el
 guardián no les exige revisión. `.ai/STATE.md` no necesita `§Esperando evidencia` hasta que una fase quede en
-`ESPERA_EVIDENCIA`.
+`ESPERA_EVIDENCIA`. La baseline sale de `bin/verify.sh` a `.ai/project/verify.conf`: el upgrade crea éste con los
+valores por defecto, y los del proyecto (y `VERIFY_SERVICE`) se copian a mano antes de aceptar el `bin/verify.sh`
+nuevo.
 
 ## Cómo se trabaja
 
@@ -221,19 +238,30 @@ guardián no les exige revisión. `.ai/STATE.md` no necesita `§Esperando eviden
    - **Paso B:** un commit por fila del plan, cada uno con `bash bin/verify.sh --fast` en verde.
    - **Paso C:** `bash bin/verify.sh` completo, RESULTADO de la fase (sobre todo «Lo que la siguiente fase necesita
      saber», que la siguiente lee con `bin/handoff.sh`; las salidas de más de 40 líneas, en `evidence/`),
-     **`/review`**, estado y puntero, memoria al día y archivada, commit de cierre. El chat sólo da cinco líneas que
-     apuntan al RESULTADO.
+     **`/review`**, estado y puntero, memoria al día y archivada, commit de cierre, y la **entrega**: push de la rama
+     y PR con la plantilla. El chat sólo da cinco líneas que apuntan al RESULTADO y al PR.
    - **El revisor** (`.claude/agents/reviewer.md`) es un subagente de solo lectura que no ve la conversación:
      compara el diff de la rama con los entregables, los criterios y su evidencia, las reglas, `.ai/project/`, las
      zonas sensibles y el alcance, y `/review` escribe sus hallazgos en la sección «Revisión» de la fase. Con un
      bloqueante sin resolver, la fase no se cierra.
-3. **Revisar** la rama en local (`git log --oneline main..HEAD`, `git diff main...HEAD`) y decidir el merge. El agente
-   nunca hace `git push`.
+3. **Revisar el PR**, con la CI en verde, y decidir el merge. El agente sólo empuja la rama de la fase: nunca a
+   `main`, nunca forzado, y nunca fusiona.
 4. **`/close`** si una sesión se cortó: documenta lo que de verdad pasó, sin completar nada.
 
 Cuando el agente no puede decidir algo (contrato, producto, arquitectura, un criterio que no se puede cumplir tal
 como está escrito), para con un **STOP & ASK**: opciones, consecuencias y su recomendación. La respuesta queda
 escrita en la fase y, si sobrevive a ella, en `.ai/DOMAIN.md`.
+
+## Dónde corre una fase
+
+En la nube por defecto (Claude Code en claude.ai/code, la app o `claude --cloud`), o en local, con Docker Compose o
+con Remote Control. Termina siempre igual: rama `phase/<NN-slug>/<FF>` en GitHub, PR y la CI repitiendo
+`bin/verify.sh`. Qué hace falta en cada modo, el script de preparación de la nube y cómo proteger `main`:
+[`docs/modos.md`](docs/modos.md).
+
+**La protección del protocolo.** Una fase no cambia los archivos del kit (`.ai/WORKFLOW.md §Archivos del
+protocolo`): en una rama de fase, el gate «protocolo» de `bin/verify.sh` (`bin/check-protocol.sh`) falla si un
+commit sin ámbito `protocol` toca un archivo que `.ai/protocol.lock` marca `kit`. Lo que marca `project` es libre.
 
 ## Un backend Laravel y un frontend Next.js
 
@@ -270,7 +298,7 @@ Para quien venga de esos repos:
 
 - **Un solo protocolo** para los dos stacks; lo que cambia por stack está en `RULES.md`, las plantillas,
   `verify.sh`, `settings.json` y `docs/`.
-- **La baseline vive en `bin/verify.sh`** (`MIN_TESTS` y la deuda congelada), no en `STATE.md`. Laravel gana el modo
+- **La baseline vive en `.ai/project/verify.conf`** (`MIN_TESTS` y la deuda congelada), no en `STATE.md`. Laravel gana el modo
   `--fast` y un gate de deuda de PHPStan que sólo mengua.
 - **Sin páginas de seguimiento** (Artifacts): el archivo de la fase es el único registro.
 - **`STATE.md`** lleva siempre `Pendientes en otros repos: N (M condicionan el despliegue)`, y el guardián comprueba
@@ -311,8 +339,9 @@ cada stack en su `stack.json`. Ésa es la única fuente de la versión; este REA
   son los de su `verify.sh`.
 - **Lo propio de un proyecto no entra en el kit:** va a `core/.ai/project/` como plantilla con `{{RELLENAR}}`, y las
   reglas lo citan.
-- **La CI del kit** (`.github/workflows/kit.yml`) corre en cada PR `shellcheck -s sh` sobre los scripts,
-  `sh tests/structure.sh` y `sh tests/run.sh`, también dentro de Alpine (busybox).
+- **La CI del kit** (`.github/workflows/kit.yml`) corre en cada PR `shellcheck -s sh` sobre los scripts, `actionlint`
+  sobre sus workflows y los de cada stack, `sh tests/structure.sh` y `sh tests/run.sh`, también dentro de Alpine
+  (busybox, con git).
 - **El contexto no crece sin decidirlo.** `tests/context-baseline.txt` guarda lo que leen al arrancar el ejecutor
   de cada stack y `CLAUDE.md`, medido con `bin/measure-context.sh` sobre una instalación limpia. `tests/run.sh` falla
   si una sesión crece más de un 3 % y avisa si baja más de un 3 %; subir la línea base es cambiar ese archivo en un
