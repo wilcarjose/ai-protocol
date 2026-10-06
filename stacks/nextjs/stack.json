@@ -10,17 +10,22 @@
     ".ai/templates/epic-plan.template.md",
     ".ai/templates/phase.template.md",
     ".claude/settings.json",
-    "bin/verify.sh",
-    "docs/README.md"
+    ".github/workflows/verify.yml",
+    "bin/verify.sh"
   ],
   "seed": [
+    ".ai/project/verify.conf",
+    "docs/README.md",
     "docs/vendor/INDEX.md"
   ],
   "gates": [
     "docs",
+    "protocolo",
+    "secretos",
     "tipos",
     "estilo",
     "supresiones",
+    "dependencias",
     "tests"
   ]
 }
