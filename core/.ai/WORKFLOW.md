@@ -221,7 +221,7 @@ baseline (conteo de tests, deuda congelada) nunca empeora: si un cierre la empeo
 | Archivo | Contiene | Quién escribe |
 |---|---|---|
 | `CLAUDE.md` | Orientación: lectura en frío, alcance, prohibiciones y punteros | Sólo el Tech Lead |
-| `.claude/` | Las skills (`/phase`, `/close`, `/plan-epic`, `/plan-phase`, `/review`) y el revisor | Sólo el Tech Lead |
+| `.claude/` | Las skills, el revisor y los permisos | Sólo el Tech Lead |
 | `.ai/RULES.md` | El núcleo de las reglas de código: stack, alcance, contrato, lista negra | Sólo el Tech Lead |
 | `.ai/rules/` | Las reglas de código por tema, que la fase cita cuando las toca | Sólo el Tech Lead |
 | `.ai/WORKFLOW.md` | Este protocolo | Sólo el Tech Lead |
@@ -238,20 +238,25 @@ baseline (conteo de tests, deuda congelada) nunca empeora: si un cierre la empeo
 
 **Reglas de escritura:**
 
-1. **Nunca modifiques `CLAUDE.md`, `.ai/RULES.md`, `.ai/rules/`, `.ai/WORKFLOW.md` ni las skills desde una fase.**
-   Si crees que algo está mal: STOP & ASK, y la propuesta a `.ai/PROTOCOL.md`.
-2. **Todo hallazgo lateral va a `.ai/BACKLOG.md`**, con archivo, clase o método y evidencia. No a un comentario.
-3. **No clasifiques la severidad tú.** Describe el impacto observable (¿afecta a datos de usuario, a la seguridad, a
+1. **Todo hallazgo lateral va a `.ai/BACKLOG.md`**, con archivo, clase o método y evidencia. No a un comentario.
+2. **No clasifiques la severidad tú.** Describe el impacto observable (¿afecta a datos de usuario, a la seguridad, a
    dinero, a lo que el usuario ve?) y deja que el Tech Lead decida la prioridad. Un defecto de facturación mal
    descrito acaba archivado como deuda técnica.
-4. **Un comentario en el código no es un canal de comunicación.** Si un humano tiene que saberlo, va en el
+3. **Un comentario en el código no es un canal de comunicación.** Si un humano tiene que saberlo, va en el
    RESULTADO y en `.ai/BACKLOG.md`, no enterrado en un docblock de cuarenta líneas.
-5. **Las referencias entre archivos se verifican con `grep` en una sesión en frío.** Cita el nombre de la clase, el
+4. **Las referencias entre archivos se verifican con `grep` en una sesión en frío.** Cita el nombre de la clase, el
    método o la sección, nunca un número de línea: un número no sobrevive a un cambio. Si el `grep` no encuentra el
    destino, la referencia miente y se corrige.
-6. **Las cifras del RESULTADO se copian de la salida de un comando**, no de memoria: el RESULTADO es la evidencia
+5. **Las cifras del RESULTADO se copian de la salida de un comando**, no de memoria: el RESULTADO es la evidencia
    con la que se verifica la fase.
-7. **Entre repos**, lo que dice `CLAUDE.md §El otro repositorio`: su código se lee y se cita; sus documentos no.
+6. **Entre repos**, lo que dice `CLAUDE.md §El otro repositorio`: su código se lee y se cita; sus documentos no.
+
+### Archivos del protocolo
+
+Los que `.ai/protocol.lock` marca `kit` (`CLAUDE.md`, las reglas, `.ai/templates/`, `.claude/`, `bin/`, `.github/`) y
+el lock; los `project` son del proyecto. **Una fase no los modifica**: si crees que algo está mal, STOP & ASK y la
+propuesta a `.ai/PROTOCOL.md`. Los cambia el Tech Lead en un commit `chore(protocol): …`; en una rama de fase lo
+vigila `bin/check-protocol.sh` (gate «protocolo»).
 
 ---
 
