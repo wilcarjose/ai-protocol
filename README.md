@@ -341,7 +341,9 @@ cada stack en su `stack.json`. Ésa es la única fuente de la versión; este REA
   reglas lo citan.
 - **La CI del kit** (`.github/workflows/kit.yml`) corre en cada PR `shellcheck -s sh` sobre los scripts, `actionlint`
   sobre sus workflows y los de cada stack, `sh tests/structure.sh` y `sh tests/run.sh`, también dentro de Alpine
-  (busybox, con git).
+  (busybox, con git). El job `e2e-nextjs` (`sh tests/e2e-nextjs.sh`) crea un proyecto nuevo con create-next-app,
+  instala el stack, corre su `bin/verify.sh` completo con `next build` y Lighthouse CI, y provoca un import que
+  rompe las capas y un OpenAPI cambiado sin regenerar el cliente.
 - **El contexto no crece sin decidirlo.** `tests/context-baseline.txt` guarda lo que leen al arrancar el ejecutor
   de cada stack y `CLAUDE.md`, medido con `bin/measure-context.sh` sobre una instalación limpia. `tests/run.sh` falla
   si una sesión crece más de un 3 % y avisa si baja más de un 3 %; subir la línea base es cambiar ese archivo en un

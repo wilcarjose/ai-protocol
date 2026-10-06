@@ -1,6 +1,7 @@
 # La CI del kit: en cada PR, los scripts pasan shellcheck y los workflows actionlint (los del kit y los que instala
 # cada stack), el núcleo y los stacks cuadran con sus manifiestos (tests/structure.sh), y el guardián de cada stack
-# pasa sobre una instalación de prueba y detecta cada fallo provocado (tests/run.sh).
+# pasa sobre una instalación de prueba y detecta cada fallo provocado (tests/run.sh). Los e2e instalan cada stack en
+# un proyecto nuevo de verdad y corren su bin/verify.sh completo (tests/e2e-<stack>.sh).
 name: kit
 
 on:
@@ -39,3 +40,24 @@ jobs:
       # Alpine no trae y bin/check-protocol.sh necesita.
       - name: tests en Alpine (busybox)
         run: docker run --rm -v "$PWD":/k:ro -w /k alpine:3 sh -c 'apk add --no-cache --quiet git && sh tests/run.sh'
+
+  e2e-nextjs:
+    runs-on: ubuntu-latest
+    env:
+      GITLEAKS_VERSION: 8.30.1
+      E2E_LIGHTHOUSE: 1
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # El gate «secretos» de verify.sh lo necesita, como en el workflow del stack.
+      - name: gitleaks
+        run: |
+          curl -sSfL "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" \
+            | sudo tar xz -C /usr/local/bin gitleaks
+
+      - name: e2e
+        run: sh tests/e2e-nextjs.sh
