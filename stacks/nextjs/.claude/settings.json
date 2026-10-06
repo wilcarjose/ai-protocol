@@ -6,6 +6,7 @@
       "Bash(sh bin/check-docs.sh*)", "Bash(sh bin/check-protocol.sh*)", "Bash(sh bin/handoff.sh*)", "Bash(sh bin/measure-context.sh*)", "Bash(bash bin/verify.sh*)", "Bash(sh bin/verify.sh*)",
       "Bash(npm run *)", "Bash(npm ls*)", "Bash(npm ci)",
       "Bash(npx tsc *)", "Bash(npx eslint *)", "Bash(npx vitest *)", "Bash(npx playwright test*)",
+      "Bash(sh bin/contract.sh*)", "Bash(npx next build*)", "Bash(npx next typegen*)",
       "Bash(node -p *)", "Bash(node -e *)",
       "Bash(curl -s http://localhost*)",
       "Bash(git status*)", "Bash(git diff*)", "Bash(git log*)", "Bash(git show*)", "Bash(git rev-parse*)",

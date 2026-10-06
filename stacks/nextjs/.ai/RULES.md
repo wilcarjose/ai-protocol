@@ -27,11 +27,12 @@ cada paquete de esta tabla y la compara con `package.json`. Una fila por paquete
 | `next` | App Router. ⚠️ La semántica de caché cambia entre versiones mayores |
 | `react` / `react-dom` | |
 | `typescript` | `strict: true` en `tsconfig.json` |
-| `zod` | Toda frontera se valida (§4) |
+| `zod` | Las fronteras que no tipa el contrato (§4) |
+| `openapi-fetch` / `openapi-typescript` | El cliente y sus tipos, generados del contrato (§3) |
 | `@tanstack/react-query` | Datos del servidor en el cliente (`.ai/rules/arquitectura.md §Estado`) |
 | `zustand` | Estado de cliente compartido (`.ai/rules/arquitectura.md §Estado`) |
-| `vitest` | Tests unitarios (`.ai/rules/tests.md`) |
-| `eslint` | Config plana, con la regla de capas (§5) |
+| `vitest` / `@playwright/test` | Unitarios y E2E (`.ai/rules/tests.md`) |
+| `eslint` / `eslint-plugin-boundaries` / `eslint-import-resolver-typescript` | Config plana, con la regla de capas (§5) |
 
 > **Antes de usar una API de cualquiera de estas librerías, lee `docs/vendor/INDEX.md`** (§7). Tu memoria de
 > entrenamiento corresponde probablemente a otra versión.
@@ -54,7 +55,8 @@ e2e/**
 package.json, lockfile     ← dependencias nuevas: .ai/WORKFLOW.md §Dependencia nueva
 tsconfig.json              ← nunca se relaja
 eslint.config.*            ← nunca se bajan reglas; una regla nueva, con la fase
-next.config.*              ← sólo si la fase lo pide
+next.config.*              ← sólo si la fase lo pide; con `agentRules: false` (AGENTS.md es del kit)
+docs/contract/             ← la copia del contrato: .ai/rules/contrato.md §Cómo se conoce el contrato
 .env*                      ← nunca se leen ni se escriben secretos
 el repo hermano            ← nunca se escribe en él (CLAUDE.md §El otro repositorio)
 ```
@@ -76,7 +78,7 @@ cambie el backend es un traspaso (`CLAUDE.md §El otro repositorio`), nunca una 
 ### 3.1 Una sola capa HTTP
 
 `fetch` y cualquier cliente HTTP sólo existen dentro de `src/shared/api/`: el cliente único, la unión de errores, los
-esquemas del contrato y las factorías de claves de caché viven ahí. Toda petición sale de ese cliente, que es el
+tipos generados del contrato y las factorías de claves de caché viven ahí. Toda petición sale de ese cliente, que es el
 único sitio que construye las cabeceras (autenticación, idioma, tenant, zona horaria…). Perder una cabecera devuelve
 datos equivocados **sin error**.
 
@@ -85,7 +87,7 @@ cabeceras`. Si hay un BFF (en `src/app/api/`), su lista blanca de rutas es la ú
 
 ### 3.2 La forma de una respuesta NO se adivina
 
-Se lee de los esquemas o de los snapshots. Si ninguno la fija: **detente y pregunta**
+Se lee de los tipos generados del contrato o de los snapshots. Si ninguno la fija: **detente y pregunta**
 (`.ai/WORKFLOW.md §Contrato`). No la infieras del código del frontend, que puede llevar formas equivocadas.
 
 Cómo se conoce el contrato, los errores, las claves de caché y las formas que varían: `.ai/rules/contrato.md`.
@@ -98,10 +100,10 @@ Cuando dos choquen, gana el de número menor.
 
 1. **El código es la fuente de verdad.** Ante una duda sobre la forma de un dato se lee el contrato (`.ai/rules/contrato.md §Cómo se conoce el contrato`), no se
    adivina.
-2. **Ningún dato cruza una frontera sin validarse** con Zod: respuestas HTTP, `formData`, `searchParams`, variables
-   de entorno, cookies.
+2. **Ningún dato cruza una frontera sin validarse**: las respuestas HTTP, con los tipos del contrato (§3);
+   `formData`, `searchParams`, variables de entorno y cookies, con Zod.
 3. **`any` está prohibido.** Lo desconocido es `unknown` y se estrecha con un esquema.
-4. **Los tipos se derivan, no se escriben**: todo tipo de datos externos es `z.infer<typeof schema>`.
+4. **Los tipos se derivan, no se escriben**: de los generados (`components["schemas"][…]`) o con `z.infer`.
 5. **Un solo cliente HTTP** (§3.1).
 6. **Los componentes renderizan; no orquestan.** Nada de red, WebSockets, cookies, storage ni cálculos de negocio en
    un `.tsx` de presentación.
@@ -131,8 +133,8 @@ app  →  features  →  entities  →  shared
   `features` no importa de `app`.
 - **Las features no se importan entre sí.** Si dos dominios necesitan lo mismo, baja a `entities` o a `shared`.
 - Cada carpeta expone su API pública por su `index.ts`; nadie importa de sus tripas.
-- La regla la aplica el linter (`eslint-plugin-boundaries` o equivalente): un import que la rompe es un error de
-  lint, no una convención que alguien recuerda.
+- La aplica el linter con `eslint.layers.mjs`, del kit, que `eslint.config.mjs` importa (el gate «capas» lo
+  comprueba): un import que la rompe es un error de lint, no una convención que alguien recuerda.
 
 ---
 
@@ -143,9 +145,9 @@ leer antes» los que toca; si vas a tocar algo de un tema que la fase no cita, l
 
 | Archivo | Qué cubre | Se lee si la fase toca |
 |---|---|---|
-| `.ai/rules/contrato.md` | Cómo se conoce el contrato, errores como datos, claves de caché, formas variables del backend | `src/shared/api/`, el `api/` de una feature o entidad, o los datos del servidor |
+| `.ai/rules/contrato.md` | Cómo se conoce el contrato y se genera el cliente, errores problem+json, claves de caché, formas variables | `src/shared/api/`, el `api/` de una feature o entidad, o los datos del servidor |
 | `.ai/rules/arquitectura.md` | Qué herramienta de estado y dónde vive; componentes, textos, testids y nombres | Cualquier componente, hook, store o Server Action |
-| `.ai/rules/tests.md` | Vitest, tests de contrato y E2E con Playwright | `tests/` o `e2e/` (casi siempre) |
+| `.ai/rules/tests.md` | Vitest, tests de contrato, E2E con Playwright y Lighthouse | `tests/` o `e2e/` (casi siempre) |
 
 ---
 
@@ -181,8 +183,8 @@ Tocar estas zonas de una forma que la fase no describe con precisión es motivo 
 
 ## 10. Verificación del stack
 
-`bash bin/verify.sh` corre los gates en su orden (tipos, estilo, deuda de lint, tests); aquí sólo lo que no cabe en
-el script:
+`bash bin/verify.sh` corre los gates en su orden (contrato, tipos, estilo, capas, deuda de lint, tests, build); aquí
+sólo lo que no cabe en el script:
 
 - **TypeScript** con `strict: true`; `tsconfig.json` nunca se relaja. Cero `@ts-ignore` y `@ts-expect-error` sin
   motivo escrito al lado; cero casts sobre datos de red (se validan).

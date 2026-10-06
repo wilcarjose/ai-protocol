@@ -1,0 +1,42 @@
+{
+  "openapi": "3.1.0",
+  "info": { "title": "Demo API", "version": "1.0.0" },
+  "paths": {
+    "/demos/{id}": {
+      "get": {
+        "operationId": "getDemo",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": {
+          "200": {
+            "description": "La demo",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Demo" } } }
+          },
+          "404": {
+            "description": "No existe",
+            "content": { "application/problem+json": { "schema": { "$ref": "#/components/schemas/Problem" } } }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Demo": {
+        "type": "object",
+        "required": ["id", "name"],
+        "properties": { "id": { "type": "integer" }, "name": { "type": "string" } }
+      },
+      "Problem": {
+        "type": "object",
+        "required": ["type", "title", "status", "code"],
+        "properties": {
+          "type": { "type": "string" },
+          "title": { "type": "string" },
+          "status": { "type": "integer" },
+          "detail": { "type": "string" },
+          "code": { "type": "string", "enum": ["demo_not_found"] }
+        }
+      }
+    }
+  }
+}
