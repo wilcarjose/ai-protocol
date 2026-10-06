@@ -61,7 +61,9 @@
 #   Provoca en una copia del repo un fallo de cada chequeo de
 #   tests/structure.sh y comprueba que lo detecta. Y corre docs/vps/doctor.sh
 #   con un PATH de stubs: con todo, pasa; sin gitleaks, con Node 20 o con un
-#   .env de staging legible, lo reporta.
+#   .env de staging legible, lo reporta. Y comprueba que cada ruta y cada
+#   script que cita docs/guia.md existen en el kit o en una instalación de
+#   prueba (con la épica del ejemplo), y que una ruta que no existe se reporta.
 #
 # ◆ CÓMO SE AÑADE UN CASO
 #   Un chequeo nuevo del guardián trae su caso en tests/lib.sh: una rama en
@@ -438,6 +440,71 @@ test_doctor() {
     else fail 'un .env de staging legible no falla'; printf '%s\n' "$out" | sed 's/^/      /'; fi
 }
 
+# ── docs/guia.md: cada ruta que cita existe ─────────────────────────────────
+# guide_paths <guía>: lo que cita, una ruta por línea. «enlace <ruta>», el destino relativo de un enlace; «ruta
+# <ruta>», una palabra del código (en línea o en un bloque) que acaba en / o en una extensión de archivo del kit. Lo
+# que lleva <…>, * o {…} es un patrón, lo que empieza por / es una skill y `.md` sola es una extensión: no son rutas.
+guide_paths() {
+    awk '
+        function words(s,   n, i, w, a) {
+            n = split(s, a, /[ \t]+/)
+            for (i = 1; i <= n; i++) {
+                w = a[i]; sub(/^[("«]+/, "", w); sub(/[,;:.)»]+$/, "", w)
+                if (w ~ /[<>*{}]|:\/\/|^\/|^\.[a-z]+$/) continue
+                if (w ~ /\/$/ || w ~ /\.(md|sh|json|yml|conf|lock|mjs|ts|php|neon|service|txt)$/) print "ruta " w
+            }
+        }
+        /^```/ { f = !f; next }
+        f { words($0); next }
+        {
+            s = $0
+            while (match(s, /`[^`]+`/)) { words(substr(s, RSTART + 1, RLENGTH - 2)); s = substr(s, RSTART + RLENGTH) }
+            s = $0
+            while (match(s, /\]\([^)]+\)/)) {
+                l = substr(s, RSTART + 2, RLENGTH - 3); s = substr(s, RSTART + RLENGTH)
+                sub(/#.*/, "", l)
+                if (l != "" && l !~ /:\/\//) print "enlace " l
+            }
+        }' "$1"
+}
+
+# guide_missing <guía> <carpeta de sus enlaces> <raíz…>: lo que cita la guía y no existe. Un enlace, desde su
+# carpeta; una ruta, en alguna de las raíces (el kit y las instalaciones), y ai-protocol/ es el kit.
+guide_missing() {
+    gm_guide=$1 gm_dir=$2
+    shift 2
+    guide_paths "$gm_guide" | while read -r kind p; do
+        if [ "$kind" = enlace ]; then
+            [ -e "$gm_dir/$p" ] && continue
+        else
+            q=${p#../}; q=${q#ai-protocol/}
+            for r in "$@"; do [ -e "$r/$q" ] && continue 2; done
+        fi
+        printf '%s\n' "$p"
+    done
+}
+
+# Las rutas de la guía, frente al kit y a las instalaciones de prueba de los dos stacks, que tienen la épica del
+# ejemplo; si este run sólo instaló uno, instala el otro. Y al revés: una ruta que no existe se reporta.
+# shellcheck disable=SC2016  # las comillas invertidas son literales
+test_guide() {
+    printf '◆ docs/guia.md\n'
+    for k in laravel nextjs; do
+        [ -d "$WORK/$k" ] && continue
+        case "$k" in laravel) SIBLING=frontend ;; nextjs) SIBLING=backend ;; esac
+        install "$k" "$WORK/$k" || { fail "no se pudo instalar $k para comprobar la guía"; return; }
+    done
+    n=$(guide_paths "$ROOT/docs/guia.md" | sort -u | grep -c .)
+    missing=$(guide_missing "$ROOT/docs/guia.md" "$ROOT/docs" "$ROOT" "$WORK/laravel" "$WORK/nextjs" | sort -u)
+    if [ -z "$missing" ]; then ok "las $n rutas y scripts que cita existen en el kit o en una instalación"
+    else fail 'cita rutas que no existen:'; printf '%s\n' "$missing" | sed 's/^/      /'; fi
+    cp "$ROOT/docs/guia.md" "$WORK/guia-rota.md"
+    printf '\nVer `bin/no-existe.sh` y [esto](no-existe.md).\n' >> "$WORK/guia-rota.md"
+    missing=$(guide_missing "$WORK/guia-rota.md" "$ROOT/docs" "$ROOT" "$WORK/laravel" "$WORK/nextjs" | tr '\n' ' ')
+    if [ "$missing" = 'bin/no-existe.sh no-existe.md ' ]; then ok 'una ruta o un enlace que no existen se reportan'
+    else fail "con una ruta y un enlace que no existen, reporta «$missing»"; fi
+}
+
 # ── Por kit ─────────────────────────────────────────────────────────────────
 for KIT in $KITS; do
     case "$KIT" in
@@ -487,6 +554,7 @@ done
 
 test_structure
 test_doctor
+test_guide
 
 printf '\n'
 if [ "$FAIL" -eq 0 ]; then echo '✓ tests/run.sh: todo en verde'; else echo '✗ tests/run.sh: hay fallos'; fi
