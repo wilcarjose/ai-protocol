@@ -4,8 +4,9 @@
 #
 # ◆ CÓMO SE EJECUTA
 #   bash bin/verify.sh            todos los gates: el del cierre de una fase
-#   bash bin/verify.sh --fast     sólo los baratos (sin la auditoría ni los
-#                                 tests): el de cada commit de fila
+#   bash bin/verify.sh --fast     sólo los baratos (sin la auditoría, los
+#                                 tests, los E2E ni el build): el de cada
+#                                 commit de fila
 #                                 (.claude/skills/phase/SKILL.md §Commits
 #                                 durante la fase)
 #   Sirve igual `sh bin/verify.sh` o un script `"verify": "sh bin/verify.sh"`
@@ -15,8 +16,8 @@
 #   Sale 0 si todo está en verde y != 0 si algo falla. Este script es la ÚNICA
 #   descripción de los gates y de su orden: la skill /phase y .ai/WORKFLOW.md
 #   remiten aquí sin repetirlos, así que se cambian aquí sin tocar
-#   documentación. Orden: barato primero (documentos, tipos, estilo), los tests
-#   al final.
+#   documentación. Orden: barato primero (documentos, contrato, tipos, estilo),
+#   los tests y `next build` al final.
 #
 # ◆ EL PROYECTO
 #   Este script es del kit: una fase no lo cambia (.ai/WORKFLOW.md §Archivos
@@ -25,7 +26,8 @@
 #   empezar.
 #
 # ◆ HERRAMIENTAS
-#   Además de las del stack: git y gitleaks (gates «protocolo» y «secretos»).
+#   Además de las del stack (package.json): git y gitleaks (gates «protocolo»
+#   y «secretos»).
 #   Si falta una, su gate falla y dice cómo instalarla.
 #
 # ◆ LOGS
@@ -51,7 +53,7 @@ FAST=0
 FAIL=0
 TMPD=$(mktemp -d)
 trap 'rm -rf "$TMPD"' EXIT
-export NO_COLOR=1
+export NO_COLOR=1 NEXT_TELEMETRY_DISABLED=1
 
 # run <nombre> <comando…>: ejecuta un gate; si falla, enseña el final de su salida.
 run() {
@@ -95,6 +97,29 @@ secrets_gate() {
     gitleaks git --no-banner --no-color --redact --verbose --log-level=warn . && echo 'secretos: ninguno en el historial de git'
 }
 
+# Los tipos de las rutas (LayoutProps, PageProps…) los genera Next en .next/types, que no se versiona: en un clon
+# limpio no existen hasta que algo los genera.
+# shellcheck disable=SC2329  # se invoca a través de run()
+types_gate() {
+    npx next typegen > "$TMPD/typegen.log" 2>&1 || { cat "$TMPD/typegen.log"; return 1; }
+    npx tsc --noEmit
+}
+
+# La regla de capas sigue activa: eslint.config.mjs es del proyecto, y uno que no importa eslint.layers.mjs (o que
+# la apaga) dejaría pasar cualquier import. Se mira la configuración efectiva de un archivo de una feature.
+# shellcheck disable=SC2329  # se invoca a través de run()
+layers_gate() {
+    npx eslint --print-config src/features/demo/index.ts > "$TMPD/eslint.json" || return 1
+    node -e '
+        const rules = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8")).rules || {};
+        if (![2, "error"].includes([].concat(rules["boundaries/dependencies"] ?? 0)[0])) {
+            console.log("boundaries/dependencies no está activa como error: eslint.config.mjs tiene que importar eslint.layers.mjs");
+            process.exit(1);
+        }
+        console.log("capas: la regla de eslint.layers.mjs está activa");
+    ' "$TMPD/eslint.json"
+}
+
 # Los tests y su baseline: el conteo sale de la línea «Tests  N passed» de Vitest (anclada, para no
 # confundirla con «Test Files»). Sin archivos de test, cuenta 0.
 # shellcheck disable=SC2329  # se invoca a través de run()
@@ -118,15 +143,22 @@ tests_gate() {
 run 'docs'         sh bin/check-docs.sh --strict
 run 'protocolo'    sh bin/check-protocol.sh
 run 'secretos'     secrets_gate
-run 'tipos'        npx tsc --noEmit
+# Antes de «tipos», que compila contra lo que genera.
+run 'contrato'     sh bin/contract.sh --check
+run 'tipos'        types_gate
 run 'estilo'       npx eslint . --max-warnings=0
+run 'capas'        layers_gate
 run 'supresiones'  suppressions_gate
-# La auditoría consulta la red y los tests son lo más lento: los dos, sólo en el verify completo.
+# La auditoría consulta la red, y los tests y el build son lo más lento: sólo en el verify completo. De los E2E sólo
+# se comprueba que la configuración y los specs cargan; correrlos necesita el backend (.ai/rules/tests.md).
 if [ "$FAST" -eq 0 ]; then
-    run 'dependencias'  npm audit --audit-level=high
+    # Sólo lo que se despliega: un aviso de una herramienta de desarrollo (linter, tests) no llega al bundle.
+    run 'dependencias'  npm audit --audit-level=high --omit=dev
     run 'tests'    tests_gate
+    run 'e2e'      npx playwright test --list --pass-with-no-tests
+    run 'build'    npx next build
 else
-    printf '\n▸ dependencias y tests  (omitidos con --fast; el cierre de una fase exige el verify completo)\n'
+    printf '\n▸ dependencias, tests, e2e y build  (omitidos con --fast; el cierre de una fase exige el verify completo)\n'
 fi
 
 printf '\n'

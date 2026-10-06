@@ -11,21 +11,37 @@
     ".ai/templates/phase.template.md",
     ".claude/settings.json",
     ".github/workflows/verify.yml",
-    "bin/verify.sh"
+    "bin/contract.sh",
+    "bin/verify.sh",
+    "eslint.layers.mjs"
   ],
   "seed": [
+    ".ai/project/lighthouse.json",
     ".ai/project/verify.conf",
     "docs/README.md",
-    "docs/vendor/INDEX.md"
+    "docs/contract/openapi.json",
+    "docs/vendor/INDEX.md",
+    "eslint.config.mjs",
+    "playwright.config.ts",
+    "src/shared/api/client.ts",
+    "src/shared/api/errors.ts",
+    "src/shared/api/index.ts",
+    "src/shared/api/schema.d.ts",
+    "tests/shared/api/request.test.ts",
+    "vitest.config.ts"
   ],
   "gates": [
     "docs",
     "protocolo",
     "secretos",
+    "contrato",
     "tipos",
     "estilo",
+    "capas",
     "supresiones",
     "dependencias",
-    "tests"
+    "tests",
+    "e2e",
+    "build"
   ]
 }
