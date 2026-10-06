@@ -343,7 +343,10 @@ cada stack en su `stack.json`. Ésa es la única fuente de la versión; este REA
   sobre sus workflows y los de cada stack, `sh tests/structure.sh` y `sh tests/run.sh`, también dentro de Alpine
   (busybox, con git). El job `e2e-nextjs` (`sh tests/e2e-nextjs.sh`) crea un proyecto nuevo con create-next-app,
   instala el stack, corre su `bin/verify.sh` completo con `next build` y Lighthouse CI, y provoca un import que
-  rompe las capas y un OpenAPI cambiado sin regenerar el cliente.
+  rompe las capas y un OpenAPI cambiado sin regenerar el cliente. El job `e2e-laravel` (`sh tests/e2e-laravel.sh`)
+  crea un proyecto nuevo de Laravel con una funcionalidad de ejemplo, instala el stack, corre su `bin/verify.sh`
+  completo con la suite contra PostgreSQL con PostGIS, y provoca una Action que usa `Illuminate\Http\Request` y un
+  endpoint cambiado sin actualizar el baseline del OpenAPI.
 - **El contexto no crece sin decidirlo.** `tests/context-baseline.txt` guarda lo que leen al arrancar el ejecutor
   de cada stack y `CLAUDE.md`, medido con `bin/measure-context.sh` sobre una instalación limpia. `tests/run.sh` falla
   si una sesión crece más de un 3 % y avisa si baja más de un 3 %; subir la línea base es cambiar ese archivo en un
