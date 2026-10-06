@@ -38,12 +38,13 @@ Prompt: «Ejecuta la fase N de docs/plan-1a.md».
 2. Cada stack declara un manifiesto `stack.json` con los archivos que aporta y el rango de versiones del núcleo con el que es compatible.
 3. Versiones por paquete con etiquetas (`core-vX.Y.Z`, `laravel-vX.Y.Z`, `nextjs-vX.Y.Z`); cada proyecto guarda lo instalado en `.ai/protocol.lock`.
 4. El instalador copia núcleo + stack; los proyectos no dependen de este repo para funcionar. La capa del proyecto vive en `.ai/project/` y el instalador nunca la toca.
-5. El stack de Laravel sigue la estructura estándar de Laravel: modelos, migraciones, factories, seeders, controladores, requests, resources, policies, rutas y Filament van donde Laravel los pone. La lógica de negocio (Actions, Services, Value Objects, Contracts y demás clases de negocio) va en su carpeta por tipo y, cuando una funcionalidad tiene varias clases, en una subcarpeta con su nombre (`app/Actions/Anuncios/PublicarAnuncio.php`). No hay módulos ni `app/Modules/`, y las pruebas de arquitectura son por capas. Reemplaza a la decisión de módulos (ver «Registro», 2026-10-06).
+5. El stack de Laravel sigue la estructura estándar de Laravel: modelos, migraciones, factories, seeders, controladores, requests, resources, policies, rutas y Filament van donde Laravel los pone. La lógica de negocio (Actions, Services, Value Objects, Contracts y demás clases de negocio) va en su carpeta por tipo y, cuando una funcionalidad tiene varias clases, en una subcarpeta con su nombre (`app/Actions/Listings/PublishListing.php`). No hay módulos ni `app/Modules/`, y las pruebas de arquitectura son por capas. Reemplaza a la decisión de módulos (ver «Registro», 2026-10-06).
 6. Toda fase termina igual: rama de fase en GitHub, PR, CI que corre `verify.sh` y revisor IA; la persona aprueba cada PR. Se ejecuta en la nube por defecto o en local, con el mismo final.
 7. El estado de ejecución vive en el repo (`STATE.md` y archivos de fase).
 8. «Fase» es la unidad del protocolo. Los planes externos (épicas, tramos y tareas de otro documento) entran como paquetes de tareas y no se vuelven a planificar.
 9. Expo queda fuera de este plan: `stacks/expo/` solo lleva un README que lo anuncia.
 10. Los proyectos que ya usan el kit 1.x no cambian hasta que corran `install.sh --upgrade`.
+11. Todo el código de los proyectos va en inglés: archivos, carpetas, clases, namespaces, métodos, variables, tablas, columnas, rutas de API, claves de traducción, códigos de error, logs, tests y comentarios. En español quedan los textos para el usuario (traducciones), los slugs públicos (datos del catálogo), los datos semilla, la documentación del protocolo y la descripción de los PR. Los commits y el título del PR van en inglés, porque el título es el mensaje del commit al fusionar con squash. El kit no traduce sus propios scripts ni documentos. Los términos del negocio y su nombre en el código viven en `.ai/project/GLOSSARY.md` (ver «Registro», 2026-10-06).
 
 ## Línea base (kit actual, `laravel/`, en caracteres)
 
@@ -296,24 +297,26 @@ Criterios de aceptación:
 
   El ejecutor de Next.js sube 515 caracteres (+0,95 %) por las filas nuevas de `RULES.md §Stack y versiones exactas`, la copia del contrato en §Alcance, los principios 2 y 4 y los gates de §Verificación del stack. El detalle (cliente, problem+json, Playwright, Lighthouse) va a `.ai/rules/contrato.md` y `.ai/rules/tests.md`, que no cuentan en el arranque. `tests/context-baseline.txt` tiene el valor nuevo.
 
-  Después de la fase 6, sobre una instalación limpia:
+  Después de la fase 6, sobre una instalación limpia (con la decisión 11):
 
   ```
   Sesión         laravel   nextjs
   cualquiera        4112     4112
-  ejecutor         53247    54831
-  cierre           11377    11377
-  plan-epica       53428    54888
-  plan-fase        55649    57233
-  revisor          33225    34815
-  rescate          39525    39519
+  ejecutor         53227    54857
+  cierre           11584    11584
+  plan-epica       53618    55124
+  plan-fase        55943    57573
+  revisor          33615    35251
+  rescate          39732    39726
   ```
 
-  El ejecutor de Laravel baja 8 caracteres y queda a 53 del tope de 53 300: `RULES.md` crece por la fila de
-  `dedoc/scramble` y baja más al compactar el alcance y la verificación. El de Next.js sube 76 por la fila de
-  `FEATURES.md` en `.ai/project/README.md`, del núcleo. El detalle (estructura por funcionalidad, `make:`, errores)
-  va a `.ai/rules/arquitectura.md` y `.ai/rules/tests.md`, que no cuentan en el arranque. `tests/context-baseline.txt`
-  tiene los dos valores nuevos.
+  El ejecutor de Laravel baja 28 caracteres y queda a 73 del tope de 53 300. `RULES.md` suma la fila de
+  `dedoc/scramble` y la regla del idioma (último punto de §Lista negra), y lo compensa compactando el alcance, la
+  verificación, la cabecera y la entrada de §Stack y versiones exactas. El de Next.js sube 102 por la fila de
+  `FEATURES.md` y `GLOSSARY.md` en `.ai/project/README.md`, del núcleo, y por la regla del idioma. El detalle
+  (estructura por funcionalidad, `make:`, errores) va a `.ai/rules/arquitectura.md` y `.ai/rules/tests.md`, que no
+  cuentan en el arranque. «cierre» sube 207 por la regla del título del PR. `tests/context-baseline.txt` tiene los
+  dos valores nuevos.
 - **Fases divididas:** —
 - **Decisiones tomadas durante el plan:**
   - 2026-10-04 (fase 1): el fallo 5 del guardián (migraciones) solo se provoca en kits cuya plantilla de fase declara «Migraciones:». En Next.js no aplica, y `tests/run.sh` comprueba en su lugar que el guardián acepta fases sin ese campo. El criterio de la fase 1 pasa a «13 fallos en Laravel; 12 en Next.js, con el 5 como no aplicable».
@@ -385,6 +388,23 @@ Criterios de aceptación:
     `php artisan key:generate --env=testing` y la versiona (gitleaks 8.30.1 no marca una `APP_KEY` versionada:
     probado). El workflow la genera si está vacía. El gate «suite» falla si `phpunit.xml` fija `DB_CONNECTION` o
     `DB_DATABASE`, como hace el del esqueleto con SQLite en memoria, que le ganaría a `.env.testing`.
+  - 2026-10-06 (fase 6, cambio aprobado por la persona antes de fusionar): decisión 11, el código en inglés. Dónde
+    vive cada pieza:
+    - La regla es el último punto de `.ai/RULES.md §Lista negra` en los dos stacks. Se compensa fusionando las notas 2
+      y 3 de la cabecera y acortando la entrada de §Stack y versiones exactas.
+    - `.ai/project/GLOSSARY.md` es una semilla del núcleo (término del negocio → nombre en el código). La leen
+      `/plan-epic` (§Antes de escribir) y `/plan-phase` (§Coherencia interna, «Nombres»), y el revisor la comprueba
+      (punto 11 de su lista).
+    - El título del PR, en inglés y en Conventional Commits, y su descripción en español: `.claude/skills/phase/cierre.md
+      §Entrega` y `.github/pull_request_template.md`.
+    - Los ejemplos pasan a inglés (`app/Actions/Listings/PublishListing`, también en la decisión 5).
+    - Las semillas de código de los dos stacks (PHP, configuraciones de Next.js, `.env.testing`) y los fixtures de los
+      e2e, también. Los archivos del kit (`ArchitectureTest.php`, `eslint.layers.mjs`, los scripts, `verify.conf`,
+      `phpstan.neon`) siguen en español.
+    - Como consecuencia, el mensaje de una `ApiException` es una clave de traducción (`demos.not_found`), y
+      `ProblemDetails` la traduce al escribir `detail`, con el contexto escalar como parámetros. Los textos fijos
+      (`Not Found.`…) también pasan por el traductor. El código de error del ejemplo de Next.js pasa a
+      `DEMO_NOT_FOUND`, en mayúsculas como en Laravel.
 - **Lo que la siguiente fase necesita saber:**
   - **Dónde vive cada cosa.** El núcleo, en `core/` (manifiesto `core/core.json`); cada stack, en `stacks/<stack>/` (`stack.json`). Instalados, los archivos conservan sus rutas (`CLAUDE.md`, `.ai/…`, `.claude/skills/…`, `bin/…`). `install.sh` está en la raíz.
   - **Las skills.** `/phase` es `.claude/skills/phase/SKILL.md` (pasos, rama, estados, sincronización, commits, verificación) más `phase/cierre.md` (cierre con revisión, cierre ligero, evidencia humana, épica, archivo de la memoria, traspaso, reporte final). `/close`, `/plan-epic`, `/plan-phase` y `/review` son una `SKILL.md` cada una; `/phase` y `/close` llevan `disable-model-invocation: true`, y `/review` no, para que `/phase` la invoque. El revisor es `.claude/agents/reviewer.md` (Read, Grep, Glob y Bash sólo para git y el guardián). Una skill o un agente nuevo entra en `core/core.json` (`files`) y en las listas de `core/bin/measure-context.sh`, y si la lee el ejecutor al arrancar, mueve su línea en `tests/context-baseline.txt`. El upgrade desde la fase 3 retira `/planning` sola (probado).
@@ -399,7 +419,7 @@ Criterios de aceptación:
   - **La memoria tiene topes.** El chequeo 13 «memoria» del guardián exige que lo cerrado esté en `.ai/archive/`. Un estado nuevo (`ESPERA_EVIDENCIA`, fase 4) se añade también a las listas de estados del chequeo «puntero» y «fases», y a `.claude/skills/phase/SKILL.md §Estado de una fase`.
   - **`tests/run.sh`.** Un caso con número en `provoke` es un fallo de la cabecera de `bin/check-docs.sh` (15 en Laravel; 14 en Next.js); uno con letra, una variante. `accept` prueba lo que tiene que pasar. La épica de prueba es 01-demo (CERRADA) y 02-paquete, creada desde `tests/fixtures/stages/E1.md` con helpers `task`, `header` y `criterion`; el puntero está en `02-paquete/03` (ligera) y `02-paquete/02` espera evidencia. El bloque `test_installer` usa `kit_copy` para simular un kit nuevo; `test_context` mide una instalación limpia contra `tests/context-baseline.txt`.
   - **Todo archivo nuevo entra en un manifiesto,** en `files` o en `seed`, o `tests/structure.sh` falla. Los manifiestos y el lock se leen sin jq: un valor por línea.
-  - **El contexto del ejecutor de Laravel está a 53 caracteres del tope de 53 300** (fase 6). Lo que se añada a `CLAUDE.md`, a `.claude/skills/phase/SKILL.md`, a `WORKFLOW.md`, a `RULES.md`, a `.ai/project/README.md` o a la plantilla de fase hay que compensarlo. Lo que sólo hace falta al cerrar va en `cierre.md`, que no cuenta en el arranque.
+  - **El contexto del ejecutor de Laravel está a 73 caracteres del tope de 53 300** (fase 6). Lo que se añada a `CLAUDE.md`, a `.claude/skills/phase/SKILL.md`, a `WORKFLOW.md`, a `RULES.md`, a `.ai/project/README.md` o a la plantilla de fase hay que compensarlo. Lo que sólo hace falta al cerrar va en `cierre.md`, que no cuenta en el arranque.
   - **Proyectos que suben a 2.0.** El upgrade no toca la memoria: lo cerrado que ya tuvieran se mueve a mano a `.ai/archive/` (README.md §Actualizar un proyecto). La fase 8 lo prueba con una instalación 1.x.
   - **El e2e de Next.js (fases 6 y 8).** `tests/e2e-nextjs.sh` fija las versiones (create-next-app 16.3.8 y los paquetes del stack), borra los `AGENTS.md`, `CLAUDE.md` y `eslint.config.mjs` que crea create-next-app antes de instalar, rellena la capa con `tests/lib.sh` (`fill_stack`, `fill_markers`), versiona el proyecto en git y corre `bin/verify.sh` completo. Después provoca los dos fallos del criterio. En la CI corre además Lighthouse (`E2E_LIGHTHOUSE=1`; el runner trae Chrome; en Docker, Chrome necesita `--no-sandbox`). La fase 6 puede escribir `tests/e2e-laravel.sh` con la misma forma, y la fase 8 añade a los dos la épica de prueba. En local se probó dentro de `node:22` con gitleaks 8.30.1.
   - **npm 10 y las peers de Vite 8.** Con el `@types/node@^20` de create-next-app, `npm install vitest@4.1.x` revienta (`Cannot read properties of null (reading 'edgesOut')`) por la cadena de peers opcionales de Vite 8. Con `@types/node@22` (el proyecto declara Node 22) y Vitest 5.0.3, instala. Vitest 4.0.0 instala, pero no arranca con Vite 8.

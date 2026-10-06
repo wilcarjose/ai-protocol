@@ -7,6 +7,11 @@ etiqueta `core-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, ar
 
 ### Añadido
 
+- `.ai/project/GLOSSARY.md` (semilla): cada término del negocio y su nombre en el código, que va en inglés. Lo leen
+  `/plan-epic` y `/plan-phase` para nombrar lo que crea una fase, y el revisor comprueba que el diff usa esos nombres
+  y que no hay código en español (punto 11 de `.claude/agents/reviewer.md`).
+- El PR de una fase lleva el título en inglés y en Conventional Commits, porque al fusionar con squash es el mensaje
+  del commit, y la descripción en español (`phase/cierre.md §Entrega` y `.github/pull_request_template.md`).
 - `.ai/project/FEATURES.md` (semilla): el mapa de funcionalidades, con sus carpetas, archivos clave y tests. Lo usa
   quien planifica: `/plan-phase` pide que la fase cite en su §2 las filas que toca. El ejecutor no lo lee al arrancar.
 - `bin/check-protocol.sh`: en una rama `phase/<NN-slug>/<FF>`, falla si un commit sin ámbito `protocol` toca un

@@ -39,6 +39,12 @@ Compatible con el núcleo `>=2.0.0-dev <3.0.0`.
 
 ### Cambiado
 
+- `.ai/RULES.md §Lista negra`: el código va en inglés (nombres, tablas, rutas, claves de traducción, códigos de error,
+  logs, tests y comentarios) y con los términos de `.ai/project/GLOSSARY.md`. En español quedan los textos para el
+  usuario, los slugs públicos y los datos semilla. Los ejemplos de las reglas pasan a inglés
+  (`app/Actions/Listings/PublishListing`), y también las semillas de código y sus tests.
+- El mensaje de una `ApiException` es una clave de traducción (`listings.not_found`): `ProblemDetails` la traduce al
+  escribir `detail`, con el contexto escalar como parámetros, y pasa también por el traductor sus textos fijos.
 - Estructura estándar de Laravel con la lógica de negocio por funcionalidad (`.ai/rules/arquitectura.md §Arquitectura
   objetivo`): lo del framework en su sitio, la lógica de negocio en su carpeta por tipo y, cuando una funcionalidad
   tiene varias clases, en una subcarpeta con su nombre, el mismo en todas las carpetas. Las clases se crean con los
