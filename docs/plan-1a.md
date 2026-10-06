@@ -14,8 +14,8 @@
 | 3 | Menos tokens | 2 | hecha | #3 |
 | 4 | Planificador, revisor y tipos de tarea | 3 | hecha | #4 |
 | 5 | Modo remoto y CI de los proyectos | 4 | hecha | #5 |
-| 6 | Stack Laravel modular por defecto | 5 | pendiente | — |
-| 7 | Stack Next.js completo | 5 | en revisión | #6 |
+| 6 | Stack Laravel: estructura estándar por funcionalidad | 5 | pendiente | — |
+| 7 | Stack Next.js completo | 5 | hecha | #6 |
 | 8 | Validación de punta a punta y versión 2.0.0 | 6, 7 | pendiente | — |
 
 ## Cómo se ejecuta una fase
@@ -38,7 +38,7 @@ Prompt: «Ejecuta la fase N de docs/plan-1a.md».
 2. Cada stack declara un manifiesto `stack.json` con los archivos que aporta y el rango de versiones del núcleo con el que es compatible.
 3. Versiones por paquete con etiquetas (`core-vX.Y.Z`, `laravel-vX.Y.Z`, `nextjs-vX.Y.Z`); cada proyecto guarda lo instalado en `.ai/protocol.lock`.
 4. El instalador copia núcleo + stack; los proyectos no dependen de este repo para funcionar. La capa del proyecto vive en `.ai/project/` y el instalador nunca la toca.
-5. El stack de Laravel es modular por defecto (`app/Modules/<Módulo>/`); no hay variante por capas.
+5. El stack de Laravel sigue la estructura estándar de Laravel: modelos, migraciones, factories, seeders, controladores, requests, resources, policies, rutas y Filament van donde Laravel los pone. La lógica de negocio (Actions, Services, Value Objects, Contracts y demás clases de negocio) va en su carpeta por tipo y, cuando una funcionalidad tiene varias clases, en una subcarpeta con su nombre (`app/Actions/Anuncios/PublicarAnuncio.php`). No hay módulos ni `app/Modules/`, y las pruebas de arquitectura son por capas. Reemplaza a la decisión de módulos (ver «Registro», 2026-10-06).
 6. Toda fase termina igual: rama de fase en GitHub, PR, CI que corre `verify.sh` y revisor IA; la persona aprueba cada PR. Se ejecuta en la nube por defecto o en local, con el mismo final.
 7. El estado de ejecución vive en el repo (`STATE.md` y archivos de fase).
 8. «Fase» es la unidad del protocolo. Los planes externos (épicas, tramos y tareas de otro documento) entran como paquetes de tareas y no se vuelven a planificar.
@@ -161,26 +161,29 @@ Criterios de aceptación:
 - [ ] `actionlint` no da avisos sobre `ci/` ni `.github/`.
 - [ ] La CI del PR está en verde.
 
-## Fase 6 — Stack Laravel modular por defecto
+## Fase 6 — Stack Laravel: estructura estándar por funcionalidad
 
-**Objetivo:** que el stack de Laravel nazca modular, con contrato OpenAPI y errores RFC 9457.
+**Objetivo:** que el stack de Laravel conserve la forma de trabajo de Laravel, con la lógica de negocio agrupada por funcionalidad, contrato OpenAPI y errores RFC 9457.
 
 Entregables:
 
-- `RULES.md` y plantillas con módulos en `app/Modules/<Módulo>/` (Http, Models, Actions, Contracts, Events, Policies, Providers, rutas y base de datos propios) y un núcleo compartido en `app/Shared/`. Un módulo solo usa de otro sus `Contracts` y sus `Events`.
-- `bin/make-module.sh <Nombre>`: crea el esqueleto del módulo y registra su provider.
-- Pruebas de arquitectura de Pest que impiden usar modelos, tablas o clases internas de otro módulo.
-- Alcance reescrito: lo no listado queda fuera, y la lista incluye `bootstrap/app.php`, comandos, jobs, policies, Filament, factories y seeders.
-- Contrato: OpenAPI generado desde el código como baseline en `docs/contract/openapi.json` (propuesta: dedoc/scramble), con un gate que lo regenera y falla si cambió sin actualizar el baseline. El baseline de rutas se mantiene para proteger el middleware.
+- `RULES.md` y `.ai/rules/arquitectura.md` con la estructura de la decisión 5. Lo propio del framework queda en su lugar habitual y los modelos, planos en `app/Models`. La lógica de negocio va en `app/Actions`, `app/Services`, `app/ValueObjects`, `app/Contracts`…, con subcarpeta por funcionalidad cuando tiene varias clases. El nombre de una funcionalidad es el mismo en todas las carpetas, y controladores, requests y resources pueden usar esa subcarpeta cuando ayude. Las clases se crean con los `make:` de artisan (`make:class`, `make:interface`, `make:enum`) y su ruta.
+- Mapa de funcionalidades: semilla `.ai/project/FEATURES.md` (funcionalidad → carpetas y archivos clave, incluidos sus tests). Lo usa el planificador al escribir la fase y lo cita su §2; el ejecutor no lo lee al arrancar.
+- Pruebas de arquitectura por capas, del kit y protegidas: la lógica de negocio no depende de `Illuminate\Http` ni de controladores, los modelos no dependen de Actions, Services ni HTTP, los Value Objects son `final` e inmutables y los Contracts son interfaces. Conserva las reglas útiles del `ArchitectureTest.php` actual. Las reglas propias del proyecto van en un archivo de tests aparte, que es semilla (decisión de la fase 5).
+- Alcance reescrito: lo no listado queda fuera. La lista incluye `bootstrap/app.php`, comandos, jobs, eventos y listeners, policies, Filament, factories, seeders, rutas y las carpetas de lógica de negocio con sus subcarpetas.
+- Contrato: OpenAPI generado desde el código como baseline en `docs/contract/openapi.json` (propuesta: dedoc/scramble), con un gate que lo regenera y falla si cambió sin actualizar el baseline. Es la misma ruta que usa la copia de Next.js (fase 7). El baseline de rutas se mantiene para proteger el middleware.
 - Errores RFC 9457: `application/problem+json` con `type`, `title`, `status`, `detail` y la extensión `code`; los tests de contrato lo verifican.
-- Pruebas contra PostgreSQL con PostGIS en `.env.testing` y en `ci/verify.yml`; fuera las menciones a MySQL.
-- Job `e2e-laravel` en la CI del kit: crea un proyecto nuevo de Laravel, instala el stack, crea un módulo y corre `verify.sh`.
+- Pruebas contra PostgreSQL con PostGIS en `.env.testing` y en el servicio de `stacks/laravel/.github/workflows/verify.yml`; fuera las menciones a MySQL.
+- Decide si `composer audit` audita solo producción (`--no-dev`), como Next.js, y anótalo en «Registro».
+- Job `e2e-laravel` en la CI del kit: `tests/e2e-laravel.sh`, con la misma forma que `tests/e2e-nextjs.sh`. Crea un proyecto nuevo de Laravel, instala el stack, agrega una funcionalidad de ejemplo (una Action en `app/Actions/Demo/` con su test) y corre `verify.sh` completo.
+- El ejecutor de Laravel está a 45 caracteres de su línea base: lo que crezca `RULES.md` se compensa, y el detalle va a `.ai/rules/arquitectura.md`, que no cuenta en el arranque.
 
 Criterios de aceptación:
 
-- [ ] El job `e2e-laravel` pasa: proyecto nuevo + stack + `bin/make-module.sh Demo` y `bin/verify.sh` en verde.
-- [ ] Un caso de prueba donde un módulo usa el modelo de otro hace fallar las pruebas de arquitectura.
+- [ ] El job `e2e-laravel` pasa: proyecto nuevo + stack + funcionalidad de ejemplo y `bin/verify.sh` completo en verde.
+- [ ] Un caso de prueba donde una Action usa `Illuminate\Http\Request` hace fallar las pruebas de arquitectura.
 - [ ] Un endpoint cambiado sin actualizar el baseline hace fallar el gate de contrato.
+- [ ] `sh tests/run.sh` pasa, con el contexto del ejecutor dentro de `tests/context-baseline.txt`.
 
 ## Fase 7 — Stack Next.js completo
 
@@ -331,11 +334,12 @@ Criterios de aceptación:
   - 2026-10-06 (fase 7): la copia del OpenAPI vive en `docs/contract/openapi.json` (la misma ruta que el baseline del backend de la fase 6) y los tipos en `src/shared/api/schema.d.ts`; los dos se versionan y sus rutas se pueden cambiar en `.ai/project/verify.conf` (`CONTRACT_SPEC`, `CONTRACT_TYPES`). La semilla trae un OpenAPI sin rutas y sus tipos ya generados: el proyecto compila nada más instalarse y el chequeo «rutas» del guardián no avisa. Si otra versión de openapi-typescript genera distinto, el gate «contrato» pide regenerar.
   - 2026-10-06 (fase 7): los presupuestos de Lighthouse son semilla en `.ai/project/lighthouse.json` (la configuración de LHCI entera: URL, `startServerCommand`, aserciones). `CROSS-CUTTING.md` es del núcleo y no puede citarlo, así que es `.ai/rules/tests.md` quien une los dos.
   - 2026-10-06 (fase 7): el e2e es `tests/e2e-nextjs.sh`, propio del stack, y usa `tests/lib.sh` para rellenar la capa del proyecto como `tests/run.sh`.
+  - 2026-10-06 (replanificación de la fase 6, decidida por la persona): la decisión 5 deja los módulos en `app/Modules/` y pasa a la estructura estándar de Laravel, con la lógica de negocio agrupada por funcionalidad. No hay `bin/make-module.sh`. Las fases 1 a 5 y 7 no cambian: no construyeron nada modular. En la Etapa 1 del portal, la decisión 7 cambia en el mismo sentido.
 - **Lo que la siguiente fase necesita saber:**
   - **Dónde vive cada cosa.** El núcleo, en `core/` (manifiesto `core/core.json`); cada stack, en `stacks/<stack>/` (`stack.json`). Instalados, los archivos conservan sus rutas (`CLAUDE.md`, `.ai/…`, `.claude/skills/…`, `bin/…`). `install.sh` está en la raíz.
   - **Las skills.** `/phase` es `.claude/skills/phase/SKILL.md` (pasos, rama, estados, sincronización, commits, verificación) más `phase/cierre.md` (cierre con revisión, cierre ligero, evidencia humana, épica, archivo de la memoria, traspaso, reporte final). `/close`, `/plan-epic`, `/plan-phase` y `/review` son una `SKILL.md` cada una; `/phase` y `/close` llevan `disable-model-invocation: true`, y `/review` no, para que `/phase` la invoque. El revisor es `.claude/agents/reviewer.md` (Read, Grep, Glob y Bash sólo para git y el guardián). Una skill o un agente nuevo entra en `core/core.json` (`files`) y en las listas de `core/bin/measure-context.sh`, y si la lee el ejecutor al arrancar, mueve su línea en `tests/context-baseline.txt`. El upgrade desde la fase 3 retira `/planning` sola (probado).
   - **La CI de los proyectos (fases 6 y 7).** Cada stack trae `.github/workflows/verify.yml`, que corre `sh bin/verify.sh` completo con `fetch-depth: 0` y gitleaks 8.30.1. Laravel toma PHP de `.php-version`, y la fase 6 le añade el servicio de PostgreSQL con PostGIS. Next.js toma Node de `engines.node`, y la fase 7 le añade el job de Lighthouse. `actionlint` (con `actionlint-py==1.7.12.25`) revisa en la CI del kit esos workflows y los del kit. Los workflows y los gates «dependencias» y «secretos» sólo se han probado con `actionlint`, `shellcheck` y a mano sobre una instalación (gitleaks sí: detecta un token y pasa sin él). La primera ejecución real es el e2e de las fases 6 y 7.
-  - **La protección del protocolo.** `bin/check-protocol.sh` lee del lock qué archivos son `kit`: todo archivo nuevo que un stack liste en `files` queda protegido sin hacer nada más. Lo que el proyecto tenga que editar va en `seed` (`bin/make-module.sh` es del kit; las reglas de arquitectura del proyecto, de la fase 6, son semilla). La rama base se resuelve así: `PROTOCOL_BASE`, `origin/$GITHUB_BASE_REF`, `epic/<NN-slug>`, `main`. `tests/run.sh` (`test_protocol`) lo prueba en un repo git, y en Alpine la CI instala `git` con `apk`.
+  - **La protección del protocolo.** `bin/check-protocol.sh` lee del lock qué archivos son `kit`: todo archivo nuevo que un stack liste en `files` queda protegido sin hacer nada más. Lo que el proyecto tenga que editar va en `seed` (las reglas de arquitectura del proyecto y `.ai/project/FEATURES.md`, de la fase 6, son semilla). La rama base se resuelve así: `PROTOCOL_BASE`, `origin/$GITHUB_BASE_REF`, `epic/<NN-slug>`, `main`. `tests/run.sh` (`test_protocol`) lo prueba en un repo git, y en Alpine la CI instala `git` con `apk`.
   - **`bin/verify.sh` es del kit.** Lo del proyecto está en `.ai/project/verify.conf` (semilla). Un gate nuevo entra en el `verify.sh` y en `gates` del `stack.json` (`tests/structure.sh` lo cuadra), y si necesita una herramienta, la instalan el workflow del stack y el script de `docs/modos.md`.
   - **El script de preparación de la nube** (`docs/modos.md`) no se ha probado en una sesión real. Se comprobó `go install` de gitleaks con `GOTOOLCHAIN=auto` y que el script pasa `shellcheck`. PHP 8.4 necesita el PPA de ondrej, que no está en la lista Trusted. Desde aquí no se pudo resolver `archive.ubuntu.com` para confirmar `postgresql-16-postgis-3`.
   - **El revisor** necesita Bash para `git diff` y puede correr `sh bin/check-protocol.sh`. En la CI no corre: lo lanza `/phase` en la sesión.
