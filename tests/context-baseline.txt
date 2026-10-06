@@ -6,4 +6,4 @@
 # <stack> <sesión> <caracteres>
 laravel cualquiera 4112
 laravel ejecutor 53255
-nextjs ejecutor 54240
+nextjs ejecutor 54755

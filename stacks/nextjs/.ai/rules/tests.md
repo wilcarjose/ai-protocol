@@ -9,10 +9,16 @@
 
 - **Unitarios con Vitest** en `tests/` o junto al código (`*.test.ts`). Sin red real: el cliente se sustituye por
   fixtures.
-- **Contrato:** cada esquema se prueba contra los snapshots de `tests/contract-snapshots/` (`.ai/rules/contrato.md`).
-- **E2E con Playwright** en `e2e/`: sólo `getByTestId()` (la interfaz cambia de idioma, los testids no), cero esperas
-  por tiempo (`waitForTimeout`), aserciones con reintento automático. Necesitan el backend levantado: sólo cuentan
-  si la fase lo pide, y sus «Criterios de éxito» dicen quién provee el backend.
+- **Contrato:** cada snapshot de `tests/contract-snapshots/` se importa en un test tipado con su tipo generado
+  (`satisfies components["schemas"]["…"]`), así que `tsc` lo comprueba contra la copia del OpenAPI
+  (`.ai/rules/contrato.md`). El cliente y sus errores problem+json tienen su test en `tests/shared/api/`.
+- **E2E con Playwright** en `e2e/` (`playwright.config.ts`): sólo `getByTestId()` (la interfaz cambia de idioma, los
+  testids no), cero esperas por tiempo (`waitForTimeout`), aserciones con reintento automático. Necesitan el backend
+  levantado, así que `bin/verify.sh` sólo comprueba que cargan: se corren con `npx playwright test` si la fase lo
+  pide, y sus «Criterios de éxito» dicen quién provee el backend.
+- **Rendimiento con Lighthouse CI**: el job `lighthouse` de `.github/workflows/verify.yml` construye la app y la mide
+  contra `.ai/project/lighthouse.json`, que es del proyecto: las URL y los presupuestos de
+  `.ai/project/CROSS-CUTTING.md §Rendimiento`. Un presupuesto sólo se relaja con una decisión en `.ai/DOMAIN.md`.
 - **No se modifica un test existente para que pase un cambio**: si falla, el cambio está mal o es una decisión del
   Tech Lead (`.ai/WORKFLOW.md §Un test existente tendría que cambiar`). Nunca `test.skip()` condicional; para
   retirar cobertura, `test.fixme()` con el motivo, y se nombra en el reporte.
