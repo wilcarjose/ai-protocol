@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\DB;
 
 uses(RefreshDatabase::class);
 
-it('corre contra PostgreSQL con PostGIS', function (): void {
+it('runs on PostgreSQL with PostGIS', function (): void {
     expect(DB::connection()->getDriverName())->toBe('pgsql')
         ->and(DB::scalar('SELECT PostGIS_Version()'))->toBeString()->not->toBeEmpty();
 });

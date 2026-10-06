@@ -14,7 +14,7 @@ final readonly class ShowDemo
     public function handle(int $id): array
     {
         if ($id !== 1) {
-            throw new ApiException('La demo no existe.', 'DEMO_NOT_FOUND', ['id' => $id], 404);
+            throw new ApiException('demos.not_found', 'DEMO_NOT_FOUND', ['id' => $id], 404);
         }
 
         return ['id' => $id, 'name' => 'Demo'];

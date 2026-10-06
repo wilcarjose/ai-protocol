@@ -8,11 +8,11 @@
         "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }],
         "responses": {
           "200": {
-            "description": "La demo",
+            "description": "The demo",
             "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Demo" } } }
           },
           "404": {
-            "description": "No existe",
+            "description": "Not found",
             "content": { "application/problem+json": { "schema": { "$ref": "#/components/schemas/Problem" } } }
           }
         }
@@ -34,7 +34,7 @@
           "title": { "type": "string" },
           "status": { "type": "integer" },
           "detail": { "type": "string" },
-          "code": { "type": "string", "enum": ["demo_not_found"] }
+          "code": { "type": "string", "enum": ["DEMO_NOT_FOUND"] }
         }
       }
     }

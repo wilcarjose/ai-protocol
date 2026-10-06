@@ -128,7 +128,7 @@ fi
 rm -rf "$APP/src/features/other"
 
 # Una ruta nueva en el OpenAPI, sin regenerar el cliente: el gate «contrato».
-edit "$APP/docs/contract/openapi.json" 's#"/demos/{id}": {#"/demos": { "get": { "responses": { "204": { "description": "Vacío" } } } },\n    "/demos/{id}": {#'
+edit "$APP/docs/contract/openapi.json" 's#"/demos/{id}": {#"/demos": { "get": { "responses": { "204": { "description": "Empty" } } } },\n    "/demos/{id}": {#'
 (cd "$APP" && sh bin/verify.sh --fast > "$WORK/contract-gate.log" 2>&1)
 if awk '/^▸ contrato/ { c = 1; next } c && /^▸/ { exit } c && /✗$/ { f = 1 } END { exit !f }' "$WORK/contract-gate.log"; then
     ok 'contrato: un cambio en el OpenAPI sin regenerar el cliente hace fallar el gate «contrato»'
