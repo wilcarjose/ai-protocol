@@ -8,7 +8,7 @@
 | Fase | Objetivo | Depende de | Estado | PR |
 |---|---|---|---|---|
 | 1 | Retroalimentación de la persona en cada cierre | — | hecha | #9 |
-| 2 | Modo VPS por defecto | 1 | en revisión | — |
+| 2 | Modo VPS por defecto | 1 | en revisión | #10 |
 | 3 | Guía práctica de inicio a fin | 2 | pendiente | — |
 
 La guía va al final para describir el kit ya con la retroalimentación y el modo VPS.
