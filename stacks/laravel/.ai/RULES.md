@@ -28,6 +28,7 @@ cada paquete de esta tabla y la compara con `composer.json`. Una fila por paquet
 | `pestphp/pest` | Pest, no PHPUnit clásico. Incluye el plugin de arquitectura |
 | `laravel/pint` | Estilo |
 | `larastan/larastan` | Análisis estático (`phpstan.neon`) |
+| `dedoc/scramble` | El OpenAPI, generado desde el código (`sh bin/contract.sh`) |
 
 **Regla dura:** la documentación de dos versiones seguidas de Laravel se parece mucho y los modelos de lenguaje
 las mezclan. Si necesitas una API del framework y no estás 100 % seguro de que existe en **tu** versión, no la uses:
@@ -43,21 +44,17 @@ convierte en parte del alcance: añadirla es funcionalidad nueva y la autoriza u
 
 ### ✅ Dentro de alcance (con autorización de la fase activa)
 
+Lo no listado queda fuera. Cada carpeta incluye sus subcarpetas por funcionalidad
+(`.ai/rules/arquitectura.md §Arquitectura objetivo`).
+
 ```
-app/Actions/**
-app/Contracts/**
-app/Data/**
-app/Enums/**
-app/Exceptions/**
-app/Http/Controllers/Api/**
-app/Http/Middleware/**
-app/Http/Requests/**
-app/Http/Resources/**
-app/Models/**                    (accessors, casts y relaciones: con cuidado, son contrato — §3)
-app/Services/**
-app/ValueObjects/**
+app/{Actions,Contracts,Data,Enums,Exceptions,Services,ValueObjects}/**
+app/{Console/Commands,Events,Filament,Http,Jobs,Listeners,Policies}/**
+app/Models/**          (accessors, casts y relaciones: con cuidado, son contrato — §3)
 app/Providers/AppServiceProvider.php   (bindings de contratos en register())
-routes/api.php                   (URLs y verbos sólo con CAMBIO AUTORIZADO — §3)
+bootstrap/app.php      (rutas, middleware y excepciones)
+database/{factories,seeders}/**
+routes/**              (URLs y verbos sólo con CAMBIO AUTORIZADO — §3)
 tests/**
 ```
 
@@ -87,14 +84,12 @@ cerrar un agujero, requiere:
 2. La autorización del Tech Lead escrita en la fase: su cabecera dice `Contrato HTTP: CAMBIO AUTORIZADO`, con el
    cambio campo por campo y la decisión de `.ai/DOMAIN.md` que lo respalda.
 3. El traspaso al repo hermano que lo consume (`CLAUDE.md §El otro repositorio`).
-4. Los tests de contrato (`tests/Feature/Contract/`) y el baseline de rutas (`docs/contract/routes-baseline.txt`,
-   generado con `php scripts/normalize-routes.php`) actualizados en la misma fase.
+4. Los tests de contrato (`tests/Feature/Contract/`) y los baselines actualizados en la misma fase: el OpenAPI
+   (`docs/contract/openapi.json`, con `sh bin/contract.sh`) y las rutas (`php scripts/normalize-routes.php`).
 
-Si el contrato no cambia, los tests de contrato pasan **sin modificarlos** y el baseline de rutas no se toca: son
-la red que salta cuando algo cambia sin querer.
+Si no cambia, los tests de contrato pasan **sin modificarlos** y los baselines no se tocan: son la red.
 
-Las reglas de forma de la salida (objetos JSON vacíos, booleanos, orden de las listas, tipo de los arrays) viven en
-`.ai/rules/arquitectura.md §Forma de las respuestas`: se leen siempre que la fase toca lo que sale por HTTP.
+Los errores (problem+json) y la forma de la salida: `.ai/rules/arquitectura.md`, siempre que la fase toque HTTP.
 
 ---
 
@@ -105,7 +100,7 @@ leer antes» los que toca; si vas a tocar algo de un tema que la fase no cita, l
 
 | Archivo | Qué cubre | Se lee si la fase toca |
 |---|---|---|
-| `.ai/rules/arquitectura.md` | Estructura de `app/`, excepciones, estados, borrado lógico, autorización, Actions, tipado, Value Objects, contratos e inyección, PHP 8.4+, forma de las respuestas | Cualquier clase de `app/` |
+| `.ai/rules/arquitectura.md` | Estructura de `app/` por funcionalidad, errores, estados, Actions, Value Objects, contratos, PHP 8.4+, forma de las respuestas | Cualquier clase de `app/` |
 | `.ai/rules/tests.md` | Dónde va cada test, el motor de la suite, Fakes y red; cómo explorar la base de datos local | `tests/` (casi siempre), o consultas a la base de datos local |
 | `.ai/rules/rendimiento.md` | N+1, caché compartida, llamadas externas, serialización y colas | Consultas, caché, colas o servicios externos |
 
@@ -124,8 +119,7 @@ Tocar estas zonas de una forma que la fase no describe con precisión es motivo 
 
 ## 6. Verificación del stack
 
-`bash bin/verify.sh` corre los gates en su orden (estilo, análisis estático, rutas, arquitectura, suite); aquí sólo
-lo que no cabe en el script:
+`bash bin/verify.sh` corre los gates en su orden; aquí sólo lo que no cabe en el script:
 
 - **Pint** con la configuración del repo; no se desactivan reglas para que algo pase.
 - **PHPStan / Larastan** al nivel de `phpstan.neon`, que nunca baja. Si existe `phpstan-baseline.neon`, **sólo
@@ -133,9 +127,9 @@ lo que no cabe en el script:
   patrón quedó huérfano: regenera el baseline (`vendor/bin/phpstan analyse --generate-baseline`), revisa el diff
   línea por línea (cada patrón que desaparece corresponde a un error que de verdad se arregló; si protegía un error
   que sigue ahí, se restaura y se arregla el código) y va en su propio commit.
-- **Test de arquitectura** (`tests/Architecture/`): las reglas de `.ai/rules/arquitectura.md` que se pueden comprobar sobre el código.
-  Una regla nueva de este archivo que se pueda comprobar, entra ahí.
-- **Rutas:** `docs/contract/routes-baseline.txt` se regenera sólo con un cambio de contrato autorizado (§3).
+- **Arquitectura** (`tests/Architecture/`): las capas de `.ai/rules/arquitectura.md`; las del proyecto, en
+  `ProjectArchitectureTest.php`.
+- **Contrato y rutas:** sus baselines se regeneran sólo con un cambio de contrato autorizado (§3).
 
 ---
 
@@ -161,7 +155,7 @@ dependencias nuevas (`.ai/WORKFLOW.md §Dependencia nueva`) y exenciones a un ga
 11. ⛔ **No uses `auth()->user()` en Services ni Actions.** Sólo controladores y middleware conocen la petición.
 12. ⛔ **No silencies excepciones** (`catch (\Exception $e) { continue; }`). Si el código existente lo hace, se
     conserva y se reporta; código nuevo así, nunca.
-13. ⛔ **No uses `->ignoring()`, `->exclude()` ni saltes un `arch()`** en el test de arquitectura: son exenciones a
+13. ⛔ **No añadas `->ignoring()`, `->exclude()` ni saltes un `arch()`** en el test de arquitectura: son exenciones a
     un gate.
 14. ⛔ **No cambies comportamiento dentro de una tarea declarada «sin cambio de comportamiento».**
 15. ⛔ **No uses `array_first()` ni `array_last()` globales**: un polyfill las define con otra semántica. Usa
