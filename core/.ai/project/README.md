@@ -13,7 +13,7 @@
 |---|---|
 | `DECISIONS.md` | Decisiones técnicas vigentes: stack y versiones, infraestructura |
 | `ARCHITECTURE.md` | Lo que el proyecto deja fuera de alcance, autorización, dominios |
-| `FEATURES.md` | Cada funcionalidad y dónde vive; lo lee quien planifica |
+| `FEATURES.md`, `GLOSSARY.md` | Cada funcionalidad y dónde vive; cada término del negocio y su nombre en el código |
 | `CONTRACT.md` | Cómo se autentica quien llama y qué cabeceras viajan |
 | `SENSITIVE-ZONES.md` | Las zonas sensibles propias del negocio |
 | `CROSS-CUTTING.md` | Idiomas, tenant, accesibilidad, rendimiento, observabilidad |
