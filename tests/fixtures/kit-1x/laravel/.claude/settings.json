@@ -1,0 +1,28 @@
+{
+  "permissions": {
+    "defaultMode": "dontAsk",
+    "allow": [
+      "Read", "Edit", "Write", "Glob", "Grep",
+      "Bash(sh bin/check-docs.sh*)", "Bash(bash bin/verify.sh*)", "Bash(sh bin/verify.sh*)",
+      "Bash(php artisan *)", "Bash(php scripts/normalize-routes.php*)",
+      "Bash(./vendor/bin/pest *)", "Bash(vendor/bin/pest *)",
+      "Bash(./vendor/bin/pint *)", "Bash(vendor/bin/pint *)",
+      "Bash(./vendor/bin/phpstan *)", "Bash(vendor/bin/phpstan *)",
+      "Bash(composer dump-autoload*)", "Bash(composer show*)", "Bash(composer validate*)",
+      "Bash(curl -s http://localhost*)",
+      "Bash(git status*)", "Bash(git diff*)", "Bash(git log*)", "Bash(git show*)", "Bash(git rev-parse*)",
+      "Bash(git branch*)", "Bash(git switch *)",
+      "Bash(git add *)", "Bash(git commit *)", "Bash(git reset --soft HEAD~1)"
+    ],
+    "deny": [
+      "Read(./.env)", "Read(./.env.testing)", "Read(./.env.production)",
+      "Read(**/*.pem)", "Read(**/*.key)", "Read(**/id_rsa*)",
+      "Read(~/.ssh/**)", "Read(~/.aws/**)", "Read(~/.gnupg/**)", "Read(~/.config/gh/**)",
+      "Read(~/.docker/config.json)", "Read(~/.npmrc)", "Read(~/.netrc)", "Read(~/.kube/config)",
+      "Bash(git push*)", "Bash(git remote*)", "Bash(git reset --hard*)",
+      "Bash(composer require*)", "Bash(composer remove*)", "Bash(composer update*)",
+      "Bash(php artisan migrate:fresh*)", "Bash(php artisan db:wipe*)",
+      "Bash(rm -rf *)", "Bash(wget *)", "Bash(ssh *)"
+    ]
+  }
+}

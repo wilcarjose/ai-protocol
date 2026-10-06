@@ -1,0 +1,10 @@
+# Análisis estático (.ai/RULES.md §Verificación del stack). El nivel sólo sube.
+# Si algún día hace falta un baseline de errores congelados, se añade «- phpstan-baseline.neon» a includes, y
+# bin/verify.sh (gate «deuda», MAX_PHPSTAN_IGNORES) vigila que sólo mengüe.
+includes:
+    - vendor/larastan/larastan/extension.neon
+
+parameters:
+    level: 6
+    paths:
+        - app

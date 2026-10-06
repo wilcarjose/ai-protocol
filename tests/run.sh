@@ -235,6 +235,8 @@ test_installer() {
     if [ "$(sha "$up/.ai/STATE.md")" = "$state" ]; then ok '--upgrade no toca la memoria (.ai/STATE.md)'
     else fail '--upgrade modificó .ai/STATE.md'; fi
 
+    [ -d "$FIXTURES/kit-1x/$KIT" ] && test_upgrade_1x
+
     kit_copy "$WORK/$KIT-kit3"
     edit "$WORK/$KIT-kit3/stacks/$KIT/stack.json" 's/"core": ".*"/"core": ">=9.0.0 <10.0.0"/'
     if out=$(sh "$WORK/$KIT-kit3/install.sh" --stack "$KIT" --target "$WORK/$KIT-kit3-p" 2>&1); then
@@ -246,6 +248,44 @@ test_installer() {
             fail "un stack incompatible falla, pero no por el rango del núcleo: $out"
         fi
     fi
+}
+
+# memory <dir>: «suma ruta» de cada archivo de la memoria (STATE, DOMAIN, BACKLOG, PROTOCOL y las épicas).
+memory() {
+    ( cd "$1" && find .ai/STATE.md .ai/DOMAIN.md .ai/BACKLOG.md .ai/PROTOCOL.md .ai/epics -type f | sort \
+        | while read -r f; do printf '%s %s\n' "$(sha "$f")" "$f"; done )
+}
+
+# Un proyecto con el kit 1.x: tests/fixtures/kit-1x/<kit>/ es la carpeta del stack tal como la copiaba `cp -Rn`
+# antes del instalador (la «Versión del kit» 2026-10-04, la de c2151e4), sin lock. El proyecto ha usado su memoria.
+# shellcheck disable=SC2016  # las comillas invertidas de los mensajes son literales
+test_upgrade_1x() {
+    old="$WORK/$KIT-1x"
+    cp -R "$FIXTURES/kit-1x/$KIT" "$old"
+    mkdir -p "$old/.ai/epics/01-demo"
+    printf '# Épica 01 — Demo\n' > "$old/.ai/epics/01-demo/epic-plan.md"
+    printf -- '- %s — Movimiento del proyecto.\n' "$DATE" >> "$old/.ai/STATE.md"
+    before=$(memory "$old")
+
+    if ! out=$(sh "$ROOT/install.sh" --upgrade --target "$old" 2>&1) && printf '%s\n' "$out" | grep -qF 'di qué stack tiene con --stack'; then
+        ok '1.x: sin lock, --upgrade pide --stack'
+    else
+        fail '1.x: sin lock, --upgrade no pide --stack:'; printf '%s\n' "$out" | sed 's/^/      /'
+    fi
+
+    out=$(sh "$ROOT/install.sh" --upgrade --stack "$KIT" --target "$old" 2>&1)
+    rc=$?
+    printf '%s\n' "$out" > "$WORK/$KIT-1x.log"
+    if [ "$rc" -eq 0 ] && grep -qE '^  ! CLAUDE\.md +conflicto' "$WORK/$KIT-1x.log" \
+       && grep -qF -- '--- proyecto/CLAUDE.md' "$WORK/$KIT-1x.log" && grep -qF '+++ kit/CLAUDE.md' "$WORK/$KIT-1x.log" \
+       && grep -qE '^  \+ \.claude/skills/phase/SKILL\.md +copiado' "$WORK/$KIT-1x.log" \
+       && [ -f "$old/.ai/protocol.lock" ] && [ -f "$old/.ai/project/README.md" ]; then
+        ok "1.x: --upgrade --stack $KIT termina en 0, enseña el diff de lo que difiere del kit ($(grep -c '^  ! ' "$WORK/$KIT-1x.log") conflictos) y copia lo nuevo"
+    else
+        fail "1.x: --upgrade --stack $KIT salió $rc o no enseñó los diffs:"; sed 's/^/      /' "$WORK/$KIT-1x.log" | head -n 40
+    fi
+    if [ "$(memory "$old")" = "$before" ]; then ok '1.x: --upgrade no toca la memoria (STATE, DOMAIN, BACKLOG, PROTOCOL y las épicas)'
+    else fail '1.x: --upgrade modificó la memoria'; fi
 }
 
 # ── La protección del protocolo (bin/check-protocol.sh), en un repositorio git ──
