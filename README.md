@@ -6,6 +6,18 @@ primer día. El trabajo se planifica en **épicas** partidas en **fases**. Cada 
 (`bin/check-docs.sh`) comprueba que esa memoria no miente, y un único árbitro (`bin/verify.sh`) decide si el código
 está sano, en la sesión y en la CI.
 
+## Principios
+
+- **Simple:** sólo lo necesario. Antes de añadir una pieza se busca lo mínimo que cumple el objetivo.
+- **Comprobable:** cada regla se comprueba con un comando o con una casilla `[humano]`. Si no se puede comprobar, se
+  simplifica o se quita.
+- **Mejorado con retroalimentación:** cada cierre de fase pregunta a la persona qué le estorbó, le faltó o le sobró, y
+  su respuesta queda en `.ai/PROTOCOL.md` junto a las propuestas del agente. Una mejora que sirve a todos los
+  proyectos llega al kit como un issue en ai-protocol con la fila de `PROTOCOL.md`.
+- **Neutral respecto al proveedor:** Claude Code es la herramienta por defecto, pero el protocolo se puede usar con
+  agentes de otros proveedores. Los textos usan un lenguaje neutro y lo propio de Claude Code va como nota entre
+  paréntesis, sin adaptadores nuevos.
+
 ## Las tres capas
 
 | Capa | Dónde vive en el kit | Qué es | Quién la cambia |
@@ -258,7 +270,7 @@ Cada rol es una sesión distinta, con su skill, y lee sólo lo que necesita (`bi
 | **Ejecutor** | `/phase` | Una sesión por fase (abajo) |
 | **Revisor** | `/review` | Un subagente de solo lectura que no ve la conversación: compara el diff de la rama con los entregables, los criterios y su evidencia, las reglas, `.ai/project/`, las zonas sensibles y el alcance, y escribe sus hallazgos en la sección «Revisión» de la fase. Con un bloqueante abierto, la fase no se cierra |
 | **Rescate** | `/close` | Documenta lo que de verdad hizo una sesión que se cortó, sin completar nada |
-| **Persona** | — | Aprueba el Paso A, responde los STOP & ASK, aporta la evidencia `[humano]` y revisa y fusiona cada PR |
+| **Persona** | — | Aprueba el Paso A, responde los STOP & ASK, aporta la evidencia `[humano]`, dice al cierre qué mejoraría del protocolo y revisa y fusiona cada PR |
 
 **`/phase`**, paso a paso:
 
@@ -387,5 +399,5 @@ separan igual, con `--path core/ --path install.sh`).
   cada stack y `CLAUDE.md`. `tests/run.sh` falla si una sesión crece más de un 3 % y avisa si baja más de un 3 %;
   subir la línea base es cambiar ese archivo en un PR que explique por qué.
 - **Las mejoras vienen de los proyectos.** Cada proyecto acumula las suyas en `.ai/PROTOCOL.md`; las que no son
-  propias de ese proyecto se suben aquí.
+  propias de ese proyecto se suben aquí como issue (§Principios).
 - **Cada cambio se anota** en el `CHANGELOG.md` del paquete que toca, en «Sin publicar».
