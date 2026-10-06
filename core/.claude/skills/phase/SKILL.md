@@ -76,9 +76,8 @@ código de esa rama.
   actual. **Sólo valen las ramas cuyo `git show <rama>:.ai/STATE.md` apunta ya a esta fase.** Si no vale ninguna,
   dilo y para.
 
-Para crear la rama o cambiar a ella, el árbol tiene que estar limpio. Sólo ramas locales: nada de `git fetch` ni de
-push. Los merges los decide el Tech Lead; si la épica declara rama base, las fases van con `--no-ff` a
-`epic/<NN-slug>`, y ésta a `main` al cerrar la épica.
+Para crear la rama o cambiar a ella, el árbol tiene que estar limpio; en la nube, `git fetch` antes. Se empuja al
+cerrar, con su PR (`.claude/skills/phase/cierre.md §Entrega`). Los merges los decide el Tech Lead.
 
 ## Estado de una fase
 
@@ -130,7 +129,8 @@ La **única** regla sobre commits; los demás archivos la citan.
   RESULTADO. Lo que es alcance nuevo no se commitea: STOP & ASK.
 - **Pruebas en rojo** («falla si quito X»): sobre trabajo commiteado o en una copia fuera del repo. `git restore`
   sobre un archivo se lleva lo que no estaba commiteado.
-- **Nunca** `git push`, `git reset --hard` ni reescribir commits que no sean de esta fase.
+- **Push**, sólo de la rama de la fase (`git push -u origin phase/<NN-slug>/<FF>`). **Nunca** a `main`, forzado
+  ni borrando ramas; ni `git reset --hard`, ni reescribir commits que no sean de esta fase.
 - **Fuera de una fase**, sólo si el Tech Lead lo pide: `chore(planning): …` o `chore(protocol): …`.
 
 ## Verificación

@@ -12,9 +12,11 @@
     ".claude/skills/plan-epic/SKILL.md",
     ".claude/skills/plan-phase/SKILL.md",
     ".claude/skills/review/SKILL.md",
+    ".github/pull_request_template.md",
     "AGENTS.md",
     "CLAUDE.md",
     "bin/check-docs.sh",
+    "bin/check-protocol.sh",
     "bin/handoff.sh",
     "bin/measure-context.sh"
   ],
