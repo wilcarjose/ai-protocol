@@ -45,6 +45,12 @@
 #      actualiza lo que el proyecto no tocó, deja como conflicto lo que sí
 #      tocó, retira lo que ya no trae (con su carpeta si queda vacía) y no toca
 #      la memoria; y no instala un stack incompatible con el núcleo.
+#   7. Prueba la protección del protocolo (bin/check-protocol.sh) en una copia
+#      de la instalación hecha repositorio git: una rama de fase que edita
+#      CLAUDE.md, o el propio script, en un commit que no es de ámbito protocol
+#      falla; el mismo cambio en un commit chore(protocol) pasa, y también los
+#      cambios en archivos del proyecto (la memoria, .ai/project/verify.conf)
+#      y cualquier cambio fuera de una rama de fase. Necesita git.
 #
 # ◆ ADEMÁS
 #   Provoca en una copia del repo un fallo de cada chequeo de
@@ -455,6 +461,46 @@ test_installer() {
     fi
 }
 
+# ── La protección del protocolo (bin/check-protocol.sh), en un repositorio git ──
+# g <args de git>: git en el repo de prueba, sin depender de la configuración de quien lo ejecuta.
+g() { git -C "$REPO" -c user.name=kit -c user.email=kit@example.invalid -c commit.gpgsign=false -c core.hooksPath=/dev/null "$@"; }
+
+# protect <rama> <archivo> <mensaje del commit> <pasa|falla> <qué se prueba> [texto que tiene que imprimir]: en una
+# rama nueva desde main, un commit que cambia ese archivo; después, bin/check-protocol.sh como fuera de la CI.
+protect() {
+    if ! { g switch -q -c "$1" main && printf '\nCambio.\n' >> "$REPO/$2" && g add -A && g commit -q -m "$3"; }; then
+        fail "protocolo: no se pudo preparar «$5»"; return
+    fi
+    out=$(GITHUB_HEAD_REF='' GITHUB_BASE_REF='' PROTOCOL_BASE='' sh "$REPO/bin/check-protocol.sh" 2>&1)
+    rc=$?
+    g switch -q main
+    if { [ "$4" = pasa ] && [ "$rc" -eq 0 ]; } || { [ "$4" = falla ] && [ "$rc" -ne 0 ] && printf '%s\n' "$out" | grep -qF -- "$6"; }; then
+        ok "protocolo: $5"
+    else
+        fail "protocolo: $5 (salió $rc)"; printf '%s\n' "$out" | sed 's/^/      /'
+    fi
+}
+
+test_protocol() {
+    printf '  ◆ protección del protocolo\n'
+    command -v git > /dev/null 2>&1 || { fail 'protocolo: hace falta git para probar bin/check-protocol.sh'; return; }
+    REPO="$WORK/$KIT-git"
+    cp -R "$BASE" "$REPO"
+    if ! { g init -q -b main && g add -A && g commit -q -m 'chore(protocol): install ai-protocol'; }; then
+        fail 'protocolo: no se pudo crear el repositorio de prueba'; return
+    fi
+    protect phase/02-paquete/03 CLAUDE.md 'docs(demo): edit CLAUDE.md' falla \
+        'una rama de fase que edita CLAUDE.md fuera de un commit (protocol) falla' 'toca CLAUDE.md'
+    protect phase/02-paquete/04 CLAUDE.md 'chore(protocol): edit CLAUDE.md' pasa \
+        'el mismo cambio en un commit chore(protocol) pasa'
+    protect phase/02-paquete/05 bin/check-protocol.sh 'fix(demo): relax the guard' falla \
+        'el propio bin/check-protocol.sh también está protegido' 'toca bin/check-protocol.sh'
+    protect phase/02-paquete/06 .ai/project/verify.conf 'chore(phase-02-06): close' pasa \
+        'un archivo «project» del lock (.ai/project/verify.conf) es del proyecto'
+    protect feature/demo CLAUDE.md 'docs(demo): edit CLAUDE.md' pasa \
+        'fuera de una rama de fase no aplica'
+}
+
 # ── tests/structure.sh, frente a un fallo de cada chequeo ───────────────────
 # breaks <caso> <texto que structure.sh tiene que imprimir>: en una copia limpia del repo, mete el defecto.
 # shellcheck disable=SC2016  # las comillas invertidas son literales
@@ -466,7 +512,7 @@ breaks() {
         case "$1" in
             listado)   printf 'x\n' > stacks/laravel/extra.md ;;
             capas)     cp core/AGENTS.md stacks/nextjs/AGENTS.md
-                       edit stacks/nextjs/stack.json 's#^    "docs/README.md"$#    "docs/README.md",\n    "AGENTS.md"#' ;;
+                       edit stacks/nextjs/stack.json 's#^    "bin/verify.sh"$#    "bin/verify.sh",\n    "AGENTS.md"#' ;;
             gates)     edit stacks/nextjs/bin/verify.sh "s/^run 'tipos'/run 'types'/" ;;
             stacks)    printf '\nVer `phpstan.neon`.\n' >> stacks/nextjs/.ai/RULES.md ;;
             nucleo)    printf '\nVer `docs/vendor/INDEX.md`.\n' >> core/CLAUDE.md ;;
@@ -589,6 +635,7 @@ for KIT in $KITS; do
     [ "$n" -eq "$TOTAL" ] || FAIL=1
 
     test_installer
+    test_protocol
 done
 
 test_structure
