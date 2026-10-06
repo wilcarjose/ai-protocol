@@ -82,10 +82,14 @@ plantilla lo pide, «Migraciones: ninguna».
   gate ve va en su fila propia; agrupado, no tiene dónde aterrizar y se pierde sin que falle nada. Los commits de
   arranque y de cierre no van en §9 (`.claude/skills/phase/SKILL.md §Commits durante la fase`).
 - **Referencias** a clases, métodos o secciones, nunca a números de línea (`.ai/WORKFLOW.md §Documentación`).
-- **Contexto que debes leer antes (§2).** Rutas concretas: siempre `sh bin/handoff.sh` de la fase anterior, y los
-  temas de `.ai/rules/` que toca la fase (el índice está en `.ai/RULES.md`). `.ai/RULES.md` y `.ai/WORKFLOW.md` se
-  leen siempre; no los listes. El revisor lee lo mismo (`.claude/agents/reviewer.md`): un tema que no está aquí no
-  lo revisa nadie.
+- **Contexto que debes leer antes (§2).** Rutas concretas: siempre `sh bin/handoff.sh` de la fase anterior, los
+  temas de `.ai/rules/` que toca la fase (el índice está en `.ai/RULES.md`) y las filas de
+  `.ai/project/FEATURES.md` de las funcionalidades que toca; si crea una o le añade una carpeta, §4 lista ese
+  archivo. `.ai/RULES.md` y `.ai/WORKFLOW.md` se leen siempre; no los listes. El revisor lee lo mismo
+  (`.claude/agents/reviewer.md`): un tema que no está aquí no lo revisa nadie.
+- **Nombres.** Lo que crea la fase (carpetas, clases, tablas, rutas, claves de traducción, códigos de error) se
+  nombra en inglés con los términos de `.ai/project/GLOSSARY.md` (`.ai/RULES.md §Lista negra`). Un término nuevo es
+  una fila más, y §4 lista ese archivo; los textos para el usuario siguen en español.
 - **No tocar (§4).** Sólo exclusiones específicas de esta fase. Los mínimos del proyecto viven en
   `.ai/RULES.md §Alcance` y en `CLAUDE.md §Cosas que no se hacen`; no los repitas.
 - **Restricciones (§6).** Sólo las de esta fase; las generales no se copian.

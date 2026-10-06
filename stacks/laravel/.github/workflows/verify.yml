@@ -2,7 +2,8 @@
 # (.claude/skills/phase/cierre.md §Entrega). Es del kit ai-protocol y lo actualiza install.sh --upgrade.
 #
 # La versión de PHP sale de .php-version (p. ej. «8.4»), como la lee shivammathur/setup-php; sin ese archivo, la
-# acción usa la última. gitleaks va en su versión fijada para que el gate «secretos» no cambie con el runner.
+# acción usa la última. gitleaks va en su versión fijada para que el gate «secretos» no cambie con el runner. La suite
+# corre contra PostgreSQL con PostGIS, con la conexión de .env.testing (.ai/rules/tests.md §Tests).
 name: verify
 
 on:
@@ -21,6 +22,20 @@ env:
 jobs:
   verify:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgis/postgis:17-3.5
+        env:
+          POSTGRES_DB: testing
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
     steps:
       # Todo el historial y las ramas: el gate «protocolo» compara la rama con su base y «secretos» lee los commits.
       - uses: actions/checkout@v7
@@ -30,6 +45,7 @@ jobs:
       - uses: shivammathur/setup-php@v2
         with:
           tools: composer
+          extensions: pdo_pgsql
           coverage: none
 
       - name: gitleaks
@@ -44,6 +60,7 @@ jobs:
         run: |
           if [ -f .env.example ] && [ ! -f .env ]; then cp .env.example .env; fi
           php artisan key:generate --no-interaction
+          if [ -f .env.testing ] && grep -q '^APP_KEY=$' .env.testing; then php artisan key:generate --env=testing --no-interaction; fi
 
       - name: verify
         run: sh bin/verify.sh

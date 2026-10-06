@@ -29,7 +29,7 @@ function succeeded<R extends { response: Response }>(result: R): result is R & {
 // request never throws: the call's result or its error, as data.
 //
 //   const result = await request(api.GET("/demos/{id}", { params: { path: { id } } }));
-//   if (!result.ok && result.error.code === "demo_not_found") …
+//   if (!result.ok && result.error.code === "DEMO_NOT_FOUND") …
 export async function request<R extends { response: Response }>(call: Promise<R>): Promise<ApiResult<Success<R>>> {
   let result: R;
   try {

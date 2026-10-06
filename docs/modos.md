@@ -42,7 +42,7 @@ trabajando aunque cierres el portátil; el visto bueno del Paso A se da desde cu
 **Lo que trae la imagen:** PHP 8.3 con Composer, Node 20–22, PostgreSQL 16, Docker con Compose, `git` y `gh`. `gh`
 funciona sin token propio: el proxy de GitHub pone las credenciales.
 
-**Lo que añade el script:** PostGIS, gitleaks y, si el proyecto lo pide, PHP 8.4. Corre como root antes de que
+**Lo que añade el script:** PostGIS con la base de datos de los tests, gitleaks y, si el proyecto lo pide, PHP 8.4. Corre como root antes de que
 arranque Claude Code; si termina en unos cinco minutos, la VM se guarda en caché y las sesiones siguientes no lo
 repiten (se reconstruye al cambiar el script, la red, o cada siete días). Tiene que salir con 0: lo que no es
 imprescindible lleva `|| true`.
@@ -53,8 +53,12 @@ imprescindible lleva `|| true`.
 export DEBIAN_FRONTEND=noninteractive
 apt-get update -qq || true
 
-# PostGIS para el PostgreSQL 16 que trae la imagen.
+# PostGIS para el PostgreSQL 16 que trae la imagen, y la base de datos de los tests con los datos de la semilla
+# .env.testing del stack de Laravel (testing, usuario y contraseña postgres). Queda en el disco, que sí se guarda.
 apt-get install -y -qq postgresql-16-postgis-3 > /dev/null || true
+{ service postgresql start > /dev/null \
+  && su postgres -c "psql -qc \"ALTER USER postgres PASSWORD 'postgres'\"" \
+  && { su postgres -c 'createdb testing' 2> /dev/null || true; }; } || true
 
 # gitleaks, para el gate «secretos» de bin/verify.sh. Con go install, porque las releases de GitHub de un repo que
 # no está en la sesión responden 403; GOTOOLCHAIN=auto baja el Go que pide gitleaks si el de la imagen es anterior.

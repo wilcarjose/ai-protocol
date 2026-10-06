@@ -115,10 +115,12 @@ Toda fase termina igual, se ejecute en la nube o en local: su rama en GitHub y u
 
 1. `git push -u origin <rama de la fase>`. Nunca a `main` ni forzado
    (`.claude/skills/phase/SKILL.md §Commits durante la fase`).
-2. El PR, si no existe: `gh pr create` contra `epic/<NN-slug>` si la épica declara rama base o contra `main` si no,
-   con el título `<NN-slug>/<FF> — <título de la fase>` y el cuerpo de `.github/pull_request_template.md` relleno
-   desde el RESULTADO. `HECHA` o `ESPERA_EVIDENCIA`, listo para revisar; `BLOQUEADA` o `VERIFICACION_ROJA`, con
-   `--draft`. Si ya existe, el push lo actualiza.
+2. El PR, si no existe: `gh pr create` contra `epic/<NN-slug>` si la épica declara rama base o contra `main` si no.
+   **El título, en inglés y en Conventional Commits** (`feat(listings): publish listings with photos`), con los
+   ámbitos de `.ai/RULES.md §Ámbitos de commit`: al fusionar con squash es el mensaje del commit. **La descripción,
+   en español**: el cuerpo de `.github/pull_request_template.md` relleno desde el RESULTADO, que nombra la fase.
+   `HECHA` o `ESPERA_EVIDENCIA`, listo para revisar; `BLOQUEADA` o `VERIFICACION_ROJA`, con `--draft`. Si ya existe,
+   el push lo actualiza.
 3. Sin `gh` o sin acceso al remoto, dilo en el reporte con la orden que falta: la rama queda commiteada en local.
 4. El merge lo decide el Tech Lead: la fase nunca fusiona su PR.
 

@@ -38,6 +38,11 @@ Compatible con el núcleo `>=2.0.0-dev <3.0.0`.
 
 ### Cambiado
 
+- `.ai/RULES.md §Lista negra`: el código va en inglés (nombres, rutas, claves de traducción, códigos de error, logs,
+  tests y comentarios) y con los términos de `.ai/project/GLOSSARY.md`. En español quedan los textos para el usuario,
+  los slugs públicos y los datos semilla. `.ai/rules/arquitectura.md` la cita en vez de repetirla. Los comentarios de
+  las semillas (`playwright.config.ts`, `vitest.config.ts`, `eslint.config.mjs`) y el título del OpenAPI semilla pasan
+  a inglés. El código de error del ejemplo es `DEMO_NOT_FOUND`, en mayúsculas como el del backend.
 - El gate «dependencias» audita sólo lo que se despliega (`npm audit --audit-level=high --omit=dev`): un aviso alto
   sin arreglo en `braces`, que traen `eslint-config-next` y `eslint-plugin-boundaries`, dejaba en rojo cualquier
   proyecto nuevo.

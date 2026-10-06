@@ -4,7 +4,7 @@
     "allow": [
       "Read", "Edit", "Write", "Glob", "Grep",
       "Bash(sh bin/check-docs.sh*)", "Bash(sh bin/check-protocol.sh*)", "Bash(sh bin/handoff.sh*)", "Bash(sh bin/measure-context.sh*)", "Bash(bash bin/verify.sh*)", "Bash(sh bin/verify.sh*)",
-      "Bash(php artisan *)", "Bash(php scripts/normalize-routes.php*)",
+      "Bash(php artisan *)", "Bash(php scripts/normalize-routes.php*)", "Bash(sh bin/contract.sh*)",
       "Bash(./vendor/bin/pest *)", "Bash(vendor/bin/pest *)",
       "Bash(./vendor/bin/pint *)", "Bash(vendor/bin/pint *)",
       "Bash(./vendor/bin/phpstan *)", "Bash(vendor/bin/phpstan *)",

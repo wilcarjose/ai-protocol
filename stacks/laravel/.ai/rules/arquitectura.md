@@ -7,22 +7,41 @@
 
 ## 1. Arquitectura objetivo
 
+La estructura estándar de Laravel. Lo del framework va donde Laravel lo pone: modelos (planos, en `app/Models`),
+migraciones, factories, seeders, controladores, requests, resources, policies, comandos, jobs, eventos, listeners,
+rutas y Filament. La lógica de negocio va en su carpeta por tipo:
+
 ```
 app/
-├── Actions/          ← lógica de negocio: 1 clase = 1 caso de uso (§2)
-├── Contracts/        ← interfaces de todo lo que cruza el proceso: red, disco, reloj, servicios externos (§4)
+├── Actions/          ← 1 clase = 1 caso de uso (§2)
+├── Contracts/        ← interfaces de lo que cruza el proceso: red, disco, reloj, servicios externos (§4)
 ├── Data/             ← DTOs de configuración
 ├── Enums/            ← enums backed string: estados y constantes de negocio
-├── Exceptions/       ← todas heredan de una ApiException base (§1.1)
-├── Http/
-│   ├── Controllers/Api/   ← delgados: validar → despachar una Action → responder
-│   ├── Middleware/
-│   ├── Requests/          ← FormRequest: autorización y validación, nada más
-│   └── Resources/         ← transformación de salida
-├── Models/
-├── Services/         ← orquestación y consultas de lectura. Nada de negocio nuevo
+├── Exceptions/       ← todas heredan de ApiException (§1.1)
+├── Services/         ← orquestación, consultas de lectura e implementaciones de contratos
 └── ValueObjects/     ← objetos readonly que se validan al construirse (§3)
 ```
+
+No hay módulos ni `app/Modules/`. Las capas, no las carpetas, son las que comprueba
+`tests/Architecture/ArchitectureTest.php`: la lógica de negocio no conoce la capa HTTP (salvo el cliente saliente,
+`Illuminate\Http\Client`) ni los controladores, y los modelos no conocen Actions, Services ni HTTP.
+
+### Por funcionalidad
+
+- Una funcionalidad con varias clases va en una subcarpeta con su nombre dentro de cada tipo:
+  `app/Actions/Listings/PublishListing`, `app/ValueObjects/Listings/Price`. Con una sola clase, puede ir
+  en la raíz del tipo.
+- **El nombre de una funcionalidad es el mismo en todas las carpetas**, y también en los tests
+  (`tests/Unit/Actions/Listings/`). Controladores, requests y resources pueden usar esa subcarpeta cuando ayude
+  (`app/Http/Controllers/Api/Listings/`).
+- Una funcionalidad nueva, o una carpeta nueva de una que existe, es una fila de `.ai/project/FEATURES.md`: lo lee
+  quien planifica para saber qué toca cada fase.
+- Las clases se crean con artisan y su ruta, no a mano: `php artisan make:class Actions/Listings/PublishListing`,
+  `make:interface Contracts/Payments/PaymentGateway`, `make:enum Enums/Listings/ListingStatus --string`, y los
+  `make:` del framework (`make:controller`, `make:request`, `make:resource`, `make:policy`…). Luego se ajustan a
+  estas reglas (`final readonly`, `declare(strict_types=1)`).
+- Las Actions que publica Laravel Fortify (`app/Actions/Fortify/`) siguen su propio contrato; las pruebas de
+  arquitectura las excluyen.
 
 ### Flujo obligatorio de una petición
 
@@ -34,12 +53,15 @@ Route → Middleware → FormRequest (authorize + rules) → Controller (sin ló
 
 ### 1.1 Excepciones
 
-- Toda excepción de negocio hereda de una `ApiException` base que lleva su `error_code` (mayúsculas, estable: es el
-  contrato), su status HTTP y un contexto. El render a JSON está en un solo sitio (`bootstrap/app.php`,
-  `withExceptions`), con un único envelope de error.
-- Toda subclase con status 4xx se registra en `dontReport`: sin eso, Laravel la reporta como `ERROR` y ensucia el
-  log en cada rechazo legítimo. Ojo: `bootstrap/app.php` no declara namespace, así que dentro del closure
-  `X::class` resuelve al namespace global si `X` no está importada con `use`.
+- Toda excepción de negocio hereda de `App\Exceptions\ApiException`, que lleva su `errorCode` (mayúsculas, estable:
+  es el contrato), su status HTTP y un contexto, que va al log y nunca a la respuesta. Su mensaje es una **clave de
+  traducción** en inglés (`listings.not_found`): el texto para el usuario vive en las traducciones, en español, y
+  `ProblemDetails` lo traduce al escribir `detail`, con el contexto como parámetros (`:id`).
+- **Los errores salen en `application/problem+json` (RFC 9457)**: `type`, `title`, `status`, `detail` y la extensión
+  `code`, que es el `errorCode`; un error de validación añade `errors` por campo. El cliente discrimina por `code`.
+  La forma se da en un solo sitio, `App\Http\ProblemDetails`, registrado en `bootstrap/app.php` (`withExceptions`);
+  `tests/Feature/Contract/ProblemDetailsTest.php` la verifica.
+- Una `ApiException` 4xx no se reporta: es un rechazo legítimo, no un error (`ProblemDetails::register`).
 - Un `500` nunca expone el mensaje de la excepción: texto fijo y el detalle al log.
 
 ### 1.2 Control de flujo — early returns
@@ -92,7 +114,7 @@ use App\Contracts\Payments\PaymentGateway;
 use App\Models\Order;
 use App\ValueObjects\Money;
 
-final readonly class CaptureOrderPaymentAction
+final readonly class CaptureOrderPayment
 {
     public function __construct(
         private PaymentGateway $gateway,
@@ -118,10 +140,10 @@ final readonly class CaptureOrderPaymentAction
 8. Nunca devuelve una respuesta HTTP: devuelve dominio (Model, Value Object, array). La forma HTTP es del
    controlador y del Resource.
 9. Si escribe en más de una tabla, `DB::transaction()`. Sin excepción.
-10. Señala el error lanzando una `ApiException` con su `error_code` y su status, no devolviendo `null`.
+10. Señala el error lanzando una `ApiException` con su `errorCode` y su status, no devolviendo `null`.
 
-Nombre: `{Verbo}{Sustantivo}Action` (`StoreOrderAction`, `ApproveJoinRequestAction`). Un archivo, una clase, mismo
-nombre. Las reglas que se pueden comprobar sobre el código las comprueba `tests/Architecture/ArchitectureTest.php`.
+Nombre: `{Verbo}{Sustantivo}`, sin sufijo (`StoreOrder`, `ApproveJoinRequest`): la Action se reconoce por su carpeta
+y su `handle()`. Un archivo, una clase, mismo nombre. Las reglas que se pueden comprobar sobre el código las comprueba `tests/Architecture/ArchitectureTest.php`.
 
 ---
 
@@ -220,7 +242,7 @@ Parte del contrato (`.ai/RULES.md §Contrato HTTP`), porque PHP y las bases de d
   PHP serializa un array vacío como `[]`, así que la salida pasa por un único helper en `app/Http/Resources/`, también
   en las respuestas que no usan un Resource. Ningún Resource escribe su propio `?: []` o `(object)`.
 - **Un booleano sale siempre como `true`/`false`**: toda columna booleana tiene cast `boolean` en su modelo, y la de
-  un pivote se convierte en su único punto de salida. MySQL la devuelve `0`/`1` si nadie la castea.
+  un pivote se convierte en su único punto de salida. Sin cast, el motor puede devolverla como `0`/`1` o `'t'`/`'f'`.
 - **El orden de una lista es parte de la respuesta.** Toda consulta que pagina o cuyo orden ve el cliente termina en
   una columna única (la clave primaria): ordenar sólo por una fecha o un nombre deja los empates al motor, y no todos
   los devuelven siempre igual.

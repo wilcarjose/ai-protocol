@@ -11,14 +11,21 @@
     ".ai/templates/phase.template.md",
     ".claude/settings.json",
     ".github/workflows/verify.yml",
+    "bin/contract.sh",
     "bin/verify.sh",
     "scripts/normalize-routes.php",
     "tests/Architecture/ArchitectureTest.php"
   ],
   "seed": [
     ".ai/project/verify.conf",
+    ".env.testing",
+    "app/Exceptions/ApiException.php",
+    "app/Http/ProblemDetails.php",
     "docs/README.md",
-    "phpstan.neon"
+    "docs/contract/openapi.json",
+    "phpstan.neon",
+    "tests/Architecture/ProjectArchitectureTest.php",
+    "tests/Feature/Contract/ProblemDetailsTest.php"
   ],
   "gates": [
     "docs",
@@ -28,6 +35,7 @@
     "análisis",
     "deuda",
     "rutas",
+    "contrato",
     "dependencias",
     "suite",
     "arquitectura"

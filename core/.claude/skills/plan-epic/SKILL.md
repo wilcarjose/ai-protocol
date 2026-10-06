@@ -22,6 +22,8 @@ Argumentos: `$ARGUMENTS`. Una épica que ya existe (`<NN-slug>`), un paquete de 
 
 - Haz la lectura en frío de `CLAUDE.md §Orden de lectura`, y además `.ai/BACKLOG.md`, `.ai/PROTOCOL.md` y el
   epic-plan si la épica ya existe. Para una fase, lo que dejó la anterior (`sh bin/handoff.sh <epica> <FF>`).
+- Lee `.ai/project/GLOSSARY.md`: los términos del negocio y su nombre en el código, que va en inglés. La épica usa
+  esos nombres y, si introduce un término, lo dice para que la fase que lo crea añada su fila.
 - **Lee el código real** de la zona que se va a tocar y mide lo que se pueda medir (`grep`, conteos,
   `bash bin/verify.sh`). Un plan escrito sin mirar el código asume cosas falsas.
 - Si la duda es del contrato con el otro repo, lee también su código (`CLAUDE.md §El otro repositorio`). Lo que la

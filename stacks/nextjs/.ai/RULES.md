@@ -6,21 +6,16 @@
 >
 > 1. Si crees que una regla está mal o desactualizada: **STOP & ASK** (`.ai/WORKFLOW.md §STOP & ASK`). Quién la
 >    cambia y cómo: `.ai/WORKFLOW.md §Archivos del protocolo`.
-> 2. Cómo se trabaja vive en `.ai/WORKFLOW.md` y en las skills; lo que cambia con el proyecto (decisiones, contrato
->    vigente del backend, fase activa), en `.ai/DOMAIN.md`, `.ai/STATE.md` y `.ai/project/`. Aquí sólo hay reglas
->    **estables**. Si chocan, gana este archivo.
-> 3. Son las reglas del stack del kit `ai-protocol`, y las actualiza `install.sh --upgrade`. Lo que decide cada
->    proyecto vive en `.ai/project/`, y aquí se cita. Un proyecto puede cambiar este archivo, pero entonces el
->    upgrade lo enseña como conflicto en vez de actualizarlo.
+> 2. Son las reglas **estables** del stack del kit `ai-protocol`, y las actualiza `install.sh --upgrade` (si el
+>    proyecto cambia este archivo, el upgrade lo enseña como conflicto). Cómo se trabaja: `.ai/WORKFLOW.md` y las
+>    skills; lo que decide el proyecto: `.ai/project/`, que aquí se cita. Si chocan, gana este archivo.
 
 ---
 
 ## 1. Stack y versiones exactas
 
-Los paquetes que el stack da por hechos. Sus versiones exactas son del proyecto y viven en
-`.ai/project/DECISIONS.md §Stack y versiones exactas`: el chequeo «stack» de `bin/check-docs.sh` exige allí una por
-cada paquete de esta tabla y la compara con `package.json`. Una fila por paquete (varios en una fila, separados por
-« / »).
+Los paquetes que el stack da por hechos. Su versión exacta, en `.ai/project/DECISIONS.md §Stack y versiones exactas`,
+que el chequeo «stack» de `bin/check-docs.sh` compara con `package.json`. Varios en una fila, separados por « / ».
 
 | Paquete | Nota |
 |---|---|
@@ -211,6 +206,9 @@ dependencias nuevas (`.ai/WORKFLOW.md §Dependencia nueva`) y exenciones a un ga
 9. ⛔ **No dejes llamadas de depuración**: `console.log`, `debugger`.
 10. ⛔ **No cites catálogos mutables** (`P<n>-<m>`, `§X` de una lista que se renumera) desde código, tests ni
     documentos. El porqué que debe sobrevivir va a `.ai/DOMAIN.md` o a `docs/adr/`.
+11. ⛔ **No escribas el código en español**: nombres (archivos, clases, métodos, tablas, rutas…), claves de
+    traducción, códigos de error, logs, tests y comentarios, en inglés y con los términos de
+    `.ai/project/GLOSSARY.md`. En español, sólo los textos para el usuario, los slugs públicos y los datos semilla.
 
 ### Archivos que NO se usan como referencia
 

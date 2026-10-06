@@ -1,6 +1,7 @@
-// vitest.config.ts — los tests unitarios (.ai/rules/tests.md). Es del proyecto: install.sh lo crea si falta.
+// vitest.config.ts — the unit tests (.ai/rules/tests.md). It belongs to the project: install.sh creates it when
+// missing.
 //
-// e2e/ es de Playwright: Vitest no lo recorre.
+// e2e/ belongs to Playwright: Vitest does not walk it.
 import { fileURLToPath } from "node:url";
 import { defineConfig } from "vitest/config";
 

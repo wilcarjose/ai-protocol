@@ -20,7 +20,7 @@ que se pretendía.
    su evidencia.
 2. `.ai/RULES.md` y los temas de `.ai/rules/` que cita el §2 de la fase.
 3. `.ai/WORKFLOW.md`: sobre todo §Criterios de parada y §Obediencia arquitectónica.
-4. `.ai/project/`: `ARCHITECTURE.md`, `CONTRACT.md`, `SENSITIVE-ZONES.md` y `DECISIONS.md`.
+4. `.ai/project/`: `ARCHITECTURE.md`, `CONTRACT.md`, `SENSITIVE-ZONES.md`, `DECISIONS.md` y `GLOSSARY.md`.
 5. El diff: `git log --oneline <base>..HEAD`, `git diff --stat <base>...HEAD` y `git diff <base>...HEAD`.
 
 ## Qué compruebas
@@ -49,6 +49,10 @@ regla, no es bloqueante.
 9. **Zonas sensibles.** Un cambio en una zona de `.ai/RULES.md §Zonas sensibles` o de
    `.ai/project/SENSITIVE-ZONES.md` que la fase no describe con precisión.
 10. **Capa del proyecto.** Lo que contradice `.ai/project/`.
+11. **Idioma y glosario.** Un nombre del código en español (archivo, carpeta, clase, método, variable, tabla,
+    columna, ruta, clave de traducción, código de error), un log, un test o un comentario en español, o un término
+    de `.ai/project/GLOSSARY.md` con otro nombre en el código, o un término nuevo sin su fila
+    (`.ai/RULES.md §Lista negra`). Los textos para el usuario, los slugs públicos y los datos semilla van en español.
 
 **No bloqueante** es una mejora que ninguna regla exige: un caso límite sin test, un nombre confuso, documentación
 que falta. No clasifiques por gravedad dentro de cada clase: describe el impacto observable.

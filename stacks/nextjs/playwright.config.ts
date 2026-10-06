@@ -1,8 +1,9 @@
-// playwright.config.ts — los E2E de e2e/ (.ai/rules/tests.md). Es del proyecto: install.sh lo crea si falta.
+// playwright.config.ts — the E2E tests in e2e/ (.ai/rules/tests.md). It belongs to the project: install.sh creates
+// it when missing.
 //
-// No corren en bin/verify.sh, que sólo comprueba que la configuración y los specs cargan: necesitan el backend
-// levantado, y los corre la fase que los pide (`npx playwright test`). Contra un entorno ya levantado,
-// E2E_BASE_URL; sin ella, Playwright construye y arranca la app.
+// They do not run in bin/verify.sh, which only checks that the config and the specs load: they need the backend up,
+// and the phase that asks for them runs them (`npx playwright test`). Against an environment already up,
+// E2E_BASE_URL; without it, Playwright builds and starts the app.
 import { defineConfig, devices } from "@playwright/test";
 
 const baseURL = process.env.E2E_BASE_URL ?? "http://localhost:3000";
