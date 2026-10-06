@@ -8,8 +8,8 @@
 | Fase | Objetivo | Depende de | Estado | PR |
 |---|---|---|---|---|
 | 1 | Retroalimentación de la persona en cada cierre | — | hecha | #9 |
-| 2 | Modo VPS por defecto | 1 | en revisión | #10 |
-| 3 | Guía práctica de inicio a fin | 2 | pendiente | — |
+| 2 | Modo VPS por defecto | 1 | hecha | #10 |
+| 3 | Guía práctica de inicio a fin | 2 | en revisión | — |
 
 La guía va al final para describir el kit ya con la retroalimentación y el modo VPS.
 
@@ -112,6 +112,15 @@ Criterios de aceptación:
     ni Vitest.
   - **El servicio, dentro de tmux (fase 2).** El servidor de Remote Control necesita un terminal y, la primera vez,
     aceptar la confianza en el directorio a mano; la unidad lanza tmux y systemd la reinicia si el servidor se cierra.
+  - **El diagrama, en Mermaid (fase 3).** GitHub lo dibuja, también en la app del teléfono, donde un diagrama ASCII se
+    rompe.
+  - **Qué es una ruta de la guía (fase 3).** `test_guide`, en `tests/run.sh`, comprueba los destinos de los enlaces
+    relativos y cada palabra del código (en línea o en un bloque) que acaba en `/` o en una extensión de archivo del
+    kit; `ai-protocol/` es la raíz del kit. Lo que lleva `<…>`, `*` o `{…}` es un patrón y no cuenta. Lo que sólo
+    existe en un proyecto de verdad (`phpunit.xml`) no va en la guía entre comillas invertidas.
+  - **2.1.0 (fase 3).** `core` pasa a `2.1.0` y su «Sin publicar», a `[2.1.0] — 2026-10-06`. Los stacks no cambiaron en
+    el plan y siguen en `2.0.0`, con un rango del núcleo que ya cubre 2.1.0. La etiqueta `core-v2.1.0` la crea quien
+    fusiona.
 - **Lo que la siguiente fase necesita saber:**
   - La pregunta de retroalimentación vive en el paso 7 de `core/.claude/skills/phase/cierre.md §Cierre de fase`;
     `/close` la hereda porque sigue el cierre desde su paso 3, y el cierre ligero la incluye. No cuenta en el
@@ -127,3 +136,7 @@ Criterios de aceptación:
   - (fase 2) Ningún stack cambió: siguen en `2.0.0`. El arranque del ejecutor sigue igual (Laravel, 53227).
   - (fase 2) Queda abierta la casilla `[humano]`: una fase arrancada desde el teléfono en el VPS que llegue al PR.
     Su enlace se anota aquí cuando la persona lo aporte.
+  - (fase 3) `docs/guia.md` resume y enlaza: el detalle sigue en el README y en `docs/modos.md`. Si cambia una ruta o
+    un script que la guía cita, `tests/run.sh` falla hasta que se corrige la guía.
+  - (fase 3) Queda abierta la casilla `[humano]` de la fase 3: la persona confirma que la guía responde sus siete
+    preguntas.
