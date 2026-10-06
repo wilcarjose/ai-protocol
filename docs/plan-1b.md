@@ -7,7 +7,7 @@
 
 | Fase | Objetivo | Depende de | Estado | PR |
 |---|---|---|---|---|
-| 1 | Retroalimentación de la persona en cada cierre | — | en revisión | — |
+| 1 | Retroalimentación de la persona en cada cierre | — | en revisión | #9 |
 | 2 | Modo VPS por defecto | 1 | pendiente | — |
 | 3 | Guía práctica de inicio a fin | 2 | pendiente | — |
 
