@@ -27,18 +27,19 @@
    entorno o de configuración, un cambio de cron o de colas, una restricción de orden), una fila por paso en
    `docs/runbooks/release.md §Pasos por fase`. Es lo que evita olvidarlo en un despliegue meses después.
 10. **Si la fase deja algo para otro repo**, su traspaso (§Traspaso al otro repo).
-11. **Si la fase mejoró la baseline** (más tests, menos deuda), el número en `bin/verify.sh`. Nunca en la dirección
-    mala.
+11. **Si la fase mejoró la baseline** (más tests, menos deuda), el número en `.ai/project/verify.conf`. Nunca en la
+    dirección mala.
 12. **Si la fase queda `HECHA` y era la última sin `HECHA` de su épica**, §Cierre de épica.
 13. `sh bin/check-docs.sh --strict` en verde: el puntero se escribe después del último `bin/verify.sh`, y es lo que
     la siguiente sesión ejecutará sin preguntar.
 14. Commit `chore(phase-<NN>-<FF>): close` con el RESULTADO, la evidencia, la revisión, la memoria y, si cambiaron,
-    el manifiesto de despliegue, el epic-plan y la baseline de `bin/verify.sh`. `git status` limpio.
-15. §Reporte final.
+    el manifiesto de despliegue, el epic-plan y la baseline de `.ai/project/verify.conf`. `git status` limpio.
+15. §Entrega.
+16. §Reporte final.
 
 ## Cierre ligero
 
-Una fase con `> **Modo:** ligero` hace los pasos 1 a 4, 8 y 13 a 15 de §Cierre de fase; los demás, sólo si tienen
+Una fase con `> **Modo:** ligero` hace los pasos 1 a 4, 8 y 13 a 16 de §Cierre de fase; los demás, sólo si tienen
 algo que escribir (una decisión, un hallazgo, un paso de despliegue, un traspaso). Los encabezados del RESULTADO se
 quedan, y los que no aplican dicen «—».
 
@@ -50,13 +51,14 @@ bloqueantes. El puntero la salta (`.claude/skills/phase/SKILL.md §Estado de una
 `.ai/STATE.md §Esperando evidencia` la nombra con lo que falta. Cuando la persona aporta la evidencia,
 `/phase <epica> <FF>`:
 
-1. En la rama de la fase si sigue abierta; si ya se integró, en la que diga el Tech Lead.
+1. En la rama de la fase si su PR sigue abierto. Si ya se integró, en una rama nueva,
+   `phase/<NN-slug>/<FF>-evidence`, creada desde la base donde se integró (tras `git fetch`), con su propio PR.
 2. Cada evidencia va a «Verificación», o a su archivo de `evidence/`, con quién la aportó y cuándo, y su casilla se
    marca. Si no muestra lo que la casilla pide, dilo y para: la fase sigue esperando.
 3. Con todas marcadas, `HECHA` en la fase y en el mapa, con la fecha de hoy en `Cerrada`; fuera de
    `§Esperando evidencia`, una línea en `§Últimos movimientos` y, si era la última sin `HECHA` de su épica,
    §Cierre de épica.
-4. `sh bin/check-docs.sh --strict` en verde, commit `chore(phase-<NN>-<FF>): evidence` y §Reporte final.
+4. `sh bin/check-docs.sh --strict` en verde, commit `chore(phase-<NN>-<FF>): evidence`, §Entrega y §Reporte final.
 
 ## Archivo de la memoria
 
@@ -106,6 +108,20 @@ mensaje) o necesita que cambie algo allí. Es parte del trabajo de la fase, no u
 La fila se escribe en la fase que causa el cambio. `bin/check-docs.sh` no deja cerrar `HECHA` una fase con
 `CAMBIO AUTORIZADO` sin esa fila o sin `> **Traspaso:** ninguno — <motivo>` en su cabecera.
 
+## Entrega
+
+Toda fase termina igual, se ejecute en la nube o en local: su rama en GitHub y un PR que la CI verifica
+(`.github/workflows/verify.yml`, que corre `bin/verify.sh` completo).
+
+1. `git push -u origin <rama de la fase>`. Nunca a `main` ni forzado
+   (`.claude/skills/phase/SKILL.md §Commits durante la fase`).
+2. El PR, si no existe: `gh pr create` contra `epic/<NN-slug>` si la épica declara rama base o contra `main` si no,
+   con el título `<NN-slug>/<FF> — <título de la fase>` y el cuerpo de `.github/pull_request_template.md` relleno
+   desde el RESULTADO. `HECHA` o `ESPERA_EVIDENCIA`, listo para revisar; `BLOQUEADA` o `VERIFICACION_ROJA`, con
+   `--draft`. Si ya existe, el push lo actualiza.
+3. Sin `gh` o sin acceso al remoto, dilo en el reporte con la orden que falta: la rama queda commiteada en local.
+4. El merge lo decide el Tech Lead: la fase nunca fusiona su PR.
+
 ## Reporte final
 
 El RESULTADO es el reporte: el chat no lo repite. Cinco líneas:
@@ -114,4 +130,4 @@ El RESULTADO es el reporte: el chat no lo repite. Cinco líneas:
 2. `bash bin/verify.sh`: verde, o el gate que falla.
 3. Los commits: cuántos y el rango (`<arranque>^..HEAD`).
 4. Lo que el Tech Lead tiene que decidir o mirar (preguntas abiertas, decisiones tomadas, traspasos), o «nada».
-5. Dónde está el RESULTADO y cómo revisar la rama: `git diff <base>...HEAD`.
+5. El PR (o la orden que falta para abrirlo) y dónde está el RESULTADO.

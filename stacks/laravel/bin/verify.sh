@@ -4,43 +4,48 @@
 #
 # ◆ CÓMO SE EJECUTA
 #   bash bin/verify.sh            todos los gates: el del cierre de una fase
-#   bash bin/verify.sh --fast     sólo los baratos (sin la suite): el de cada
-#                                 commit de fila (.claude/skills/phase/SKILL.md
-#                                 §Commits durante la fase)
+#   bash bin/verify.sh --fast     sólo los baratos (sin la auditoría ni la
+#                                 suite): el de cada commit de fila
+#                                 (.claude/skills/phase/SKILL.md §Commits
+#                                 durante la fase)
 #   Sirve igual `sh bin/verify.sh`: está escrito en POSIX sh porque la imagen
 #   habitual de PHP (php:*-alpine) no trae bash.
 #
 # ◆ CONTRATO
 #   Sale 0 si todo está en verde y != 0 si algo falla. Este script es la ÚNICA
-#   descripción de los gates, de su orden y de la baseline: la skill /phase y
-#   .ai/WORKFLOW.md remiten aquí sin repetirlos, así que se cambian aquí sin
-#   tocar documentación. Orden: barato y ruidoso primero, la suite al final.
+#   descripción de los gates y de su orden: la skill /phase y .ai/WORKFLOW.md
+#   remiten aquí sin repetirlos, así que se cambian aquí sin tocar
+#   documentación. Orden: barato y ruidoso primero, la suite al final.
 #
-# ◆ BASELINE
-#   Los números que nunca empeoran viven abajo, en «BASELINE». Los mueve quien
-#   cierra una fase que los mejora, en su commit de cierre; el diff de este
-#   archivo es el registro de esa mejora. Nunca se mueven en la dirección mala.
+# ◆ EL PROYECTO
+#   Este script es del kit: una fase no lo cambia (.ai/WORKFLOW.md §Archivos
+#   del protocolo). Lo que es del proyecto —la baseline, que sólo se mueve en
+#   la dirección buena, y el servicio de Docker Compose— vive en
+#   .ai/project/verify.conf, que el script lee al empezar.
+#
+# ◆ HERRAMIENTAS
+#   Además de las del stack: git y gitleaks (gates «protocolo» y «secretos»).
+#   Si falta una, su gate falla y dice cómo instalarla.
 # ─────────────────────────────────────────────────────────────────────────────
 cd "$(dirname "$0")/.." || exit 1
 
 # ─────────────────────────────────────────────────────────────────────────────
-# CONFIGURACIÓN DEL PROYECTO
+# CONFIGURACIÓN DEL PROYECTO: MIN_TESTS, MAX_PHPSTAN_IGNORES, VERIFY_SERVICE…
 # ─────────────────────────────────────────────────────────────────────────────
-# Si el proyecto corre en Docker Compose, el nombre del servicio de PHP (p. ej.
-# «app» o «backend»): desde el host, el script se relanza dentro de él. Vacío =
-# se ejecuta donde se invoque.
+[ -f .ai/project/verify.conf ] || {
+    echo '✗ falta .ai/project/verify.conf (la baseline y la configuración del proyecto); install.sh --upgrade lo crea'
+    exit 1
+}
+# shellcheck source=/dev/null  # es del proyecto
+. ./.ai/project/verify.conf
 : "${VERIFY_SERVICE:=}"
 : "${COMPOSE_CMD:=docker compose}"
+: "${MIN_TESTS:?falta en .ai/project/verify.conf}"
+: "${MAX_PHPSTAN_IGNORES:?falta en .ai/project/verify.conf}"
 
 # Memoria de PHPStan. Con el memory_limit por defecto, un worker paralelo puede
 # reventar sin que haya ningún error de código y el gate parece intermitente.
-PHPSTAN_MEMORY_LIMIT="1G"
-
-# ─────────────────────────────────────────────────────────────────────────────
-# BASELINE — sólo se mueven en la dirección buena.
-# ─────────────────────────────────────────────────────────────────────────────
-MIN_TESTS=0                # tests de la suite que pasan (nunca baja)
-MAX_PHPSTAN_IGNORES=0      # entradas de phpstan-baseline.neon (nunca sube)
+: "${PHPSTAN_MEMORY_LIMIT:=1G}"
 
 # ─────────────────────────────────────────────────────────────────────────────
 # ¿En el host o en el contenedor?
@@ -109,6 +114,17 @@ phpstan_debt_gate() {
     }
 }
 
+# Ningún secreto en el historial de git: lo que se empuja ya no se puede retirar. Va antes del push, también con
+# --fast.
+# shellcheck disable=SC2329  # se invoca a través de run()
+secrets_gate() {
+    command -v gitleaks > /dev/null 2>&1 || {
+        echo 'falta gitleaks (https://github.com/gitleaks/gitleaks#installing; en la nube, docs/modos.md del kit)'
+        return 1
+    }
+    gitleaks git --no-banner --no-color --redact --verbose --log-level=warn . && echo 'secretos: ninguno en el historial de git'
+}
+
 # La suite completa y su baseline: el conteo sale de la línea «Tests: … N passed» de Pest.
 # shellcheck disable=SC2329  # se invoca a través de run()
 tests_gate() {
@@ -126,17 +142,21 @@ tests_gate() {
 # Gates — barato primero
 # ─────────────────────────────────────────────────────────────────────────────
 run 'docs'          sh bin/check-docs.sh --strict
+run 'protocolo'     sh bin/check-protocol.sh
+run 'secretos'      secrets_gate
 run 'estilo'        ./vendor/bin/pint --test
 run 'análisis'      ./vendor/bin/phpstan analyse --no-progress --memory-limit="$PHPSTAN_MEMORY_LIMIT"
 run 'deuda'         phpstan_debt_gate
 run 'rutas'         routes_gate
 # La suite completa ya incluye tests/Architecture: con --fast es lo único que corre de Pest; sin él, no se repite.
+# La auditoría consulta la red y la suite es lo más lento: los dos, sólo en el verify completo.
 if [ "$FAST" -eq 0 ]; then
+    run 'dependencias'  composer audit --no-interaction
     printf '\n▸ arquitectura  (dentro de la suite)\n'
     run 'suite'     tests_gate
 else
     run 'arquitectura'  ./vendor/bin/pest --colors=never tests/Architecture
-    printf '\n▸ suite  (omitida con --fast; el cierre de una fase exige el verify completo)\n'
+    printf '\n▸ dependencias y suite  (omitidas con --fast; el cierre de una fase exige el verify completo)\n'
 fi
 
 printf '\n'

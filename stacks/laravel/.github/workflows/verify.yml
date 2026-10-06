@@ -1,0 +1,49 @@
+# verify — en cada PR, bin/verify.sh completo: el mismo árbitro que cierra una fase en local
+# (.claude/skills/phase/cierre.md §Entrega). Es del kit ai-protocol y lo actualiza install.sh --upgrade.
+#
+# La versión de PHP sale de .php-version (p. ej. «8.4»), como la lee shivammathur/setup-php; sin ese archivo, la
+# acción usa la última. gitleaks va en su versión fijada para que el gate «secretos» no cambie con el runner.
+name: verify
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: verify-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+env:
+  GITLEAKS_VERSION: 8.30.1
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      # Todo el historial y las ramas: el gate «protocolo» compara la rama con su base y «secretos» lee los commits.
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          tools: composer
+          coverage: none
+
+      - name: gitleaks
+        run: |
+          curl -sSfL "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" \
+            | sudo tar xz -C /usr/local/bin gitleaks
+
+      - name: dependencias
+        run: composer install --no-interaction --no-progress --prefer-dist
+
+      - name: entorno
+        run: |
+          if [ -f .env.example ] && [ ! -f .env ]; then cp .env.example .env; fi
+          php artisan key:generate --no-interaction
+
+      - name: verify
+        run: sh bin/verify.sh

@@ -4,8 +4,8 @@
 > Este archivo es el núcleo y se lee entero antes de escribir una línea; los temas de `.ai/rules/` se leen cuando la
 > fase los cita (§Reglas por tema). Si algo aquí contradice tu instinto, gana este archivo.
 >
-> 1. Si crees que una regla está mal o desactualizada: **STOP & ASK** (`.ai/WORKFLOW.md §STOP & ASK`). Nadie la edita
->    sin el visto bueno del Tech Lead, y nunca desde una fase.
+> 1. Si crees que una regla está mal o desactualizada: **STOP & ASK** (`.ai/WORKFLOW.md §STOP & ASK`). Quién la
+>    cambia y cómo: `.ai/WORKFLOW.md §Archivos del protocolo`.
 > 2. Cómo se trabaja vive en `.ai/WORKFLOW.md` y en las skills; lo que cambia con el proyecto (decisiones, contrato
 >    vigente del backend, fase activa), en `.ai/DOMAIN.md`, `.ai/STATE.md` y `.ai/project/`. Aquí sólo hay reglas
 >    **estables**. Si chocan, gana este archivo.
@@ -188,7 +188,7 @@ el script:
   motivo escrito al lado; cero casts sobre datos de red (se validan).
 - **ESLint** con `--max-warnings=0`. Las reglas no se bajan ni se desactivan por archivo para que algo pase.
 - **Supresiones congeladas** (`eslint-suppressions.json`, si existe): **sólo menguan**. Una supresión nueva no se
-  añade; `MAX_SUPPRESSIONS` en `bin/verify.sh` lo vigila.
+  añade; `MAX_SUPPRESSIONS` de `.ai/project/verify.conf` lo vigila.
 
 ---
 

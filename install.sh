@@ -36,17 +36,21 @@
 #                 las carpetas que deja vacías; si lo tocó, se deja y se avisa
 #                 en cada --upgrade.
 #   Las semillas («seed»: la memoria —STATE, DOMAIN, BACKLOG, PROTOCOL, las
-#   épicas—, la capa del proyecto .ai/project/ y los registros que llenan las
-#   fases) sólo se copian si faltan: el upgrade nunca las toca. Si nada cambia,
+#   épicas—, la capa del proyecto .ai/project/, los registros que llenan las
+#   fases y la configuración que el proyecto ajusta, como phpstan.neon) sólo se
+#   copian si faltan: el upgrade nunca las toca. Si nada cambia,
 #   dice «sin cambios» y no escribe nada, tampoco el lock.
 #
 # ◆ FORMATO DE LOS MANIFIESTOS Y DEL LOCK
 #   Los manifiestos son JSON con un valor por línea (tests/structure.sh lo
 #   comprueba); se leen con awk y sed porque Alpine no trae jq. El lock:
 #     package <nombre> <versión>
-#     file <kit|seed> <sha256|-> <ruta>
-#   La suma es la del archivo tal como lo trajo el kit la última vez que el
-#   proyecto lo tuvo igual; «-» si nunca lo tuvo (no se copió al instalar).
+#     file <kit|project> <sha256|-> <ruta>
+#   «kit» es lo que el kit actualiza y bin/check-protocol.sh protege;
+#   «project», lo que el manifiesto lista en «seed»: el proyecto lo hace suyo.
+#   Un lock anterior puede decir «seed»: vale como «project». La suma es la del
+#   archivo tal como lo trajo el kit la última vez que el proyecto lo tuvo
+#   igual; «-» si nunca lo tuvo (no se copió al instalar).
 #
 # ◆ PORTABILIDAD
 #   POSIX sh, como el resto de scripts del kit: corre en busybox (Alpine).
@@ -173,9 +177,9 @@ trap 'rm -rf "$TMPD"' EXIT
 TAB=$(printf '\t')
 {
     json_list "$CORE_JSON" files | sed "s#^#kit${TAB}core${TAB}#"
-    json_list "$CORE_JSON" seed  | sed "s#^#seed${TAB}core${TAB}#"
+    json_list "$CORE_JSON" seed  | sed "s#^#project${TAB}core${TAB}#"
     json_list "$STACK_JSON" files | sed "s#^#kit${TAB}stacks/$STACK${TAB}#"
-    json_list "$STACK_JSON" seed  | sed "s#^#seed${TAB}stacks/$STACK${TAB}#"
+    json_list "$STACK_JSON" seed  | sed "s#^#project${TAB}stacks/$STACK${TAB}#"
 } > "$TMPD/plan"
 
 # locked_sum <ruta>: la suma que el lock anterior tiene para esa ruta, o nada.
@@ -246,7 +250,7 @@ if [ -n "$OLD_LOCK" ]; then
         cut -f 3 "$TMPD/plan" | grep -qxF -- "$path" && continue
         dst="$TARGET/$path"
         # Una semilla es del proyecto aunque el kit ya no la traiga; lo que ya no existe, no hay que retirarlo.
-        if [ "$kind" = seed ] || [ ! -e "$dst" ]; then
+        if [ "$kind" != kit ] || [ ! -e "$dst" ]; then
             continue
         elif [ "$(sha "$dst")" = "$old" ]; then
             note - "$path" 'retirado del kit: se borra' change

@@ -11,7 +11,7 @@ de esta revisión. No recibes la conversación de quien la ejecutó, a propósit
 que se pretendía.
 
 **Sólo lees.** No editas, no creas archivos y no commiteas. Bash, sólo para `git diff`, `git log`, `git show`,
-`git status` y `sh bin/check-docs.sh`; nada que escriba, tampoco `bin/verify.sh`.
+`git status`, `sh bin/check-docs.sh` y `sh bin/check-protocol.sh`; nada que escriba, tampoco `bin/verify.sh`.
 
 ## Qué lees
 
@@ -31,7 +31,7 @@ regla, no es bloqueante.
 
 1. **Alcance.** Cada archivo del diff está en los «Archivos» de la fase o es contiguo y el RESULTADO lo declara
    (`CLAUDE.md §Alcance`). Nada de su «No tocar», de lo que `.ai/RULES.md §Alcance` deja fuera ni de los archivos
-   del protocolo (`CLAUDE.md §Cosas que no se hacen`).
+   del protocolo fuera de un commit `(protocol)` (`.ai/WORKFLOW.md §Archivos del protocolo`).
 2. **Entregables.** Cada entregable tiene su cambio en el diff, entero.
 3. **Criterios y su evidencia.** Cada casilla marcada tiene su salida en «Verificación» o en su archivo de
    evidencia, y la salida muestra lo que la casilla pide; marcarla con otra prueba es bloqueante

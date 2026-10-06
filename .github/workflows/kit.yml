@@ -1,6 +1,6 @@
-# La CI del kit: en cada PR, los scripts pasan shellcheck, el núcleo y los stacks cuadran con sus manifiestos
-# (tests/structure.sh), y el guardián de cada stack pasa sobre una instalación de prueba y detecta cada fallo
-# provocado (tests/run.sh).
+# La CI del kit: en cada PR, los scripts pasan shellcheck y los workflows actionlint (los del kit y los que instala
+# cada stack), el núcleo y los stacks cuadran con sus manifiestos (tests/structure.sh), y el guardián de cada stack
+# pasa sobre una instalación de prueba y detecta cada fallo provocado (tests/run.sh).
 name: kit
 
 on:
@@ -23,12 +23,19 @@ jobs:
           pip install --quiet shellcheck-py==0.11.0.1
           shellcheck -s sh install.sh core/bin/*.sh stacks/*/bin/*.sh tests/*.sh
 
+      # Después de shellcheck: actionlint lo usa para revisar los «run:» de los workflows.
+      - name: actionlint
+        run: |
+          pip install --quiet actionlint-py==1.7.12.25
+          actionlint .github/workflows/*.yml stacks/*/.github/workflows/*.yml
+
       - name: estructura
         run: sh tests/structure.sh
 
       - name: tests
         run: sh tests/run.sh
 
-      # Los scripts prometen POSIX sh y busybox: la imagen habitual de PHP (php:*-alpine) no trae bash.
+      # Los scripts prometen POSIX sh y busybox: la imagen habitual de PHP (php:*-alpine) no trae bash. Sí git, que
+      # Alpine no trae y bin/check-protocol.sh necesita.
       - name: tests en Alpine (busybox)
-        run: docker run --rm -v "$PWD":/k:ro -w /k alpine:3 sh tests/run.sh
+        run: docker run --rm -v "$PWD":/k:ro -w /k alpine:3 sh -c 'apk add --no-cache --quiet git && sh tests/run.sh'

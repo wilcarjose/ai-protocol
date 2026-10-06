@@ -62,6 +62,5 @@ con su propio protocolo.
 - Dejar llamadas de depuración en el código (las de `.ai/RULES.md §Lista negra`).
 - Tocar los archivos de «No tocar» de la fase o lo que `.ai/RULES.md §Alcance` deja fuera.
 - Escribir en el otro repositorio o citar sus documentos (§El otro repositorio).
-- Modificar este archivo, `.ai/RULES.md`, `.ai/rules/`, `.ai/WORKFLOW.md` o las skills desde una fase. Si crees que
-  están mal: STOP & ASK, y la propuesta a `.ai/PROTOCOL.md`.
-- `git push` (`.claude/skills/phase/SKILL.md §Commits durante la fase`).
+- Modificar los archivos del protocolo desde una fase (`.ai/WORKFLOW.md §Archivos del protocolo`).
+- `git push` a `main` o forzado (`.claude/skills/phase/SKILL.md §Commits durante la fase`).

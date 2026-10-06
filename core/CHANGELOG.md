@@ -7,6 +7,14 @@ etiqueta `core-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, ar
 
 ### Añadido
 
+- `bin/check-protocol.sh`: en una rama `phase/<NN-slug>/<FF>`, falla si un commit sin ámbito `protocol` toca un
+  archivo que `.ai/protocol.lock` marca `kit` (o el propio lock), contra la base de la rama (la del PR en la CI,
+  `epic/<NN-slug>` o `main` en local, o `PROTOCOL_BASE`). Los `verify.sh` de los stacks lo corren en su gate
+  «protocolo». La regla vive en `.ai/WORKFLOW.md §Archivos del protocolo`.
+- `.github/pull_request_template.md`: la plantilla del PR de cada fase (fase, tarea externa, estado, checklist,
+  evidencia pendiente y lo que el Tech Lead tiene que mirar).
+- `phase/cierre.md §Entrega`: toda fase termina con el push de su rama y un PR (en borrador si cierra
+  `BLOQUEADA` o `VERIFICACION_ROJA`); `/close` también, porque sigue el cierre desde su paso 3.
 - `.claude/skills/`: `/phase` (`phase/SKILL.md`: pasos, rama, estados, sincronización, commits y verificación;
   `phase/cierre.md`: cierre de fase y de épica, archivo de la memoria, traspaso, evidencia humana y reporte final),
   `/close`, `/plan-epic` (épicas, numeración, rama base y entrada desde un paquete de tareas), `/plan-phase` (corte,
@@ -48,6 +56,15 @@ etiqueta `core-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, ar
 
 ### Cambiado
 
+- «Nunca `git push`» pasa a «nunca a `main`, forzado ni borrando ramas»: la fase empuja su rama
+  (`phase/SKILL.md §Commits durante la fase`).
+- La evidencia humana de una fase cuyo PR ya se fusionó va en una rama nueva, `phase/<NN-slug>/<FF>-evidence`, con
+  su PR (`phase/cierre.md §Evidencia humana`).
+- La baseline que mueven las fases pasa de `bin/verify.sh` a `.ai/project/verify.conf` (`phase/cierre.md`, pasos 11
+  y 14).
+- «No modificar el protocolo desde una fase» vive sólo en `.ai/WORKFLOW.md §Archivos del protocolo`; `CLAUDE.md`,
+  las cabeceras de `RULES.md`, `PROTOCOL.md` y el revisor la citan.
+- `.ai/protocol.lock` marca cada archivo como `kit` o `project` (antes, `seed`, que se sigue leyendo).
 - `CLAUDE.md` mínimo (de 21 017 a 4 028 caracteres): orden de lectura, qué hace cada skill, alcance, el otro
   repositorio, prohibiciones y punteros. El ciclo de fase, las ramas, los commits y el cierre pasan a las skills.
 - `.ai/WORKFLOW.md` sin `§Plantilla del reporte final` ni el resumen de cinco frases: el RESULTADO de la fase es el

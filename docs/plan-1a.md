@@ -12,8 +12,8 @@
 | 1 | Base de verificación e inconsistencias | — | hecha | #1 |
 | 2 | Núcleo, stacks e instalador | 1 | hecha | #2 |
 | 3 | Menos tokens | 2 | hecha | #3 |
-| 4 | Planificador, revisor y tipos de tarea | 3 | en revisión | #4 |
-| 5 | Modo remoto y CI de los proyectos | 4 | pendiente | — |
+| 4 | Planificador, revisor y tipos de tarea | 3 | hecha | #4 |
+| 5 | Modo remoto y CI de los proyectos | 4 | en revisión | #5 |
 | 6 | Stack Laravel modular por defecto | 5 | pendiente | — |
 | 7 | Stack Next.js completo | 5 | pendiente | — |
 | 8 | Validación de punta a punta y versión 2.0.0 | 6, 7 | pendiente | — |
@@ -262,6 +262,21 @@ Criterios de aceptación:
   ```
 
   El ejecutor de Laravel sigue por debajo de 53 300 (un 30 % menos que la línea base). Sube 1 250 caracteres por el estado `ESPERA_EVIDENCIA`, el modo ligero, el tipo de tarea y la sección «Revisión» de la plantilla; `CLAUDE.md`, por las tres skills nuevas de su tabla. «cierre» incluye ahora `/review`, y el rescate lo nota porque lee `cierre.md`. `tests/context-baseline.txt` tiene los valores nuevos.
+
+  Después de la fase 5, sobre una instalación limpia:
+
+  ```
+  Sesión         laravel   nextjs
+  cualquiera        4112     4112
+  ejecutor         53255    54240
+  cierre           11377    11377
+  plan-epica       53436    54297
+  plan-fase        55526    56511
+  revisor          33309    34300
+  rescate          39525    39519
+  ```
+
+  El ejecutor de Laravel sube 175 caracteres y queda a 45 del tope de 53 300: `WORKFLOW.md §Archivos del protocolo` es nueva, y se compensa con lo que sale de `CLAUDE.md` y de la tabla de `WORKFLOW.md §Documentación: dónde va cada cosa`. «cierre» sube 1 038 por `cierre.md §Entrega`. `tests/context-baseline.txt` tiene los valores nuevos.
 - **Fases divididas:** —
 - **Decisiones tomadas durante el plan:**
   - 2026-10-04 (fase 1): el fallo 5 del guardián (migraciones) solo se provoca en kits cuya plantilla de fase declara «Migraciones:». En Next.js no aplica, y `tests/run.sh` comprueba en su lugar que el guardián acepta fases sin ese campo. El criterio de la fase 1 pasa a «13 fallos en Laravel; 12 en Next.js, con el 5 como no aplicable».
@@ -284,18 +299,29 @@ Criterios de aceptación:
   - 2026-10-05 (fase 4): la sección «Revisión» es el `## 10.` de la plantilla, fuera del RESULTADO. El guardián sólo la exige en las fases `HECHA` o `ESPERA_EVIDENCIA` que la tienen, así que las fases antiguas no fallan. `/review` corre en el paso 3 de `cierre.md`, después de ejecutar los criterios (el revisor comprueba su evidencia) y antes del estado final; en `BLOQUEADA` o `VERIFICACION_ROJA` no hace falta.
   - 2026-10-05 (fase 4): el chequeo 14 «tareas» comprueba, además de que la tarea existe en un paquete, que su criterio está literal en «Criterios de éxito». Una tarea es una fase: si no cabe en una, STOP & ASK, porque partirla es cambiar el plan externo.
   - 2026-10-05 (fase 4): el criterio de `/review` se probó lanzando un subagente `general-purpose` con `reviewer.md` como instrucciones. Un agente definido en una instalación temporal no se puede cargar como tipo propio desde esta sesión. La revisión encontró, además del bloqueante esperado, dos defectos reales del fixture: el comando de cada tarea (corregido en `tests/run.sh`) y el ámbito `web` del commit de prueba.
+  - 2026-10-06 (fase 5): la fase va en un solo PR.
+  - 2026-10-06 (fase 5): el workflow de los proyectos es uno por stack, `stacks/<stack>/.github/workflows/verify.yml`, en su `stack.json` como cualquier archivo: Laravel y Next.js necesitan pasos distintos, y el stack se separa entero con `filter-repo`. `ci/` desaparece. Donde las fases 6 y 7 dicen `ci/verify.yml`, es ese archivo de su stack, y el criterio de `actionlint` de esta fase se cumple sobre `.github/` y `stacks/*/.github/`.
+  - 2026-10-06 (fase 5): la protección cubre todo lo que `.ai/protocol.lock` marca `kit`, más el propio lock, así que `bin/verify.sh`, `bin/check-docs.sh` y el propio `bin/check-protocol.sh` también quedan protegidos. Lo que el proyecto tiene que poder editar es semilla, y el lock lo marca `project` (antes `seed`, que se sigue leyendo): la memoria, `.ai/project/` (con `verify.conf`), `phpstan.neon` y los `docs/README.md` de los stacks. Las reglas de arquitectura del kit siguen protegidas; las propias del proyecto irán en un archivo aparte en la fase 6.
+  - 2026-10-06 (fase 5): la evidencia humana de una fase cuyo PR ya se fusionó va en una rama nueva, `phase/<NN-slug>/<FF>-evidence`, creada desde la base donde se integró, con su propio PR.
+  - 2026-10-06 (fase 5): la baseline (`MIN_TESTS` y la deuda congelada) y, en Laravel, `VERIFY_SERVICE` y `COMPOSE_CMD` pasan a `.ai/project/verify.conf` (semilla de cada stack). `bin/verify.sh` queda entero del kit y falla si ese archivo no existe.
+  - 2026-10-06 (fase 5): el gate «secretos» corre `gitleaks git` sobre todo el historial, también con `--fast`, y falla si gitleaks no está instalado. Un aviso no basta, porque lo que se escanea tiene que estar limpio antes del push. «dependencias» va sólo en el verify completo, porque consulta la red. «protocolo» corre en los dos modos.
+  - 2026-10-06 (fase 5): la fase empuja su rama al cerrar en cualquier estado, y abre el PR con `gh pr create`, en borrador si cierra `BLOQUEADA` o `VERIFICACION_ROJA`. Nunca lo fusiona. `settings.json` permite empujar sólo `phase/*` y bloquea el push a `main`, con `:` en el refspec, forzado y con borrado.
+  - 2026-10-06 (fase 5): en la nube, el proxy de GitHub de Claude Code no limita a qué rama se empuja (sólo rechaza borrados y etiquetas), y una regla de permisos no es una barrera de seguridad. `docs/modos.md` pide un *ruleset* de GitHub sobre `main`. Las releases de GitHub de un repo que no está en la sesión dan 403, así que el script de preparación instala gitleaks con `go install`.
   - 2026-10-04 (fase 1): dónde vive cada regla que estaba repetida. Exenciones a un gate: `WORKFLOW.md §Obediencia arquitectónica`. No arreglar de paso: `CLAUDE.md §Alcance`. Dependencias nuevas: `WORKFLOW.md §Dependencia nueva`. `git push`: `CLAUDE.md §Commits durante la fase`. Las listas negras de `RULES.md` quedan solo con lo propio del stack.
 - **Lo que la siguiente fase necesita saber:**
   - **Dónde vive cada cosa.** El núcleo, en `core/` (manifiesto `core/core.json`); cada stack, en `stacks/<stack>/` (`stack.json`). Instalados, los archivos conservan sus rutas (`CLAUDE.md`, `.ai/…`, `.claude/skills/…`, `bin/…`). `install.sh` está en la raíz.
   - **Las skills.** `/phase` es `.claude/skills/phase/SKILL.md` (pasos, rama, estados, sincronización, commits, verificación) más `phase/cierre.md` (cierre con revisión, cierre ligero, evidencia humana, épica, archivo de la memoria, traspaso, reporte final). `/close`, `/plan-epic`, `/plan-phase` y `/review` son una `SKILL.md` cada una; `/phase` y `/close` llevan `disable-model-invocation: true`, y `/review` no, para que `/phase` la invoque. El revisor es `.claude/agents/reviewer.md` (Read, Grep, Glob y Bash sólo para git y el guardián). Una skill o un agente nuevo entra en `core/core.json` (`files`) y en las listas de `core/bin/measure-context.sh`, y si la lee el ejecutor al arrancar, mueve su línea en `tests/context-baseline.txt`. El upgrade desde la fase 3 retira `/planning` sola (probado).
-  - **Para el modo remoto (fase 5).** La protección del protocolo tiene que cubrir también `.claude/agents/`. La plantilla de PR puede llevar la sección «Revisión» y las casillas `[humano]` de la fase. Una fase en `ESPERA_EVIDENCIA` termina igualmente en su PR, y su evidencia llega después con un commit `…: evidence`: hay que decidir en qué rama, porque `cierre.md §Evidencia humana` sólo dice «la que diga el Tech Lead» si la de la fase ya se integró. El revisor necesita Bash para `git diff`; en la CI no corre: lo lanza `/phase` en la sesión.
+  - **La CI de los proyectos (fases 6 y 7).** Cada stack trae `.github/workflows/verify.yml`, que corre `sh bin/verify.sh` completo con `fetch-depth: 0` y gitleaks 8.30.1. Laravel toma PHP de `.php-version`, y la fase 6 le añade el servicio de PostgreSQL con PostGIS. Next.js toma Node de `engines.node`, y la fase 7 le añade el job de Lighthouse. `actionlint` (con `actionlint-py==1.7.12.25`) revisa en la CI del kit esos workflows y los del kit. Los workflows y los gates «dependencias» y «secretos» sólo se han probado con `actionlint`, `shellcheck` y a mano sobre una instalación (gitleaks sí: detecta un token y pasa sin él). La primera ejecución real es el e2e de las fases 6 y 7.
+  - **La protección del protocolo.** `bin/check-protocol.sh` lee del lock qué archivos son `kit`: todo archivo nuevo que un stack liste en `files` queda protegido sin hacer nada más. Lo que el proyecto tenga que editar va en `seed` (`bin/make-module.sh` es del kit; las reglas de arquitectura del proyecto, de la fase 6, son semilla). La rama base se resuelve así: `PROTOCOL_BASE`, `origin/$GITHUB_BASE_REF`, `epic/<NN-slug>`, `main`. `tests/run.sh` (`test_protocol`) lo prueba en un repo git, y en Alpine la CI instala `git` con `apk`.
+  - **`bin/verify.sh` es del kit.** Lo del proyecto está en `.ai/project/verify.conf` (semilla). Un gate nuevo entra en el `verify.sh` y en `gates` del `stack.json` (`tests/structure.sh` lo cuadra), y si necesita una herramienta, la instalan el workflow del stack y el script de `docs/modos.md`.
+  - **El script de preparación de la nube** (`docs/modos.md`) no se ha probado en una sesión real. Se comprobó `go install` de gitleaks con `GOTOOLCHAIN=auto` y que el script pasa `shellcheck`. PHP 8.4 necesita el PPA de ondrej, que no está en la lista Trusted. Desde aquí no se pudo resolver `archive.ubuntu.com` para confirmar `postgresql-16-postgis-3`.
+  - **El revisor** necesita Bash para `git diff` y puede correr `sh bin/check-protocol.sh`. En la CI no corre: lo lanza `/phase` en la sesión.
   - **Las citas a una skill van con la ruta completa** (`.claude/skills/phase/SKILL.md §Estado de una fase`): el chequeo «secciones» valida `.claude/skills/*.md`, `.ai/rules/*.md` y `.ai/archive/*.md`. Una cita a `cierre.md` a secas no se valida.
   - **Las reglas por capas.** `.ai/RULES.md` es el núcleo y su `§Reglas por tema` indexa `.ai/rules/`. Los dos stacks tienen `arquitectura.md` y `tests.md` (el núcleo puede citarlos); Laravel tiene además `rendimiento.md` y Next.js, `contrato.md` (el núcleo no puede citarlos: `tests/structure.sh`). El revisor de la fase 4 lee el núcleo y los temas que cita la fase.
   - **Un solo reporte.** El RESULTADO es el reporte; el chat da cinco líneas (`cierre.md §Reporte final`). La sección «Revisión» que añade la fase 4 va en la plantilla de fase: un encabezado nuevo del RESULTADO hace fallar el guardián en las fases vivas escritas con la plantilla vieja (chequeo «fases»), así que conviene que vaya fuera del RESULTADO o que se diga en el CHANGELOG.
   - **La memoria tiene topes.** El chequeo 13 «memoria» del guardián exige que lo cerrado esté en `.ai/archive/`. Un estado nuevo (`ESPERA_EVIDENCIA`, fase 4) se añade también a las listas de estados del chequeo «puntero» y «fases», y a `.claude/skills/phase/SKILL.md §Estado de una fase`.
   - **`tests/run.sh`.** Un caso con número en `provoke` es un fallo de la cabecera de `bin/check-docs.sh` (15 en Laravel; 14 en Next.js); uno con letra, una variante. `accept` prueba lo que tiene que pasar. La épica de prueba es 01-demo (CERRADA) y 02-paquete, creada desde `tests/fixtures/stages/E1.md` con helpers `task`, `header` y `criterion`; el puntero está en `02-paquete/03` (ligera) y `02-paquete/02` espera evidencia. El bloque `test_installer` usa `kit_copy` para simular un kit nuevo; `test_context` mide una instalación limpia contra `tests/context-baseline.txt`.
   - **Todo archivo nuevo entra en un manifiesto,** en `files` o en `seed`, o `tests/structure.sh` falla. Los manifiestos y el lock se leen sin jq: un valor por línea.
-  - **`bin/verify.sh` mezcla kit y proyecto** (la baseline y `VERIFY_SERVICE`). Le toca a la fase 5 sacarlos a un archivo del proyecto.
-  - **Duplicado pendiente (de la fase 1).** «No modificar `CLAUDE.md`, las reglas ni las skills desde una fase» sigue en `CLAUDE.md §Cosas que no se hacen`, `WORKFLOW.md §Documentación`, la cabecera de `RULES.md` y `PROTOCOL.md`. Le toca a la fase 5.
+  - **El contexto del ejecutor de Laravel está a 45 caracteres del tope de 53 300.** Lo que se añada a `CLAUDE.md`, a `.claude/skills/phase/SKILL.md`, a `WORKFLOW.md`, a `RULES.md` o a la plantilla de fase hay que compensarlo. Lo que sólo hace falta al cerrar va en `cierre.md`, que no cuenta en el arranque.
   - **Proyectos que suben a 2.0.** El upgrade no toca la memoria: lo cerrado que ya tuvieran se mueve a mano a `.ai/archive/` (README.md §Actualizar un proyecto). La fase 8 lo prueba con una instalación 1.x.
-  - **Cada cambio va al `CHANGELOG.md` de su paquete,** en «Sin publicar». La CI usa `shellcheck-py==0.11.0.1` sobre `install.sh core/bin/*.sh stacks/*/bin/*.sh tests/*.sh`.
+  - **Cada cambio va al `CHANGELOG.md` de su paquete,** en «Sin publicar». La CI usa `shellcheck-py==0.11.0.1` sobre `install.sh core/bin/*.sh stacks/*/bin/*.sh tests/*.sh`, y `actionlint-py==1.7.12.25`.
