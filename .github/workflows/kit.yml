@@ -22,7 +22,7 @@ jobs:
       - name: shellcheck
         run: |
           pip install --quiet shellcheck-py==0.11.0.1
-          shellcheck -s sh install.sh core/bin/*.sh stacks/*/bin/*.sh tests/*.sh
+          shellcheck -s sh install.sh core/bin/*.sh stacks/*/bin/*.sh tests/*.sh docs/vps/*.sh
 
       # Después de shellcheck: actionlint lo usa para revisar los «run:» de los workflows.
       - name: actionlint

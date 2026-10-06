@@ -59,7 +59,9 @@
 #
 # ◆ ADEMÁS
 #   Provoca en una copia del repo un fallo de cada chequeo de
-#   tests/structure.sh y comprueba que lo detecta.
+#   tests/structure.sh y comprueba que lo detecta. Y corre docs/vps/doctor.sh
+#   con un PATH de stubs: con todo, pasa; sin gitleaks, con Node 20 o con un
+#   .env de staging legible, lo reporta.
 #
 # ◆ CÓMO SE AÑADE UN CASO
 #   Un chequeo nuevo del guardián trae su caso en tests/lib.sh: una rama en
@@ -400,6 +402,42 @@ test_structure() {
     breaks nucleo  'cita «docs/vendor/INDEX.md», que no traen todos los stacks'
 }
 
+# ── docs/vps/doctor.sh, con un PATH de stubs ────────────────────────────────
+# El PATH sólo tiene stubs de las herramientas del VPS, que responden como un VPS preparado (STUB_NODE cambia la
+# versión de Node), y las utilidades que usa el script.
+# shellcheck disable=SC2016  # el stub se escribe tal cual
+test_doctor() {
+    printf '◆ docs/vps/doctor.sh\n'
+    stubs="$WORK/doctor-path"
+    mkdir -p "$stubs"
+    printf '%s\n' '#!/bin/sh' 'case "${0##*/} $*" in' \
+        "    'php -r'*) printf 8.4.1 ;;" \
+        "    'php -m') echo pdo_pgsql ;;" \
+        '    "node --version") echo "${STUB_NODE:-v22.3.0}" ;;' \
+        "    'claude auth status') echo '{\"loggedIn\": true, \"authMethod\": \"claude.ai\"}' ;;" \
+        "    'psql '*) echo '1|f' ;;" \
+        'esac' > "$stubs/stub"
+    chmod +x "$stubs/stub"
+    for c in git gh claude tmux gitleaks php composer node npm psql; do ln -s stub "$stubs/$c"; done
+    for u in sed grep id; do ln -s "$(command -v "$u")" "$stubs/$u"; done
+    shell=$(command -v sh)
+    doctor() { PATH="$stubs" STUB_NODE=${STUB_NODE:-} "$shell" "$ROOT/docs/vps/doctor.sh" "$@" 2>&1; }
+
+    if out=$(doctor) && printf '%s\n' "$out" | grep -qF 'no falta nada'; then ok 'con todo, no falta nada'
+    else fail 'con todo, dice que falta algo:'; printf '%s\n' "$out" | grep '✗' | sed 's/^/      /'; fi
+    rm "$stubs/gitleaks"
+    if ! out=$(doctor) && printf '%s\n' "$out" | grep -qF 'gitleaks: falta'; then ok 'sin gitleaks en el PATH, lo reporta'
+    else fail 'sin gitleaks en el PATH, no lo reporta'; printf '%s\n' "$out" | sed 's/^/      /'; fi
+    ln -s stub "$stubs/gitleaks"
+    if ! out=$(STUB_NODE=v20.1.0 doctor) && printf '%s\n' "$out" | grep -qF 'node v20.1.0: hace falta 22'; then
+        ok 'con Node 20, pide 22'
+    else fail 'con Node 20, no pide 22'; printf '%s\n' "$out" | sed 's/^/      /'; fi
+    echo 'APP_KEY=x' > "$WORK/staging.env"
+    if ! out=$(doctor --env "$WORK/staging.env") && printf '%s\n' "$out" | grep -qF "puede leer $WORK/staging.env"; then
+        ok 'un .env de staging que el usuario de los agentes puede leer falla'
+    else fail 'un .env de staging legible no falla'; printf '%s\n' "$out" | sed 's/^/      /'; fi
+}
+
 # ── Por kit ─────────────────────────────────────────────────────────────────
 for KIT in $KITS; do
     case "$KIT" in
@@ -448,6 +486,7 @@ for KIT in $KITS; do
 done
 
 test_structure
+test_doctor
 
 printf '\n'
 if [ "$FAIL" -eq 0 ]; then echo '✓ tests/run.sh: todo en verde'; else echo '✗ tests/run.sh: hay fallos'; fi
