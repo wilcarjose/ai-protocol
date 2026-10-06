@@ -29,15 +29,15 @@ No hay módulos ni `app/Modules/`. Las capas, no las carpetas, son las que compr
 ### Por funcionalidad
 
 - Una funcionalidad con varias clases va en una subcarpeta con su nombre dentro de cada tipo:
-  `app/Actions/Anuncios/PublicarAnuncio`, `app/ValueObjects/Anuncios/Precio`. Con una sola clase, puede ir
+  `app/Actions/Listings/PublishListing`, `app/ValueObjects/Listings/Price`. Con una sola clase, puede ir
   en la raíz del tipo.
 - **El nombre de una funcionalidad es el mismo en todas las carpetas**, y también en los tests
-  (`tests/Unit/Actions/Anuncios/`). Controladores, requests y resources pueden usar esa subcarpeta cuando ayude
-  (`app/Http/Controllers/Api/Anuncios/`).
+  (`tests/Unit/Actions/Listings/`). Controladores, requests y resources pueden usar esa subcarpeta cuando ayude
+  (`app/Http/Controllers/Api/Listings/`).
 - Una funcionalidad nueva, o una carpeta nueva de una que existe, es una fila de `.ai/project/FEATURES.md`: lo lee
   quien planifica para saber qué toca cada fase.
-- Las clases se crean con artisan y su ruta, no a mano: `php artisan make:class Actions/Anuncios/PublicarAnuncio`,
-  `make:interface Contracts/Pagos/PasarelaDePago`, `make:enum Enums/Anuncios/EstadoAnuncio --string`, y los
+- Las clases se crean con artisan y su ruta, no a mano: `php artisan make:class Actions/Listings/PublishListing`,
+  `make:interface Contracts/Payments/PaymentGateway`, `make:enum Enums/Listings/ListingStatus --string`, y los
   `make:` del framework (`make:controller`, `make:request`, `make:resource`, `make:policy`…). Luego se ajustan a
   estas reglas (`final readonly`, `declare(strict_types=1)`).
 - Las Actions que publica Laravel Fortify (`app/Actions/Fortify/`) siguen su propio contrato; las pruebas de
@@ -54,7 +54,9 @@ Route → Middleware → FormRequest (authorize + rules) → Controller (sin ló
 ### 1.1 Excepciones
 
 - Toda excepción de negocio hereda de `App\Exceptions\ApiException`, que lleva su `errorCode` (mayúsculas, estable:
-  es el contrato), su status HTTP y un contexto, que va al log y nunca a la respuesta.
+  es el contrato), su status HTTP y un contexto, que va al log y nunca a la respuesta. Su mensaje es una **clave de
+  traducción** en inglés (`listings.not_found`): el texto para el usuario vive en las traducciones, en español, y
+  `ProblemDetails` lo traduce al escribir `detail`, con el contexto como parámetros (`:id`).
 - **Los errores salen en `application/problem+json` (RFC 9457)**: `type`, `title`, `status`, `detail` y la extensión
   `code`, que es el `errorCode`; un error de validación añade `errors` por campo. El cliente discrimina por `code`.
   La forma se da en un solo sitio, `App\Http\ProblemDetails`, registrado en `bootstrap/app.php` (`withExceptions`);

@@ -6,20 +6,16 @@
 >
 > 1. Si crees que una regla está mal o desactualizada: **STOP & ASK** (`.ai/WORKFLOW.md §STOP & ASK`). Quién la
 >    cambia y cómo: `.ai/WORKFLOW.md §Archivos del protocolo`.
-> 2. Cómo se trabaja vive en `.ai/WORKFLOW.md` y en las skills; lo que cambia con el proyecto, en `.ai/DOMAIN.md`,
->    `.ai/STATE.md` y `.ai/project/`. Aquí sólo hay reglas **estables**. Si chocan, gana este archivo.
-> 3. Son las reglas del stack del kit `ai-protocol`, y las actualiza `install.sh --upgrade`. Lo que decide cada
->    proyecto vive en `.ai/project/`, y aquí se cita. Un proyecto puede cambiar este archivo, pero entonces el
->    upgrade lo enseña como conflicto en vez de actualizarlo.
+> 2. Son las reglas **estables** del stack del kit `ai-protocol`, y las actualiza `install.sh --upgrade` (si el
+>    proyecto cambia este archivo, el upgrade lo enseña como conflicto). Cómo se trabaja: `.ai/WORKFLOW.md` y las
+>    skills; lo que decide el proyecto: `.ai/project/`, que aquí se cita. Si chocan, gana este archivo.
 
 ---
 
 ## 1. Stack y versiones exactas
 
-Los paquetes que el stack da por hechos. Sus versiones exactas son del proyecto y viven en
-`.ai/project/DECISIONS.md §Stack y versiones exactas`: el chequeo «stack» de `bin/check-docs.sh` exige allí una por
-cada paquete de esta tabla y la compara con `composer.json`. Una fila por paquete (varios en una fila, separados por
-« / »).
+Los paquetes que el stack da por hechos. Su versión exacta, en `.ai/project/DECISIONS.md §Stack y versiones exactas`,
+que el chequeo «stack» de `bin/check-docs.sh` compara con `composer.json`. Varios en una fila, separados por « / ».
 
 | Paquete | Nota |
 |---|---|
@@ -123,10 +119,9 @@ Tocar estas zonas de una forma que la fase no describe con precisión es motivo 
 
 - **Pint** con la configuración del repo; no se desactivan reglas para que algo pase.
 - **PHPStan / Larastan** al nivel de `phpstan.neon`, que nunca baja. Si existe `phpstan-baseline.neon`, **sólo
-  mengua**: un error nuevo se arregla, no se añade al baseline. Si el análisis falla con `ignore.unmatched`, un
-  patrón quedó huérfano: regenera el baseline (`vendor/bin/phpstan analyse --generate-baseline`), revisa el diff
-  línea por línea (cada patrón que desaparece corresponde a un error que de verdad se arregló; si protegía un error
-  que sigue ahí, se restaura y se arregla el código) y va en su propio commit.
+  mengua**: un error nuevo se arregla, no se añade al baseline. Si falla con `ignore.unmatched`, se regenera
+  (`vendor/bin/phpstan analyse --generate-baseline`) en su propio commit, y cada patrón que desaparece tiene que ser
+  un error arreglado: si el error sigue, se restaura el patrón y se arregla el código.
 - **Arquitectura** (`tests/Architecture/`): las capas de `.ai/rules/arquitectura.md`; las del proyecto, en
   `ProjectArchitectureTest.php`.
 - **Contrato y rutas:** sus baselines se regeneran sólo con un cambio de contrato autorizado (§3).
@@ -165,6 +160,9 @@ dependencias nuevas (`.ai/WORKFLOW.md §Dependencia nueva`) y exenciones a un ga
 17. ⛔ **No cites catálogos mutables** (`P<n>-<m>`, `§X` de una lista que se renumera) desde código, tests ni
     documentos. El porqué que debe sobrevivir va a `.ai/DOMAIN.md` o a `docs/`.
 18. ⛔ **No dejes llamadas de depuración**: `dd()`, `dump()`, `ray()`, `var_dump()`.
+19. ⛔ **No escribas el código en español**: nombres (archivos, clases, métodos, tablas, rutas…), claves de
+    traducción, códigos de error, logs, tests y comentarios, en inglés y con los términos de
+    `.ai/project/GLOSSARY.md`. En español, sólo los textos para el usuario, los slugs públicos y los datos semilla.
 
 ---
 

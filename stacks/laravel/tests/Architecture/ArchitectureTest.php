@@ -18,7 +18,7 @@ declare(strict_types=1);
 | Corre en su propio gate de `bin/verify.sh` («arquitectura») y sin base de
 | datos. Un namespace que todavía no existe pasa sin comprobar nada: la regla
 | empieza a morder con la primera clase. Las reglas miran el namespace, no la
-| subcarpeta: una funcionalidad (`App\Actions\Anuncios`) cumple las de su capa.
+| subcarpeta: una funcionalidad (`App\Actions\Listings`) cumple las de su capa.
 |
 | Una regla, un namespace y una expectativa: con varios namespaces, Pest da
 | por buena la regla entera si uno no existe, y `->ignoring()` sólo vale

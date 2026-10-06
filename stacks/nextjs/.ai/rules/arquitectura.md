@@ -45,5 +45,5 @@ Next instalada: `docs/vendor/INDEX.md`).
 | Store de Zustand | `use` + dominio + `Store` | `useCartStore` |
 | Factoría de claves | dominio + `Keys` | `orderKeys` |
 
-Identificadores y comentarios del código, en inglés; la documentación para agentes, en español. Lo que importa es que
-sea uno solo y esté escrito: la mezcla arbitraria es lo que hace alucinar a un agente.
+El idioma del código, en inglés y con los términos de `.ai/project/GLOSSARY.md`: `.ai/RULES.md §Lista negra`. Lo que
+importa es que sea uno solo y esté escrito: la mezcla arbitraria es lo que hace alucinar a un agente.
