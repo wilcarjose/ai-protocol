@@ -21,7 +21,9 @@
    el cierre, en una línea, arriba de `§Últimos movimientos`.
 5. Decisiones de negocio nuevas a `.ai/DOMAIN.md §Decisiones tomadas`, con fecha y fase.
 6. Hallazgos fuera de alcance a `.ai/BACKLOG.md`, sin arreglarlos (`CLAUDE.md §Alcance`).
-7. «Qué mejorarías del protocolo» a `.ai/PROTOCOL.md`.
+7. «Qué mejorarías del protocolo» a `.ai/PROTOCOL.md`, y una sola pregunta a la persona, con opciones (en Claude
+   Code, `AskUserQuestion`): «¿Algo del protocolo te estorbó, te faltó o te sobró en esta fase?», «Nada» o «Sí»,
+   con su texto. Con texto, una fila más con `De` = `persona — fase NN/FF`; sin respuesta, el cierre sigue.
 8. **Memoria archivada** (§Archivo de la memoria).
 9. **Si la fase añade algo que hacer en producción al desplegarla** (una migración, un comando, una variable de
    entorno o de configuración, un cambio de cron o de colas, una restricción de orden), una fila por paso en
@@ -39,9 +41,9 @@
 
 ## Cierre ligero
 
-Una fase con `> **Modo:** ligero` hace los pasos 1 a 4, 8 y 13 a 16 de §Cierre de fase; los demás, sólo si tienen
-algo que escribir (una decisión, un hallazgo, un paso de despliegue, un traspaso). Los encabezados del RESULTADO se
-quedan, y los que no aplican dicen «—».
+Una fase con `> **Modo:** ligero` hace los pasos 1 a 4, la pregunta del 7, el 8 y 13 a 16 de §Cierre de fase; los
+demás, sólo si tienen algo que escribir (una decisión, un hallazgo, un paso de despliegue, un traspaso). Los
+encabezados del RESULTADO se quedan, y los que no aplican dicen «—».
 
 ## Evidencia humana
 

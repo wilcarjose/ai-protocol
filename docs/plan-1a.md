@@ -16,7 +16,7 @@
 | 5 | Modo remoto y CI de los proyectos | 4 | hecha | #5 |
 | 6 | Stack Laravel: estructura estándar por funcionalidad | 5 | hecha | #7 |
 | 7 | Stack Next.js completo | 5 | hecha | #6 |
-| 8 | Validación de punta a punta y versión 2.0.0 | 6, 7 | en revisión | #8 |
+| 8 | Validación de punta a punta y versión 2.0.0 | 6, 7 | hecha | #8 |
 
 ## Cómo se ejecuta una fase
 

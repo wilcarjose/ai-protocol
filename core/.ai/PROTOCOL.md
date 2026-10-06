@@ -6,8 +6,10 @@
 
      Qué va aquí: lo que estorbó del PROCESO. Lo que estorba del CÓDIGO va a .ai/BACKLOG.md.
 
-     Quién escribe: la fase, al cerrar, copia aquí su «Qué mejorarías del protocolo». La sesión de planificación las
-     revisa con el Tech Lead y las aplica (.ai/WORKFLOW.md §Archivos del protocolo).
+     Quién escribe: la fase, al cerrar, copia aquí su «Qué mejorarías del protocolo» (De: fase NN/FF) y lo que
+     responde la persona a la pregunta del cierre (De: persona — fase NN/FF), en la misma tabla
+     (.claude/skills/phase/cierre.md §Cierre de fase). La sesión de planificación las revisa con el Tech Lead y las
+     aplica (.ai/WORKFLOW.md §Archivos del protocolo).
 
      Cómo se aplica una mejora: cada regla en un solo archivo, y los demás la citan; si puede incumplirse en
      silencio, con su chequeo en bin/check-docs.sh, probado en las dos direcciones (falla con el defecto, pasa sin

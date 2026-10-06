@@ -3,6 +3,17 @@
 El núcleo del protocolo: lo que es igual en todos los stacks. Versiones con [SemVer](https://semver.org/lang/es/) y
 etiqueta `core-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, arriba.
 
+## Sin publicar
+
+### Añadido
+
+- `phase/cierre.md §Cierre de fase` (paso 7): una sola pregunta a la persona, con opciones, sobre lo que le estorbó,
+  le faltó o le sobró del protocolo en la fase. Su respuesta va a `.ai/PROTOCOL.md` con `De` = `persona — fase NN/FF`,
+  en la misma tabla que las propuestas del agente; sin respuesta, el cierre sigue. La hacen `/phase`, el cierre
+  ligero y `/close`, que sigue el cierre desde su paso 3. No cambia el arranque del ejecutor.
+- `.ai/PROTOCOL.md` (semilla): su cabecera dice quién escribe cada fila (`fase NN/FF` o `persona — fase NN/FF`).
+  Sólo cambia en las instalaciones nuevas; en las que ya existen, la tabla sirve igual.
+
 ## [2.0.0] — 2026-10-06
 
 ### Añadido
