@@ -9,7 +9,7 @@
 |---|---|---|---|---|
 | 1 | Retroalimentación de la persona en cada cierre | — | hecha | #9 |
 | 2 | Modo VPS por defecto | 1 | hecha | #10 |
-| 3 | Guía práctica de inicio a fin | 2 | en revisión | #11 |
+| 3 | Guía práctica de inicio a fin | 2 | hecha | #11 |
 
 La guía va al final para describir el kit ya con la retroalimentación y el modo VPS.
 
