@@ -52,7 +52,10 @@
 #      CLAUDE.md, o el propio script, en un commit que no es de ámbito protocol
 #      falla; el mismo cambio en un commit chore(protocol) pasa, y también los
 #      cambios en archivos del proyecto (la memoria, .ai/project/verify.conf)
-#      y cualquier cambio fuera de una rama de fase. Necesita git.
+#      y cualquier cambio fuera de una rama de fase. Y lo mismo dentro de un
+#      git worktree, como los del VPS (docs/modos.md): el guardián pasa y la
+#      protección compara con origin/main aunque el main local vaya por
+#      detrás. Necesita git.
 #
 # ◆ ADEMÁS
 #   Provoca en una copia del repo un fallo de cada chequeo de
@@ -326,6 +329,44 @@ test_protocol() {
         'un archivo «project» del lock (.ai/project/verify.conf) es del proyecto'
     protect feature/demo CLAUDE.md 'docs(demo): edit CLAUDE.md' pasa \
         'fuera de una rama de fase no aplica'
+    test_worktree
+}
+
+# w <args de git>: git en el worktree de prueba, como g.
+w() { git -C "$WT" -c user.name=kit -c user.email=kit@example.invalid -c commit.gpgsign=false -c core.hooksPath=/dev/null "$@"; }
+
+# in_worktree <pasa|falla> <qué se prueba> [texto que tiene que imprimir]: bin/check-protocol.sh en el worktree.
+in_worktree() {
+    out=$(GITHUB_HEAD_REF='' GITHUB_BASE_REF='' PROTOCOL_BASE='' sh "$WT/bin/check-protocol.sh" 2>&1)
+    rc=$?
+    if { [ "$1" = pasa ] && [ "$rc" -eq 0 ]; } || { [ "$1" = falla ] && [ "$rc" -ne 0 ] && printf '%s\n' "$out" | grep -qF -- "$3"; }; then
+        ok "worktree: $2"
+    else
+        fail "worktree: $2 (salió $rc)"; printf '%s\n' "$out" | sed 's/^/      /'
+    fi
+}
+
+# Una fase en un git worktree, como los que crea Claude Code en el VPS (docs/modos.md §VPS): en .claude/worktrees/,
+# desde origin/main. El main local del checkout principal se queda atrás: origin/main trae una fase ya fusionada con
+# squash, en un commit que no es de ámbito protocol y tocó CLAUDE.md. La base tiene que ser origin/main.
+test_worktree() {
+    WT="$REPO/.claude/worktrees/demo"
+    if ! { g switch -q -c merged main && printf '\nFase fusionada.\n' >> "$REPO/CLAUDE.md" \
+           && g commit -q -am 'feat(demo): merged phase' && g update-ref refs/remotes/origin/main merged \
+           && g switch -q main && g branch -q -D merged \
+           && g worktree add -q -b phase/02-paquete/07 "$WT" origin/main; }; then
+        fail 'worktree: no se pudo preparar'; return
+    fi
+    if out=$(sh "$WT/bin/check-docs.sh" --strict 2>&1); then ok 'worktree: el guardián pasa (--strict)'
+    else fail 'worktree: el guardián no pasa'; printf '%s\n' "$out" | grep -E '✗|⚠' | sed 's/^/      /'; fi
+    printf '\nCambio.\n' >> "$WT/.ai/project/verify.conf"
+    w commit -q -am 'chore(phase-02-07): close'
+    in_worktree pasa 'la protección compara con origin/main, no con el main local que va por detrás'
+    printf '\nCambio.\n' >> "$WT/CLAUDE.md"
+    w commit -q -am 'docs(demo): edit CLAUDE.md'
+    in_worktree falla 'editar CLAUDE.md fuera de un commit (protocol) falla' 'toca CLAUDE.md'
+    w commit -q --amend -m 'chore(protocol): edit CLAUDE.md'
+    in_worktree pasa 'el mismo cambio en un commit chore(protocol) pasa'
 }
 
 # ── tests/structure.sh, frente a un fallo de cada chequeo ───────────────────
