@@ -10,7 +10,8 @@
 #      del proyecto que RULES.md cita. Escribe esas versiones en
 #      .ai/project/DECISIONS.md, rellena cada {{RELLENAR}} y declara un repo
 #      hermano para que los chequeos «traspaso» y «cross-repo» apliquen.
-#   2. Crea desde las plantillas las épicas de prueba: 01-demo, CERRADA, con dos
+#   2. Crea desde las plantillas (make_test_epics, en tests/lib.sh, que usan
+#      también los e2e) las épicas de prueba: 01-demo, CERRADA, con dos
 #      fases HECHA; y 02-paquete, creada desde el paquete de tareas
 #      tests/fixtures/stages/E1.md como lo haría /plan-epic: una fase de código
 #      HECHA y revisada, una de operación en ESPERA_EVIDENCIA y una ligera
@@ -18,7 +19,8 @@
 #   3. Comprueba que `sh bin/check-docs.sh --strict` pasa sobre esa instalación,
 #      que bin/measure-context.sh la mide y que bin/handoff.sh imprime lo que
 #      una fase cerrada dejó para la siguiente (y falla con una sin cerrar).
-#   4. Provoca, cada uno en una copia limpia, los 15 fallos de «CÓMO PROVOCAR
+#   4. Provoca (guardian_cases, en tests/lib.sh, que usan también los e2e),
+#      cada uno en una copia limpia, los 15 fallos de «CÓMO PROVOCAR
 #      CADA FALLO» de la cabecera de bin/check-docs.sh, más sus variantes (los
 #      casos con letra): el puntero en una fase que espera evidencia (1e), una
 #      fase con las secciones sin número (2n), una evidencia enlazada que no
@@ -57,11 +59,12 @@
 #   tests/structure.sh y comprueba que lo detecta.
 #
 # ◆ CÓMO SE AÑADE UN CASO
-#   Un chequeo nuevo del guardián trae su caso aquí: una rama en estropea()
-#   que mete el defecto en la instalación (corre en su raíz) y una línea
-#   `provoke` con el texto que el guardián tiene que imprimir (o `accept`, si
-#   el caso tiene que pasar). Un caso con número es un fallo de la cabecera de
-#   bin/check-docs.sh; uno con letra, una variante.
+#   Un chequeo nuevo del guardián trae su caso en tests/lib.sh: una rama en
+#   estropea() que mete el defecto en la instalación (corre en su raíz) y una
+#   línea `provoke` en guardian_cases con el texto que el guardián tiene que
+#   imprimir (o `accept`, si el caso tiene que pasar). Un caso con número es
+#   un fallo de la cabecera de bin/check-docs.sh; uno con letra, una variante.
+#   Así lo prueban también los e2e, sobre un proyecto de verdad.
 #
 # ◆ USO
 #   sh tests/run.sh             # los dos stacks
@@ -81,7 +84,6 @@ WORK=$(mktemp -d)
 trap 'rm -rf "$WORK"' EXIT
 
 KITS=${1:-'laravel nextjs'}
-DATE=2026-01-01
 FAIL=0
 
 # ── Helpers ─────────────────────────────────────────────────────────────────
@@ -107,54 +109,13 @@ json_list() {
 # kit_copy <dir>: una copia del repo del kit, para cambiarla sin tocar el de verdad.
 kit_copy() { mkdir -p "$1" && cp -R "$ROOT/install.sh" "$ROOT/core" "$ROOT/stacks" "$ROOT/tests" "$1/"; }
 
-# edit, awk_edit, fill_stack y fill_markers.
+# edit, awk_edit, fill_stack, fill_markers, la épica de prueba (make_test_epics) y los fallos del guardián
+# (guardian_cases).
 # shellcheck source=tests/lib.sh
 . "$ROOT/tests/lib.sh"
 
-# make_epic <slug> <estado> <fases…>: el epic-plan desde su plantilla, con una fila por cada una de esas fases.
-make_epic() {
-    slug=$1; st=$2; shift 2
-    mkdir -p ".ai/epics/$slug"
-    plan=".ai/epics/$slug/epic-plan.md"
-    sed -e "s/^# Épica NN — .*/# Épica ${slug%%-*} — Demo/" \
-        -e "s/^> \*\*Slug:\*\* .*/> **Slug:** \`$slug\`/" \
-        -e "s/^> \*\*Estado:\*\* .*/> **Estado:** $st/" \
-        .ai/templates/epic-plan.template.md > "$plan"
-    awk_edit "$plan" "/^## Fases/ { s = 1 } s && /^## / && !/Fases/ { s = 0 }
-        s && /^\| [0-9][0-9] \|/ { next }
-        { print }
-        s && /^\|---/ { n = split(\"$*\", k, \" \"); for (i = 1; i <= n; i++) print \"| \" k[i] \" | Demo | — |\" }"
-    [ "$st" = CERRADA ] && edit "$plan" 's/^- \[ \]/- [x]/'
-    return 0
-}
-
-# make_phase <slug> <FF> <estado> <depende de>: la fase desde su plantilla; HECHA o ESPERA_EVIDENCIA, con su
-# RESULTADO, sus casillas marcadas y su revisión.
-make_phase() {
-    f=".ai/epics/$1/phase-$2.md"
-    sed -e "s/^# Fase FF — .*/# Fase $2 — Demo/" \
-        -e "s/^> \*\*Épica:\*\* .*/> **Épica:** \`$1\` · **Depende de:** $4/" \
-        -e "s/^> \*\*Estado:\*\* .*/> **Estado:** $3/" \
-        .ai/templates/phase.template.md > "$f"
-    case "$3" in HECHA|ESPERA_EVIDENCIA) ;; *) return 0 ;; esac
-    edit "$f" "s/^- \[ \]/- [x]/; s/^\*\*Fecha:\*\*\$/**Fecha:** $DATE/
-        s/^Sin revisar\.\$/**Revisión 1 · $DATE · \`aaaaaaa..bbbbbbb\`:** 0 bloqueantes, 0 no bloqueantes./"
-    awk_edit "$f" '{ print } /^### (Qué se hizo|Lo que la siguiente fase necesita saber)$/ { print ""; print "Fase de prueba." }'
-}
-
-# header <fase> <línea>: una línea más en la cabecera de la fase, tras «Tipo:».
-header() { awk_edit "$1" "{ print } /^> \\*\\*Tipo:\\*\\*/ { print \"$2\" }"; }
-
-# criterion <fase> <línea>: una casilla más al final de «Criterios de éxito».
-criterion() { awk_edit "$1" "/^## [0-9]+\\. Restricciones/ { print \"$2\"; print \"\" } { print }"; }
-
-# task <fase> <ID> <casilla> <comando>: la fase sale de esa tarea del paquete E1, con su criterio literal en §5
-# seguido del comando que lo prueba.
-task() {
-    header "$1" "> **Tarea externa:** $2"
-    c=$(awk -F'|' -v t="$2" '{ i = $2; gsub(/ /, "", i) } i == t { c = $5; sub(/^ +/, "", c); sub(/ +$/, "", c); print c }' .ai/stages/E1.md)
-    criterion "$1" "$3 $c — \`$4\`"
-}
+# fresh <caso>: el directorio de una copia limpia de la instalación de prueba, para provocar ese caso en ella.
+fresh() { d="$WORK/$KIT-$1"; cp -R "$BASE" "$d" && printf '%s' "$d"; }
 
 # install <kit> <dir>: el kit instalado con install.sh y con la épica de prueba.
 install() {
@@ -170,140 +131,8 @@ install() {
         fill_stack .ai/RULES.md .ai/project/DECISIONS.md "$manifest"
         find . -type f -name '*.md' -exec grep -lF '{{RELLENAR' {} + | while read -r f; do fill_markers "$f" "$SIBLING"; done
 
-        make_epic 01-demo CERRADA 01 02
-        make_phase 01-demo 01 HECHA '—'
-        make_phase 01-demo 02 HECHA 'fase 01'
-        # La épica desde el paquete E1: lo que dejaría /plan-epic (.claude/skills/plan-epic/SKILL.md §Desde un
-        # paquete de tareas). E1-04 es de otro repo y no entra.
-        mkdir -p .ai/stages && cp "$FIXTURES/stages/E1.md" .ai/stages/E1.md
-        make_epic 02-paquete EN_CURSO 01 02 03
-        # shellcheck disable=SC2016  # las comillas invertidas son literales
-        printf '\n- `.ai/stages/E1.md §Decisiones vigentes`.\n' >> .ai/epics/02-paquete/epic-plan.md
-        p=.ai/epics/02-paquete
-        make_phase 02-paquete 01 HECHA '—'
-        task $p/phase-01.md E1-01 '- [x]' 'curl -s http://localhost/api/demos'
-        make_phase 02-paquete 02 ESPERA_EVIDENCIA 'fase 01'
-        edit $p/phase-02.md 's/^> \*\*Tipo:\*\* .*/> **Tipo:** operación/'
-        task $p/phase-02.md E1-02 '- [ ] [humano]' 'dig +short demo.example'
-        make_phase 02-paquete 03 LISTA_PARA_EJECUTAR 'fase 01'
-        task $p/phase-03.md E1-03 '- [ ]' 'curl -s http://localhost/'
-        header $p/phase-03.md '> **Modo:** ligero'
-        awk_edit $p/phase-03.md '/^## [0-9]+\. Entregables/ { s = 1 } s && /^## [0-9]+\. Archivos/ { s = 0 } s && /^3\.$/ { next } { print }'
-
-        awk_edit .ai/STATE.md "
-            /^## Mapa de fases/ { m = 1 }
-            { print }
-            m && /^\|---/ { m = 0
-                print \"| 01-demo | 01 | HECHA | $DATE |\"
-                print \"| 01-demo | 02 | HECHA | $DATE |\"
-                print \"| 02-paquete | 01 | HECHA | $DATE |\"
-                print \"| 02-paquete | 02 | ESPERA_EVIDENCIA | $DATE |\"
-                print \"| 02-paquete | 03 | LISTA_PARA_EJECUTAR | — |\" }"
-        awk_edit .ai/STATE.md '/^## Esperando evidencia/ { w = 1 } /^## Bloqueo activo/ { w = 0 }
-            w && /^\*\*Ninguna\.\*\*$/ { print "- 02-paquete/02 — la evidencia [humano] de E1-02."; next } { print }'
-        edit .ai/STATE.md "s/^- \*\*Épica activa:\*\* .*/- **Épica activa:** 02-paquete/
-            s/^- \*\*Fase activa:\*\* .*/- **Fase activa:** 03/
-            s#^- \*\*Archivo de la fase:\*\* .*#- **Archivo de la fase:** \`.ai/epics/02-paquete/phase-03.md\`#
-            s/^- \*\*Última actualización:\*\* .*/- **Última actualización:** $DATE/"
+        make_test_epics
     )
-}
-
-# ── Los fallos de la cabecera de bin/check-docs.sh («CÓMO PROVOCAR CADA FALLO») ──
-# estropea <caso>: mete el defecto del caso en la instalación del directorio actual.
-# shellcheck disable=SC2016  # las comillas invertidas y los $ de awk son literales
-estropea() {
-    case "$1" in
-        0)  printf '\n{{RELLENAR: x}}\n' >> .ai/DOMAIN.md ;;
-        1)  edit .ai/STATE.md 's/^- \*\*Épica activa:\*\* .*/- **Épica activa:** 01-demo/
-                s/^- \*\*Fase activa:\*\* .*/- **Fase activa:** 02/
-                s#^- \*\*Archivo de la fase:\*\* .*#- **Archivo de la fase:** `.ai/epics/01-demo/phase-02.md`#' ;;
-        # El puntero no se queda en una fase que espera la evidencia de la persona.
-        1e) edit .ai/STATE.md 's/^- \*\*Fase activa:\*\* .*/- **Fase activa:** 02/
-                s#^- \*\*Archivo de la fase:\*\* .*#- **Archivo de la fase:** `.ai/epics/02-paquete/phase-02.md`#' ;;
-        2)  edit .ai/epics/01-demo/phase-02.md 's/^> \*\*Estado:\*\* HECHA$/> **Estado:** EN_CURSO/' ;;
-        # La cabecera y la evidencia humana (.claude/skills/plan-phase/SKILL.md §Tipos de tarea).
-        2t) edit .ai/epics/01-demo/phase-02.md 's/^> \*\*Tipo:\*\* .*/> **Tipo:** otro/' ;;
-        2a) edit .ai/epics/01-demo/phase-02.md '/^> \*\*Tipo:\*\*/d' ;;
-        2h) criterion .ai/epics/01-demo/phase-02.md '- [x] [humano] Prueba.' ;;
-        2w) edit .ai/epics/02-paquete/phase-02.md 's/^- \[ \] \[humano\]/- [x] [humano]/' ;;
-        2x) awk_edit .ai/epics/02-paquete/phase-02.md '!d && /^- \[x\]/ { sub(/\[x\]/, "[ ]"); d = 1 } { print }' ;;
-        2l) awk_edit .ai/epics/02-paquete/phase-03.md '{ print } /^2\.$/ { print "3. Otro." }' ;;
-        2c) edit .ai/epics/02-paquete/phase-03.md 's/^> \*\*Contrato HTTP:\*\* SIN CAMBIOS$/> **Contrato HTTP:** CAMBIO AUTORIZADO (prueba)/' ;;
-        # La revisión: un bloqueante abierto (2r) o resuelto (2v), y una fase cerrada sin revisar (2s).
-        2r|2v) b='- [ ] **B1** · `composer.json` — Prueba.'; [ "$1" = 2v ] && b='- [x] **B1** · `composer.json` — Prueba. Resuelto en `ccccccc`.'
-            awk_edit .ai/epics/01-demo/phase-02.md "{ print } /^\\*\\*Revisión 1/ { print \"\"; print \"$b\" }" ;;
-        2s) edit .ai/epics/01-demo/phase-02.md 's/^\*\*Revisión 1 .*/Sin revisar./' ;;
-        # Las secciones se buscan por su nombre: sin el número delante, la casilla sin marcar se sigue viendo.
-        2n) edit .ai/epics/01-demo/phase-02.md 's/^## [0-9][0-9]*\. /## /'
-            awk_edit .ai/epics/01-demo/phase-02.md '!d && /^- \[x\]/ { sub(/\[x\]/, "[ ]"); d = 1 } { print }' ;;
-        3)  awk_edit .ai/epics/01-demo/epic-plan.md '!d && /^- \[x\]/ { sub(/\[x\]/, "[ ]"); d = 1 } { print }' ;;
-        4)  printf '\nVer fase 01/99.\n' >> .ai/BACKLOG.md ;;
-        5)  edit .ai/epics/01-demo/phase-02.md 's/^> \*\*Migraciones:\*\* ninguna$/> **Migraciones:** autorizadas (users)/' ;;
-        6)  edit .ai/epics/01-demo/phase-02.md \
-                's/^> \*\*Contrato HTTP:\*\* SIN CAMBIOS$/> **Contrato HTTP:** CAMBIO AUTORIZADO (prueba)/' ;;
-        7)  edit .ai/STATE.md 's/^- \*\*Decisiones abiertas:\*\* 0 (0/- **Decisiones abiertas:** 1 (0/' ;;
-        7e) edit .ai/STATE.md 's/^- 02-paquete\/02 — .*/**Ninguna.**/' ;;
-        8)  printf '| 1 | %s | api | interno | 99 | Prueba. | — | abierto |\n' "$DATE" >> .ai/BACKLOG.md ;;
-        9)  awk_edit .ai/project/DECISIONS.md 'BEGIN { FS = OFS = "|" } /^## Stack/ { s = 1 }
-                s && !d && /^\| `/ { $3 = " 0.0.0 "; d = 1 } { print }' ;;
-        # Un paquete que el stack da por hecho y el proyecto no versiona.
-        9n) awk_edit .ai/project/DECISIONS.md '/^## Stack/ { s = 1 } s && !d && /^\| `/ { d = 1; next } { print }' ;;
-        10) printf '\nVer %s/docs/x.md.\n' "$SIBLING" >> .ai/DOMAIN.md ;;
-        11) printf '\nVer `bin/no-existe.sh`.\n' >> CLAUDE.md ;;
-        12) printf '\nVer `.ai/RULES.md §No existe`.\n' >> CLAUDE.md ;;
-        12n) printf '\nVer `.ai/WORKFLOW.md §3`.\n' >> CLAUDE.md ;;
-        # Una evidencia enlazada desde el RESULTADO: sin el archivo (2e) y con él (2f).
-        2e|2f) awk_edit .ai/epics/01-demo/phase-02.md '{ print } /^### Verificación$/ { print ""; print "Salida en `.ai/epics/01-demo/evidence/02-verify.txt`." }'
-            if [ "$1" = 2f ]; then mkdir -p .ai/epics/01-demo/evidence && echo ok > .ai/epics/01-demo/evidence/02-verify.txt; fi ;;
-        # Un epic-plan que cita una decisión: que no existe (3n) o que está archivada (3a).
-        3n) printf '\nVer D9.\n' >> .ai/epics/01-demo/epic-plan.md ;;
-        3a) printf '| D1 | Prueba. | otro | — | fase 01/01 | respondida | A — %s |\n' "$DATE" >> .ai/archive/DOMAIN.md
-            printf '\nVer D1.\n' >> .ai/epics/01-demo/epic-plan.md ;;
-        # La memoria: lo cerrado va a .ai/archive/ y «Últimos movimientos» tiene un tope.
-        13) printf '| 1 | %s | api | — | — | Prueba. | 01/01 | cerrado — 01/01 |\n' "$DATE" >> .ai/BACKLOG.md ;;
-        13a) for i in 1 2 3 4 5 6 7 8 9 10; do printf -- '- Movimiento %s.\n' "$i" >> .ai/STATE.md; done ;;
-        13b) printf '| 2 | %s | fase 01/01 | Prueba. | aplicada — %s |\n' "$DATE" "$DATE" >> .ai/PROTOCOL.md ;;
-        13c) printf '\n### %s — Prueba (fase 01/01)\n\n**Reemplazada por:** %s — Otra.\n' "$DATE" "$DATE" >> .ai/DOMAIN.md ;;
-        13d) printf '| D1 | Prueba. | otro | — | fase 01/01 | respondida | A — %s |\n' "$DATE" >> .ai/DOMAIN.md ;;
-        13e) printf '| 1 | %s | api | — | — | Prueba. | 01/01 | cerrado — 01/01 |\n' "$DATE" >> .ai/archive/BACKLOG.md
-             printf '| 1 | %s | api | interno | — | Prueba. | — | abierto |\n' "$DATE" >> .ai/BACKLOG.md ;;
-        # Las tareas externas: un ID que no está en ningún paquete (14) y un criterio que no es el literal (14c).
-        14) edit .ai/epics/02-paquete/phase-01.md 's/^> \*\*Tarea externa:\*\* .*/> **Tarea externa:** T9-99/' ;;
-        14c) edit .ai/epics/02-paquete/phase-01.md 's/responde 200 con la lista de demos/responde 200/' ;;
-        *)  return 1 ;;
-    esac
-}
-
-# provoke <caso> <qué se estropea> <texto que el guardián tiene que imprimir>
-provoke() {
-    d="$WORK/$KIT-$1"
-    cp -R "$BASE" "$d"
-    if ! ( cd "$d" && estropea "$1" ); then
-        printf '  ✗ %-3s %s: no se pudo provocar\n' "$1" "$2"; FAIL=1; return
-    fi
-    out=$(sh "$d/bin/check-docs.sh" --strict 2>&1)
-    rc=$?
-    if [ "$rc" -ne 0 ] && printf '%s\n' "$out" | grep -qF -- "$3"; then
-        printf '  ✓ %-3s %s\n' "$1" "$2"
-        case "$1" in *[!0-9]*) ;; *) DETECTED=$((DETECTED + 1)) ;; esac
-    else
-        printf '  ✗ %-3s %s: el guardián salió %s sin decir «%s»\n' "$1" "$2" "$rc" "$3"
-        printf '%s\n' "$out" | grep -E '✗|⚠' | sed 's/^/        /'
-        FAIL=1
-    fi
-}
-
-# accept <caso> <qué se cambia>: en una copia limpia, un cambio que el guardián tiene que aceptar.
-accept() {
-    d="$WORK/$KIT-$1"
-    cp -R "$BASE" "$d"
-    ( cd "$d" && estropea "$1" ) || { printf '  ✗ %-3s %s: no se pudo preparar\n' "$1" "$2"; FAIL=1; return; }
-    if out=$(sh "$d/bin/check-docs.sh" --strict 2>&1); then printf '  ✓ %-3s %s\n' "$1" "$2"
-    else
-        printf '  ✗ %-3s %s: el guardián lo rechaza\n' "$1" "$2"
-        printf '%s\n' "$out" | grep -E '✗|⚠' | sed 's/^/        /'
-        FAIL=1
-    fi
 }
 
 # ── Lo que lee cada sesión, frente a tests/context-baseline.txt ─────────────
@@ -406,6 +235,8 @@ test_installer() {
     if [ "$(sha "$up/.ai/STATE.md")" = "$state" ]; then ok '--upgrade no toca la memoria (.ai/STATE.md)'
     else fail '--upgrade modificó .ai/STATE.md'; fi
 
+    [ -d "$FIXTURES/kit-1x/$KIT" ] && test_upgrade_1x
+
     kit_copy "$WORK/$KIT-kit3"
     edit "$WORK/$KIT-kit3/stacks/$KIT/stack.json" 's/"core": ".*"/"core": ">=9.0.0 <10.0.0"/'
     if out=$(sh "$WORK/$KIT-kit3/install.sh" --stack "$KIT" --target "$WORK/$KIT-kit3-p" 2>&1); then
@@ -417,6 +248,44 @@ test_installer() {
             fail "un stack incompatible falla, pero no por el rango del núcleo: $out"
         fi
     fi
+}
+
+# memory <dir>: «suma ruta» de cada archivo de la memoria (STATE, DOMAIN, BACKLOG, PROTOCOL y las épicas).
+memory() {
+    ( cd "$1" && find .ai/STATE.md .ai/DOMAIN.md .ai/BACKLOG.md .ai/PROTOCOL.md .ai/epics -type f | sort \
+        | while read -r f; do printf '%s %s\n' "$(sha "$f")" "$f"; done )
+}
+
+# Un proyecto con el kit 1.x: tests/fixtures/kit-1x/<kit>/ es la carpeta del stack tal como la copiaba `cp -Rn`
+# antes del instalador (la «Versión del kit» 2026-10-04, la de c2151e4), sin lock. El proyecto ha usado su memoria.
+# shellcheck disable=SC2016  # las comillas invertidas de los mensajes son literales
+test_upgrade_1x() {
+    old="$WORK/$KIT-1x"
+    cp -R "$FIXTURES/kit-1x/$KIT" "$old"
+    mkdir -p "$old/.ai/epics/01-demo"
+    printf '# Épica 01 — Demo\n' > "$old/.ai/epics/01-demo/epic-plan.md"
+    printf -- '- %s — Movimiento del proyecto.\n' "$DATE" >> "$old/.ai/STATE.md"
+    before=$(memory "$old")
+
+    if ! out=$(sh "$ROOT/install.sh" --upgrade --target "$old" 2>&1) && printf '%s\n' "$out" | grep -qF 'di qué stack tiene con --stack'; then
+        ok '1.x: sin lock, --upgrade pide --stack'
+    else
+        fail '1.x: sin lock, --upgrade no pide --stack:'; printf '%s\n' "$out" | sed 's/^/      /'
+    fi
+
+    out=$(sh "$ROOT/install.sh" --upgrade --stack "$KIT" --target "$old" 2>&1)
+    rc=$?
+    printf '%s\n' "$out" > "$WORK/$KIT-1x.log"
+    if [ "$rc" -eq 0 ] && grep -qE '^  ! CLAUDE\.md +conflicto' "$WORK/$KIT-1x.log" \
+       && grep -qF -- '--- proyecto/CLAUDE.md' "$WORK/$KIT-1x.log" && grep -qF '+++ kit/CLAUDE.md' "$WORK/$KIT-1x.log" \
+       && grep -qE '^  \+ \.claude/skills/phase/SKILL\.md +copiado' "$WORK/$KIT-1x.log" \
+       && [ -f "$old/.ai/protocol.lock" ] && [ -f "$old/.ai/project/README.md" ]; then
+        ok "1.x: --upgrade --stack $KIT termina en 0, enseña el diff de lo que difiere del kit ($(grep -c '^  ! ' "$WORK/$KIT-1x.log") conflictos) y copia lo nuevo"
+    else
+        fail "1.x: --upgrade --stack $KIT salió $rc o no enseñó los diffs:"; sed 's/^/      /' "$WORK/$KIT-1x.log" | head -n 40
+    fi
+    if [ "$(memory "$old")" = "$before" ]; then ok '1.x: --upgrade no toca la memoria (STATE, DOMAIN, BACKLOG, PROTOCOL y las épicas)'
+    else fail '1.x: --upgrade modificó la memoria'; fi
 }
 
 # ── La protección del protocolo (bin/check-protocol.sh), en un repositorio git ──
@@ -531,66 +400,7 @@ for KIT in $KITS; do
     fi
     test_context
 
-    DETECTED=0
-    TOTAL=15
-    provoke 0  'instalación: un {{RELLENAR}} sin completar'          'marcador(es) {{RELLENAR}}'
-    provoke 1  'puntero: «Fase activa» en una fase HECHA'            'la cabecera apunta a'
-    provoke 1e 'puntero: «Fase activa» en una ESPERA_EVIDENCIA'      'la cabecera apunta a'
-    provoke 2  'fases: una HECHA pasa a EN_CURSO sin tocar el mapa'  'dice EN_CURSO y el mapa dice HECHA'
-    provoke 2t 'fases: un «Tipo:» que no existe'                     '«Tipo:» es «otro»'
-    accept  2a 'fases: una fase sin «Tipo:» (código, como las de antes)'
-    provoke 2h 'fases: una casilla [humano] en una fase de código'  'tiene casillas [humano] y es de tipo código'
-    provoke 2w 'fases: ESPERA_EVIDENCIA sin casilla [humano] abierta' 'no tiene ninguna casilla [humano] abierta'
-    provoke 2x 'fases: ESPERA_EVIDENCIA con una casilla sin [humano] abierta' 'casilla(s) sin [humano] sin marcar'
-    provoke 2l 'fases: una ligera con tres entregables'              'es ligera y tiene 3 entregable(s)'
-    provoke 2c 'fases: una ligera que cambia el contrato'            'es ligera y cambia el contrato'
-    provoke 2r 'fases: una HECHA con un bloqueante abierto'          '1 hallazgo(s) bloqueante(s) de «Revisión» sin resolver'
-    accept  2v 'fases: una HECHA con su bloqueante resuelto'
-    provoke 2s 'fases: una HECHA sin revisar'                        'la fase no pasó por /review'
-    provoke 2n 'fases: una casilla sin marcar, con secciones sin número' 'casilla(s) de «Criterios de éxito» sin marcar'
-    provoke 2e 'fases: enlaza una evidencia que no existe'            'enlaza la evidencia .ai/epics/01-demo/evidence/02-verify.txt'
-    accept  2f 'fases: enlaza una evidencia que existe'
-    provoke 3  'épicas: una CERRADA con su cierre sin marcar'        'casilla(s) del «Criterio de cierre» sin marcar'
-    provoke 3n 'épicas: cita una decisión que no existe'             'cita D9, que no existe'
-    accept  3a 'épicas: cita una decisión archivada en .ai/archive/DOMAIN.md'
-    provoke 4  'referencias: «fase 01/99» en BACKLOG.md'             'cita la fase 01/99'
-    if grep -q '^> \*\*Migraciones:\*\*' "$BASE/.ai/templates/phase.template.md"; then
-        provoke 5 'despliegue: migraciones sin fila en el manifiesto' 'declara migraciones y no tiene fila'
-    else
-        TOTAL=14
-        if printf '%s\n' "$out" | grep -qF 'no declara migraciones: no aplica' \
-           && ! grep -q '^> \*\*Migraciones:\*\*' "$BASE"/.ai/epics/*/phase-*.md; then
-            printf '  ✓ 5   despliegue: no aplica; el guardián acepta fases sin «Migraciones:»\n'
-        else
-            printf '  ✗ 5   despliegue: la plantilla no declara migraciones y el guardián no lo trata como «no aplica»\n'
-            FAIL=1
-        fi
-    fi
-    provoke 6  'traspaso: CAMBIO AUTORIZADO sin traspaso'            'cambia el contrato y nada lo traspasa'
-    provoke 7  'contadores: «Decisiones abiertas» sube sin DOMAIN'   'la cabecera dice «Decisiones abiertas: 1'
-    provoke 7e 'contadores: §Esperando evidencia no nombra la que espera' 'STATE.md §Esperando evidencia nombra'
-    provoke 8  'destinos: «99» en la columna Destino'                '«Destino» es 99'
-    provoke 9  'stack: otra versión en DECISIONS.md §Stack'          'dice 0.0.0 y el manifiesto dice'
-    provoke 9n 'stack: un paquete de RULES.md sin versión'         '(de RULES.md §Stack) no tiene versión'
-    provoke 10 'cross-repo: cita un documento del repo hermano'      "cita documentos de «$SIBLING»"
-    # shellcheck disable=SC2016  # las comillas invertidas son literales
-    provoke 11 'rutas: cita bin/no-existe.sh'                        'cita `bin/no-existe.sh`, que no existe'
-    provoke 12 'secciones: cita una sección que no existe'           'cita «.ai/RULES.md §No existe»'
-    provoke 12n 'secciones: cita una sección por su número'          'cita «.ai/WORKFLOW.md §3» por su número'
-    provoke 13 'memoria: una fila cerrada sigue en BACKLOG.md'        'BACKLOG.md #1 está cerrada o descartada'
-    provoke 13a 'memoria: 11 líneas en «Últimos movimientos»'       'tiene 11 líneas; el tope es 10'
-    provoke 13b 'memoria: una mejora aplicada sigue en PROTOCOL.md'  'PROTOCOL.md #2 está aplicada o descartada'
-    provoke 13c 'memoria: una decisión reemplazada sigue en DOMAIN.md' 'una decisión «**Reemplazada por:**» sigue aquí'
-    provoke 13d 'memoria: una decisión respondida sigue en DOMAIN.md' 'D1 está respondida'
-    provoke 13e 'memoria: un # de BACKLOG.md que ya está archivado'  'el id 1 ya está en .ai/archive/BACKLOG.md'
-    provoke 14 'tareas: una «Tarea externa» que no está en ningún paquete' 'es T9-99, que no es una fila'
-    provoke 14c 'tareas: el criterio de la tarea no está literal'    'el criterio de E1-01 no está, literal'
-    # Los casos con letra son variantes: no cuentan entre los de la cabecera.
-    n=$DETECTED
-    note=''
-    [ "$TOTAL" -eq 15 ] || note=' (el 5 no aplica)'
-    printf '  → %s/%s fallos de la cabecera provocados y detectados%s\n' "$n" "$TOTAL" "$note"
-    [ "$n" -eq "$TOTAL" ] || FAIL=1
+    guardian_cases "$BASE"
 
     test_installer
     test_protocol

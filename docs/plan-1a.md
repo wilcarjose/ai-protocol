@@ -14,9 +14,9 @@
 | 3 | Menos tokens | 2 | hecha | #3 |
 | 4 | Planificador, revisor y tipos de tarea | 3 | hecha | #4 |
 | 5 | Modo remoto y CI de los proyectos | 4 | hecha | #5 |
-| 6 | Stack Laravel: estructura estándar por funcionalidad | 5 | en revisión | #7 |
+| 6 | Stack Laravel: estructura estándar por funcionalidad | 5 | hecha | #7 |
 | 7 | Stack Next.js completo | 5 | hecha | #6 |
-| 8 | Validación de punta a punta y versión 2.0.0 | 6, 7 | pendiente | — |
+| 8 | Validación de punta a punta y versión 2.0.0 | 6, 7 | en revisión | #8 |
 
 ## Cómo se ejecuta una fase
 
@@ -405,6 +405,23 @@ Criterios de aceptación:
       `ProblemDetails` la traduce al escribir `detail`, con el contexto escalar como parámetros. Los textos fijos
       (`Not Found.`…) también pasan por el traductor. El código de error del ejemplo de Next.js pasa a
       `DEMO_NOT_FOUND`, en mayúsculas como en Laravel.
+  - 2026-10-06 (fase 8, aprobado en el Paso A): la fase va en un solo PR. La épica de prueba (`make_test_epics`) y
+    los casos del guardián (`estropea`, `provoke`, `accept` y `guardian_cases`) pasan de `tests/run.sh` a
+    `tests/lib.sh`. Cada llamador define `fresh <caso>`, que da una instalación limpia: `run.sh` copia la de prueba, y
+    los e2e restauran el proyecto con `git checkout -- . && git clean -fd`, que no toca `vendor/` ni `node_modules/`.
+    Los e2e corren todos los casos sobre el proyecto real y uno más a través de `bin/verify.sh --fast`, que tiene que
+    caer en su gate «docs».
+  - 2026-10-06 (fase 8, aprobado en el Paso A): la instalación 1.x de prueba es `tests/fixtures/kit-1x/laravel/`, la
+    carpeta `laravel/` de `c2151e4` tal cual (24 archivos), y no se saca del historial de git: la CI hace un checkout
+    superficial y `filter-repo` lo reescribiría. Sólo hay fixture de Laravel; `test_upgrade_1x` corre para cada stack
+    que tenga el suyo.
+  - 2026-10-06 (fase 8): los tres paquetes salen en `2.0.0` con fecha 2026-10-06, y cada stack pide el núcleo
+    `>=2.0.0 <3.0.0`. Las etiquetas `core-v2.0.0`, `laravel-v2.0.0` y `nextjs-v2.0.0` las crea la persona al fusionar.
+  - 2026-10-06 (fase 8): sin lock, un upgrade desde 1.x no retira `.claude/commands/` ni `.ai/PLANNING.md`, porque no
+    sabe qué trajo la 1.x: se borran a mano (README.md §Migrar desde 1.x). Un conflicto se resuelve borrando el
+    archivo y repitiendo el `--upgrade`, que lo copia y guarda su suma (probado).
+  - 2026-10-06 (fase 8): el README deja la sección «Diferencias con el protocolo de Kiniela Pro». Lo que importa a
+    un proyecto que viene de antes está en §Migrar desde 1.x, y el resto, en el historial de git.
 - **Lo que la siguiente fase necesita saber:**
   - **Dónde vive cada cosa.** El núcleo, en `core/` (manifiesto `core/core.json`); cada stack, en `stacks/<stack>/` (`stack.json`). Instalados, los archivos conservan sus rutas (`CLAUDE.md`, `.ai/…`, `.claude/skills/…`, `bin/…`). `install.sh` está en la raíz.
   - **Las skills.** `/phase` es `.claude/skills/phase/SKILL.md` (pasos, rama, estados, sincronización, commits, verificación) más `phase/cierre.md` (cierre con revisión, cierre ligero, evidencia humana, épica, archivo de la memoria, traspaso, reporte final). `/close`, `/plan-epic`, `/plan-phase` y `/review` son una `SKILL.md` cada una; `/phase` y `/close` llevan `disable-model-invocation: true`, y `/review` no, para que `/phase` la invoque. El revisor es `.claude/agents/reviewer.md` (Read, Grep, Glob y Bash sólo para git y el guardián). Una skill o un agente nuevo entra en `core/core.json` (`files`) y en las listas de `core/bin/measure-context.sh`, y si la lee el ejecutor al arrancar, mueve su línea en `tests/context-baseline.txt`. El upgrade desde la fase 3 retira `/planning` sola (probado).
@@ -420,7 +437,7 @@ Criterios de aceptación:
   - **`tests/run.sh`.** Un caso con número en `provoke` es un fallo de la cabecera de `bin/check-docs.sh` (15 en Laravel; 14 en Next.js); uno con letra, una variante. `accept` prueba lo que tiene que pasar. La épica de prueba es 01-demo (CERRADA) y 02-paquete, creada desde `tests/fixtures/stages/E1.md` con helpers `task`, `header` y `criterion`; el puntero está en `02-paquete/03` (ligera) y `02-paquete/02` espera evidencia. El bloque `test_installer` usa `kit_copy` para simular un kit nuevo; `test_context` mide una instalación limpia contra `tests/context-baseline.txt`.
   - **Todo archivo nuevo entra en un manifiesto,** en `files` o en `seed`, o `tests/structure.sh` falla. Los manifiestos y el lock se leen sin jq: un valor por línea.
   - **El contexto del ejecutor de Laravel está a 73 caracteres del tope de 53 300** (fase 6). Lo que se añada a `CLAUDE.md`, a `.claude/skills/phase/SKILL.md`, a `WORKFLOW.md`, a `RULES.md`, a `.ai/project/README.md` o a la plantilla de fase hay que compensarlo. Lo que sólo hace falta al cerrar va en `cierre.md`, que no cuenta en el arranque.
-  - **Proyectos que suben a 2.0.** El upgrade no toca la memoria: lo cerrado que ya tuvieran se mueve a mano a `.ai/archive/` (README.md §Actualizar un proyecto). La fase 8 lo prueba con una instalación 1.x.
+  - **Proyectos que suben a 2.0.** El upgrade no toca la memoria: lo cerrado que ya tuvieran se mueve a mano a `.ai/archive/` (README.md §Migrar desde 1.x). `tests/run.sh` (`test_upgrade_1x`) lo prueba con la instalación 1.x de `tests/fixtures/kit-1x/laravel/`: sin lock pide `--stack`; con él termina en 0, enseña 10 conflictos con su diff, copia lo nuevo y deja la memoria igual byte a byte.
   - **El e2e de Next.js (fases 6 y 8).** `tests/e2e-nextjs.sh` fija las versiones (create-next-app 16.3.8 y los paquetes del stack), borra los `AGENTS.md`, `CLAUDE.md` y `eslint.config.mjs` que crea create-next-app antes de instalar, rellena la capa con `tests/lib.sh` (`fill_stack`, `fill_markers`), versiona el proyecto en git y corre `bin/verify.sh` completo. Después provoca los dos fallos del criterio. En la CI corre además Lighthouse (`E2E_LIGHTHOUSE=1`; el runner trae Chrome; en Docker, Chrome necesita `--no-sandbox`). La fase 6 puede escribir `tests/e2e-laravel.sh` con la misma forma, y la fase 8 añade a los dos la épica de prueba. En local se probó dentro de `node:22` con gitleaks 8.30.1.
   - **npm 10 y las peers de Vite 8.** Con el `@types/node@^20` de create-next-app, `npm install vitest@4.1.x` revienta (`Cannot read properties of null (reading 'edgesOut')`) por la cadena de peers opcionales de Vite 8. Con `@types/node@22` (el proyecto declara Node 22) y Vitest 5.0.3, instala. Vitest 4.0.0 instala, pero no arranca con Vite 8.
   - **Next 16.3 y `AGENTS.md`.** create-next-app crea `AGENTS.md` y `CLAUDE.md`, y `next dev`, lanzado por un agente, vuelve a escribir su bloque en `AGENTS.md` (`node_modules/next/dist/server/lib/generate-agent-files.js`), que es del kit. `RULES.md §Alcance` pide `agentRules: false` en `next.config.*`, y `stacks/nextjs/CHANGELOG.md` dice qué hacer al actualizar un proyecto que ya los tiene. La fase 8 lo lleva al README (migración).
@@ -446,3 +463,11 @@ Criterios de aceptación:
     pero el OpenAPI no los lista.
   - **Los tipos de rutas de Next.** `tsc --noEmit` falla en un clon limpio (`LayoutProps`, `PageProps`) hasta que `next typegen` los genera en `.next/types`; el gate «tipos» lo corre antes. Un script que compile fuera de `verify.sh` tiene que hacer lo mismo.
   - **Cada cambio va al `CHANGELOG.md` de su paquete,** en «Sin publicar». La CI usa `shellcheck-py==0.11.0.1` sobre `install.sh core/bin/*.sh stacks/*/bin/*.sh tests/*.sh`, y `actionlint-py==1.7.12.25`.
+  - **El plan 1a termina en la fase 8.** Lo que cambie después del 2.0.0 sube versión por paquete (README.md §Versiones
+    y etiquetas): sufijo `-dev` y «Sin publicar» en el `CHANGELOG.md` del paquete que cambia.
+  - **Un caso nuevo del guardián va en `tests/lib.sh`** (`estropea` y `guardian_cases`), y lo prueban a la vez
+    `tests/run.sh` y los dos e2e. Si el caso necesita archivos que sólo tiene la instalación de prueba (los de
+    `tests/fixtures/<stack>/`), un proyecto nuevo de verdad puede no tenerlos: pruébalo también con el e2e.
+  - **Los e2e en local** (fase 8) se corrieron así. Laravel, en la imagen `kit-php84` (`php:8.4-cli` con `pdo_pgsql`,
+    Composer, git y gitleaks 8.30.1), en la red de un `postgis/postgis:17-3.5` (`DB_HOST`). Next.js, en `node:22` con
+    gitleaks montado, sin Lighthouse. Los dos tardan unos minutos, y la mayor parte se va en instalar dependencias.
