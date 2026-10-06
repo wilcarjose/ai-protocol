@@ -10,19 +10,25 @@
     ".ai/templates/epic-plan.template.md",
     ".ai/templates/phase.template.md",
     ".claude/settings.json",
+    ".github/workflows/verify.yml",
     "bin/verify.sh",
-    "docs/README.md",
-    "phpstan.neon",
     "scripts/normalize-routes.php",
     "tests/Architecture/ArchitectureTest.php"
   ],
-  "seed": [],
+  "seed": [
+    ".ai/project/verify.conf",
+    "docs/README.md",
+    "phpstan.neon"
+  ],
   "gates": [
     "docs",
+    "protocolo",
+    "secretos",
     "estilo",
     "análisis",
     "deuda",
     "rutas",
+    "dependencias",
     "suite",
     "arquitectura"
   ]

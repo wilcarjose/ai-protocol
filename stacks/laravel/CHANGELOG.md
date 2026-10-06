@@ -9,6 +9,13 @@ Compatible con el núcleo `>=2.0.0-dev <3.0.0`.
 
 ### Añadido
 
+- `.github/workflows/verify.yml`: la CI del proyecto, que corre `bin/verify.sh` completo en cada PR con todo el
+  historial (los gates «protocolo» y «secretos» lo necesitan) y gitleaks en versión fija.
+  La versión de PHP sale de `.php-version`.
+- `bin/verify.sh`, gates «protocolo», «secretos» y «dependencias» (`composer audit`). «secretos» corre `gitleaks git`
+  sobre el historial, también con `--fast`, y falla si falta gitleaks; «dependencias» va sólo en el verify completo,
+  porque consulta la red.
+- `.ai/project/verify.conf` (semilla): la baseline, `VERIFY_SERVICE` y `COMPOSE_CMD`, que salen de `bin/verify.sh`.
 - `stack.json`: nombre, versión, rango compatible del núcleo, archivos que aporta y gates de su `bin/verify.sh`.
 - `.ai/rules/`: las reglas por tema que la fase cita cuando las toca: `arquitectura.md` (estructura de `app/`,
   Actions, Value Objects, contratos, PHP 8.4+ y forma de las respuestas), `tests.md` (con la exploración local) y
@@ -16,6 +23,13 @@ Compatible con el núcleo `>=2.0.0-dev <3.0.0`.
 
 ### Cambiado
 
+- `bin/verify.sh` es entero del kit: lee la configuración del proyecto de `.ai/project/verify.conf` y falla si no
+  existe.
+- `phpstan.neon` y `docs/README.md` pasan de `files` a `seed`: son del proyecto, el upgrade no los toca y el gate
+  «protocolo» no los protege.
+- `.claude/settings.json`: permite `git push [-u] origin phase/*`, `git fetch`, `gh pr create|view|checks|list`,
+  `composer audit`, `gitleaks git` y `sh bin/check-protocol.sh`; bloquea el push a `main`, con `:` en el refspec,
+  forzado, con borrado, `--mirror`, `--all` y `--tags`, y `gh pr merge`.
 - Plantilla de fase: `> **Tipo:**` en la cabecera (código por defecto), los campos opcionales `Modo` y
   `Tarea externa`, las casillas `[humano]` en «Criterios de éxito» y la sección `## 10. Revisión`, fuera del
   RESULTADO, que escribe `/review`. Las plantillas citan `/plan-epic` y `/plan-phase` en vez de `/planning`.

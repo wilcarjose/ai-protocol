@@ -4,8 +4,8 @@
 > Este archivo es el núcleo y se lee entero antes de escribir una línea; los temas de `.ai/rules/` se leen cuando la
 > fase los cita (§Reglas por tema). Si algo aquí contradice tu instinto, gana este archivo.
 >
-> 1. Si crees que una regla está mal o desactualizada: **STOP & ASK** (`.ai/WORKFLOW.md §STOP & ASK`). Nadie la edita
->    sin el visto bueno del Tech Lead, y nunca desde una fase.
+> 1. Si crees que una regla está mal o desactualizada: **STOP & ASK** (`.ai/WORKFLOW.md §STOP & ASK`). Quién la
+>    cambia y cómo: `.ai/WORKFLOW.md §Archivos del protocolo`.
 > 2. Cómo se trabaja vive en `.ai/WORKFLOW.md` y en las skills; lo que cambia con el proyecto, en `.ai/DOMAIN.md`,
 >    `.ai/STATE.md` y `.ai/project/`. Aquí sólo hay reglas **estables**. Si chocan, gana este archivo.
 > 3. Son las reglas del stack del kit `ai-protocol`, y las actualiza `install.sh --upgrade`. Lo que decide cada
