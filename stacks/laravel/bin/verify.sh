@@ -43,6 +43,10 @@ cd "$(dirname "$0")/.." || exit 1
 : "${MIN_TESTS:?falta en .ai/project/verify.conf}"
 : "${MAX_PHPSTAN_IGNORES:?falta en .ai/project/verify.conf}"
 
+# laravel/pao (en el esqueleto de Laravel) cambia la salida de Pest, PHPStan y Pint por JSON cuando detecta un agente;
+# los gates leen la salida de siempre.
+export PAO_DISABLE=1
+
 # Memoria de PHPStan. Con el memory_limit por defecto, un worker paralelo puede
 # reventar sin que haya ningún error de código y el gate parece intermitente.
 : "${PHPSTAN_MEMORY_LIMIT:=1G}"
@@ -125,9 +129,15 @@ secrets_gate() {
     gitleaks git --no-banner --no-color --redact --verbose --log-level=warn . && echo 'secretos: ninguno en el historial de git'
 }
 
-# La suite completa y su baseline: el conteo sale de la línea «Tests: … N passed» de Pest.
+# La suite completa y su baseline: el conteo sale de la línea «Tests: … N passed» de Pest. Corre contra el motor de
+# producción con la conexión de .env.testing (.ai/rules/tests.md §Tests): el phpunit.xml del esqueleto la pisa con
+# SQLite en memoria.
 # shellcheck disable=SC2329  # se invoca a través de run()
 tests_gate() {
+    if grep -qE '<env name="DB_(CONNECTION|DATABASE)"' phpunit.xml 2> /dev/null; then
+        echo 'phpunit.xml fija DB_CONNECTION o DB_DATABASE: quítalos, la conexión de los tests sale de .env.testing'
+        return 1
+    fi
     ./vendor/bin/pest --colors=never > "$TMPD/pest.log" 2>&1
     rc=$?
     tail -n 30 "$TMPD/pest.log"
@@ -148,14 +158,15 @@ run 'estilo'        ./vendor/bin/pint --test
 run 'análisis'      ./vendor/bin/phpstan analyse --no-progress --memory-limit="$PHPSTAN_MEMORY_LIMIT"
 run 'deuda'         phpstan_debt_gate
 run 'rutas'         routes_gate
-# La suite completa ya incluye tests/Architecture: con --fast es lo único que corre de Pest; sin él, no se repite.
+# El contrato es el OpenAPI que genera el código: si ya no genera el baseline, cambió (.ai/RULES.md §Contrato HTTP).
+run 'contrato'      sh bin/contract.sh --check
+# tests/Architecture tiene su propio gate, en los dos modos: las suites del phpunit.xml de Laravel son Unit y Feature.
+run 'arquitectura'  ./vendor/bin/pest --colors=never tests/Architecture
 # La auditoría consulta la red y la suite es lo más lento: los dos, sólo en el verify completo.
 if [ "$FAST" -eq 0 ]; then
-    run 'dependencias'  composer audit --no-interaction
-    printf '\n▸ arquitectura  (dentro de la suite)\n'
-    run 'suite'     tests_gate
+    run 'dependencias'  composer audit --no-interaction --no-dev
+    run 'suite'         tests_gate
 else
-    run 'arquitectura'  ./vendor/bin/pest --colors=never tests/Architecture
     printf '\n▸ dependencias y suite  (omitidas con --fast; el cierre de una fase exige el verify completo)\n'
 fi
 
