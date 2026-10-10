@@ -67,8 +67,8 @@ sh bin/contract.sh                                       # antes, copia aquí el
 bash bin/verify.sh && git add -A && git commit -m "chore(protocol): install ai-protocol"
 ```
 
-Los ajustes a mano de cada stack (la base de datos de los tests, `APP_URL` y los errores RFC 9457 en Laravel,
-`agentRules: false` en Next.js…) y qué va en cada marcador están en [README §Instalación en un proyecto nuevo](../README.md#instalación-en-un-proyecto-nuevo). Después, súbelo a
+Los ajustes a mano de cada stack (en Laravel, la base de datos de los tests, `APP_URL` y los errores RFC 9457; en
+Next.js, `agentRules: false` y la página de ejemplo, que escribe sus textos en el JSX…) y qué va en cada marcador están en [README §Instalación en un proyecto nuevo](../README.md#instalación-en-un-proyecto-nuevo). Después, súbelo a
 GitHub y protege `main` con un *ruleset* que exija PR y el check `verify`
 ([`docs/modos.md` §Proteger main en GitHub](modos.md#proteger-main-en-github)). Si vas a usar el VPS, prepáralo una
 vez ([`docs/modos.md` §VPS](modos.md#vps)).

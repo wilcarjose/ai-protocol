@@ -92,10 +92,11 @@ Además, cada stack trae lo suyo, en su `stack.json`:
 - **Laravel:** las pruebas de arquitectura por capas (`tests/Architecture/ArchitectureTest.php`, del kit, y
   `ProjectArchitectureTest.php`, semilla), el baseline de rutas (`scripts/normalize-routes.php`), los errores RFC 9457
   (`App\Exceptions\ApiException` y `App\Http\ProblemDetails`, semillas, con su test de contrato), `.env.testing` para
-  la suite contra PostgreSQL con PostGIS y `phpstan.neon` (semilla).
-- **Next.js:** la regla de capas `app → features → entities → shared` (`eslint.layers.mjs`, del kit, que importa
-  `eslint.config.mjs`, semilla), el cliente generado del OpenAPI en `src/shared/api/` (semilla), las configuraciones
-  de Vitest y Playwright, los presupuestos de Lighthouse (`.ai/project/lighthouse.json`) y `docs/vendor/INDEX.md`.
+  la suite contra PostgreSQL y `phpstan.neon` (semilla).
+- **Next.js:** la regla de capas `app → features → entities → shared` y la de los textos en el JSX
+  (`eslint.layers.mjs`, del kit, que importa `eslint.config.mjs`, semilla), el cliente generado del OpenAPI en
+  `src/shared/api/` (semilla), las configuraciones de Vitest y Playwright, los presupuestos de Lighthouse
+  (`.ai/project/lighthouse.json`) y `docs/vendor/INDEX.md`.
 
 ## Instalación en un proyecto nuevo
 
@@ -128,7 +129,7 @@ composer require 'php:^8.4' --no-update && composer update --lock   # el stack u
 - En `.env`, `APP_URL` con un solo puerto: el instalador de Laravel puede dejarlo repetido
   (`http://localhost:8000:8000`), y entonces artisan falla con «Invalid URI: Host is malformed».
 - En `phpunit.xml`, borra las líneas que fijan `DB_CONNECTION` y `DB_DATABASE` (SQLite en memoria): la suite corre
-  contra PostgreSQL con PostGIS, con la configuración de `.env.testing`, y el gate «suite» falla si siguen.
+  contra PostgreSQL, con la configuración de `.env.testing`, y el gate «suite» falla si siguen.
 - En `tests/TestCase.php`, que ningún test llame a la red real (`.ai/rules/tests.md`):
   `Http::preventStrayRequests()` en el `setUp()`.
 
@@ -151,6 +152,10 @@ regla de capas.
 
 En `next.config.*`, `agentRules: false`: desde Next 16.3, `next dev` lanzado por un agente escribe su bloque en
 `AGENTS.md`, que es del kit, y el gate «protocolo» fallaría. `tsconfig.json` lleva `"strict": true`.
+
+La página de ejemplo de create-next-app (`src/app/page.tsx`) escribe sus textos en el JSX, y el gate «estilo» la
+rechaza (`.ai/rules/arquitectura.md §Componentes, textos e identificadores`): sustitúyela por la primera página del
+proyecto, con sus textos en las traducciones que dice `.ai/project/CROSS-CUTTING.md §Idiomas` (paso 3).
 
 ### 2. Instalar el kit
 
