@@ -3,6 +3,19 @@
 El stack Next.js: lo que añade al núcleo. Versiones con [SemVer](https://semver.org/lang/es/) y etiqueta
 `nextjs-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, arriba.
 
+## [2.0.1] — 2026-10-10
+
+Compatible con el núcleo `>=2.0.0 <3.0.0`.
+
+### Cambiado
+
+- `.ai/project/lighthouse.json` (semilla): Lighthouse corre 3 veces por URL (`numberOfRuns`) y cada aserción se
+  evalúa contra la mediana (`aggregationMethod: "median"`), no contra una sola corrida. Con una, el ruido de
+  rendimiento del runner hacía fallar la CI sin cambios en el código: en el kit, `e2e-nextjs` falló tres veces en
+  cuatro días en `total-blocking-time` (hasta 753 ms con un presupuesto de 300) y pasó al relanzarlo. Los
+  presupuestos no cambian. Sólo afecta a las instalaciones nuevas: la semilla no se copia si el proyecto ya tiene el
+  archivo, y un proyecto que la quiera aplica los dos campos a mano.
+
 ## [2.0.0] — 2026-10-06
 
 Compatible con el núcleo `>=2.0.0 <3.0.0`.
