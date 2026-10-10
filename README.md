@@ -40,7 +40,8 @@ core/                     El núcleo.                  core.json: versión, arch
 stacks/laravel/           El stack de Laravel.        stack.json: versión, rango del núcleo, archivos y gates.
 stacks/nextjs/            El stack de Next.js.
 stacks/expo/              Sólo un README que anuncia el stack.
-install.sh                Instala o actualiza núcleo + stack en un proyecto, o deja como nuevo uno que sale de una plantilla.
+install.sh                Instala o actualiza núcleo + stack en un proyecto, o deja como nuevo uno que sale de una
+                          plantilla.
 tests/                    Las pruebas del kit: structure.sh, run.sh, los e2e de cada stack y sus fixtures.
 docs/                     Documentación del propio kit: la guía práctica, los modos de ejecución, los planes y, en
                           vps/, el doctor y la unidad de systemd del modo VPS.
@@ -459,8 +460,8 @@ separan igual, con `--path core/ --path install.sh`).
   - `sh tests/structure.sh`, y `sh tests/run.sh` en el host y en Alpine (busybox, con git): instala cada stack con
     la épica de prueba, provoca cada fallo del guardián, prueba el instalador (también el upgrade de una instalación
     1.x sin tocar su memoria y el modo de proyecto nuevo), la protección del protocolo (también dentro de un git
-    worktree), el contexto de
-    arranque, `docs/vps/doctor.sh` con un `PATH` de stubs y que cada ruta que cita `docs/guia.md` existe.
+    worktree), el contexto de arranque, `docs/vps/doctor.sh` con un `PATH` de stubs y que cada ruta que cita
+    `docs/guia.md` existe.
   - `e2e-laravel` y `e2e-nextjs` (`sh tests/e2e-<stack>.sh`): crean un proyecto nuevo de verdad, instalan el stack,
     generan la épica de prueba desde el paquete `tests/fixtures/stages/E1.md`, pasan el guardián y `bin/verify.sh`
     completo (Laravel, con la suite contra PostgreSQL con PostGIS; Next.js, con `next build` y Lighthouse CI), y
