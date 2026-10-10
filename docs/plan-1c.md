@@ -50,7 +50,9 @@ repo, el PR de esas fases sólo actualiza la tabla de estado y el «Registro», 
    de sesión social quedan para cada proyecto.
 7. **Idiomas de la base:** español por defecto e inglés como segundo idioma, para que el multi-idioma quede probado
    desde el primer día. En la web, con `next-intl`; en la API, con las traducciones de Laravel y la cabecera
-   `Accept-Language`.
+   `Accept-Language`. En la URL sólo lleva prefijo el idioma que no es el de por defecto (`localePrefix:
+   'as-needed'`: `/pricing` en español, `/en/pricing` en inglés), y los segmentos de las rutas no se traducen: van
+   en inglés en todos los idiomas. Los slugs que salen de los datos siguen la decisión 3.
 8. **Interfaz de la base:** shadcn/ui con primitivas de Radix, instalado con su CLI en `src/shared/ui`; el panel parte
    de los bloques `sidebar-07` y `dashboard-01`, y la página de inicio pública de bloques de Tailark. Nada de
    plantillas de pago. El código MIT que se copie conserva su aviso de licencia.
@@ -76,8 +78,9 @@ Entregables:
   idioma; con la excepción de la decisión 3 y cómo se declara sin bajar la regla.
 - Una comprobación ejecutable de esa regla en Next.js, si es viable sin dependencias nuevas (por ejemplo,
   `react/jsx-no-literals` en la configuración de ESLint del kit). Si no lo es, STOP & ASK con las opciones.
-- La semilla `.ai/project/CROSS-CUTTING.md §Idiomas` pide el idioma por defecto, los demás idiomas, la librería y
-  dónde viven las traducciones; desaparece la opción «Un solo idioma: los textos van en el código».
+- La semilla `.ai/project/CROSS-CUTTING.md §Idiomas` pide el idioma por defecto, los demás idiomas, la librería,
+  dónde viven las traducciones y cómo va el idioma en la URL; desaparece la opción «Un solo idioma: los textos van
+  en el código».
 - Laravel: `.ai/rules/tests.md` y los comentarios de `.github/workflows/verify.yml` y `.env.testing` dicen
   «PostgreSQL», con PostGIS disponible y opcional.
 - `CHANGELOG.md` de cada paquete tocado, con la versión que corresponda (README.md §Versiones y etiquetas: si añade
@@ -196,7 +199,7 @@ contraseña, panel, página de inicio pública y dos idiomas.
 | BA-02 | Registro, inicio y cierre de sesión con tokens Bearer de Sanctum, y consulta del usuario actual | base-api | Un usuario se registra, inicia sesión, consulta /v1/auth/me con su token y, después de cerrar sesión, ese token recibe 401 | BA-01 |
 | BA-03 | Recuperación de contraseña por correo, con el enlace hacia la web | base-api | Con el enlace del correo el usuario fija una contraseña nueva y la anterior deja de servir | BA-02 |
 | BA-04 | Límites de tasa en registro, inicio de sesión y recuperación | base-api | El sexto intento fallido de inicio de sesión en un minuto recibe 429 como problem+json | BA-02 |
-| BW-01 | Idiomas con next-intl: español por defecto e inglés, y el cliente único enviando Accept-Language | base-web | La página de inicio se ve en español por defecto y en inglés al cambiar de idioma, sin texto escrito en el JSX | — |
+| BW-01 | Idiomas con next-intl: español por defecto e inglés, y el cliente único enviando Accept-Language | base-web | La página de inicio se ve en español en / y en inglés en /en, sin redirección en / y sin texto escrito en el JSX | — |
 | BW-02 | Sistema de diseño con shadcn/ui (Radix), instalado por su CLI en src/shared/ui, y una página de muestra | base-web | La página de muestra enseña botón, campo, selector, tarjeta, diálogo y aviso con textos traducidos, y lo que genera el CLI pasa la regla de capas | BW-01 |
 | BW-03 | Grupos de rutas (public), (auth) y (panel) con layouts separados, y una página de inicio pública con bloques de Tailark | base-web | La página de inicio cumple el presupuesto de Lighthouse y no carga JavaScript del panel | BW-02 |
 | BW-04 | Sesión por el BFF: Route Handlers con lista blanca, token en cookie HttpOnly y protección del panel | base-web | Después de iniciar sesión el token sólo existe en una cookie HttpOnly, y sin ella el panel redirige al inicio de sesión | BW-03, BA-02 |
@@ -211,7 +214,7 @@ contraseña, panel, página de inicio pública y dos idiomas.
 - La API sólo acepta tokens Bearer de Sanctum; la web guarda el token en una cookie HttpOnly detrás de su BFF.
 - Autenticación de la base: correo y contraseña con recuperación; SMS, WhatsApp e inicio de sesión social quedan para cada proyecto.
 - Interfaz: shadcn/ui con Radix en src/shared/ui; panel desde sidebar-07 y dashboard-01; página de inicio con bloques de Tailark; el código MIT copiado conserva su aviso.
-- Pendiente para la épica de base-web: cómo va el idioma en la URL (prefijo en todos los idiomas o sólo en los que no son el de por defecto).
+- En la URL sólo lleva prefijo el idioma que no es el de por defecto (localePrefix as-needed: /pricing y /en/pricing), y los segmentos de las rutas no se traducen: van en inglés en todos los idiomas.
 ```
 
 ---
