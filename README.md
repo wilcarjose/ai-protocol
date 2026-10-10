@@ -113,12 +113,20 @@ instala el script de preparación ([`docs/modos.md`](docs/modos.md)).
 ```bash
 laravel new mi-proyecto --pest              # o composer create-project, y Pest en lugar de PHPUnit
 cd mi-proyecto && git init
+rm -f AGENTS.md CLAUDE.md                   # los del esqueleto, si los trae: el kit trae los suyos
 composer require dedoc/scramble
 composer require --dev larastan/larastan
 php artisan install:api                     # si expone una API
 echo 8.4 > .php-version                     # la versión de PHP de la CI (.github/workflows/verify.yml)
+composer require 'php:^8.4' --no-update && composer update --lock   # el stack usa PHP 8.4; el esqueleto pide ^8.3
 ```
 
+- Pest tiene que quedar inicializado: si no hay `tests/Pest.php` (el instalador de Laravel 5.16 no lo deja aunque
+  reciba `--pest`), borra los `ExampleTest.php` de `tests/Feature` y `tests/Unit`, que son clases de PHPUnit, y
+  ejecuta `./vendor/bin/pest --init`. Sin `tests/Pest.php`, los tests de `tests/Feature` corren sin la aplicación y
+  fallan con «Target class [translator] does not exist».
+- En `.env`, `APP_URL` con un solo puerto: el instalador de Laravel puede dejarlo repetido
+  (`http://localhost:8000:8000`), y entonces artisan falla con «Invalid URI: Host is malformed».
 - En `phpunit.xml`, borra las líneas que fijan `DB_CONNECTION` y `DB_DATABASE` (SQLite en memoria): la suite corre
   contra PostgreSQL con PostGIS, con la configuración de `.env.testing`, y el gate «suite» falla si siguen.
 - En `tests/TestCase.php`, que ningún test llame a la red real (`.ai/rules/tests.md`):
@@ -130,10 +138,16 @@ echo 8.4 > .php-version                     # la versión de PHP de la CI (.gith
 npx create-next-app@latest mi-front --ts --eslint --app --src-dir
 cd mi-front && git init
 rm AGENTS.md CLAUDE.md eslint.config.mjs    # los de create-next-app: el kit trae los suyos
-npm i zod openapi-fetch @tanstack/react-query zustand
-npm i -D openapi-typescript vitest @playwright/test eslint-plugin-boundaries eslint-import-resolver-typescript
+npm i --save-exact zod openapi-fetch @tanstack/react-query zustand
+npm i -D --save-exact @types/node@22 openapi-typescript vitest @playwright/test eslint-plugin-boundaries \
+    eslint-import-resolver-typescript       # @types/node@22: vitest 5 no acepta el ^20 de create-next-app
 npm pkg set engines.node=22.x               # la versión de Node de la CI
 ```
+
+Con `--save-exact`, `package.json` lleva la versión exacta que `.ai/project/DECISIONS.md` repite. Los avisos de
+`npm audit` en dependencias de desarrollo no frenan: el gate «dependencias» audita sólo las de producción. No
+apliques `npm audit fix --force`, que baja `eslint-plugin-boundaries` a una versión mayor anterior a la que pide la
+regla de capas.
 
 En `next.config.*`, `agentRules: false`: desde Next 16.3, `next dev` lanzado por un agente escribe su bloque en
 `AGENTS.md`, que es del kit, y el gate «protocolo» fallaría. `tsconfig.json` lleva `"strict": true`.
