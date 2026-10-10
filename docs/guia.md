@@ -35,6 +35,21 @@ flowchart TD
 Necesitas `git`, `gh` (con `gh auth login`), gitleaks y las herramientas del stack. En el VPS,
 `sh ai-protocol/docs/vps/doctor.sh` dice qué falta.
 
+**Desde una plantilla**, el camino recomendado si hay una de tu stack: un repo de GitHub marcado como plantilla, con el
+kit instalado, como `base-api` o `base-web`. En GitHub, *Use this template*; después, en tu copia, con sus
+dependencias instaladas y, en Laravel, su `.env`:
+
+```bash
+sh ai-protocol/install.sh --new-project --target mi-proyecto   # la memoria y el contexto de la plantilla, a la semilla
+cd mi-proyecto                                                 # y rellena los marcadores que lista: cada uno dice qué va
+bash bin/verify.sh && git add -A && git commit -m "chore(protocol): start the project from the template"
+```
+
+Qué conserva de la plantilla, lo que GitHub no copia (la protección de `main` y los secretos) y los demás pasos, en
+[README §Proyecto nuevo desde una plantilla](../README.md#proyecto-nuevo-desde-una-plantilla).
+
+**Sin plantilla**, desde cero:
+
 **Laravel**
 
 ```bash

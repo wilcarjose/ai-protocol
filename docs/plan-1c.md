@@ -11,8 +11,8 @@
 
 | Fase | Objetivo | Depende de | Estado | PR |
 |---|---|---|---|---|
-| 1 | Idiomas y PostgreSQL en las reglas | — | en revisión | #17 |
-| 2 | Proyecto nuevo desde una plantilla | 1 | pendiente | |
+| 1 | Idiomas y PostgreSQL en las reglas | — | hecha | #17 |
+| 2 | Proyecto nuevo desde una plantilla | 1 | en revisión | #18 |
 | 3 | Plantilla de la API (`base-api`) | 1 | pendiente | |
 | 4 | Plantilla web (`base-web`) | 3 | pendiente | |
 | 5 | Validación de punta a punta | 2, 4 | pendiente | |
@@ -241,6 +241,24 @@ contraseña, panel, página de inicio pública y dos idiomas.
   - **Contexto (fase 1).** El ejecutor sube 77 caracteres en cada stack (Laravel 53 304, Next.js 54 934, un 0,14 %):
     `RULES.md §Lista negra` cita `.ai/project/CROSS-CUTTING.md §Idiomas`. `tests/context-baseline.txt` tiene los
     valores nuevos.
+  - **Lo que hereda el proyecto se conserva (fase 2, opción A del resumen).** Además de `DECISIONS.md`,
+    `ARCHITECTURE.md`, `CONTRACT.md` y `CROSS-CUTTING.md`, el modo de proyecto nuevo conserva `FEATURES.md`,
+    `GLOSSARY.md` y `COMMIT-SCOPES.md`: en una plantilla describen la autenticación, los idiomas y el panel, que
+    siguen en el código del proyecto nuevo. Vuelven a la semilla `README.md` (nombre, contexto y repos hermanos) y
+    `SENSITIVE-ZONES.md`; la autenticación ya es zona sensible en el `RULES.md` de cada stack. Las filas del negocio
+    las añade cada fase antes de usarlas, como piden esas semillas.
+  - **El modo, en `install.sh` (fase 2).** `install.sh --new-project --target <dir> [--dry-run]`, como proponía el
+    plan. La regla vive en el instalador: vuelven a la semilla las del núcleo, salvo las siete de `.ai/project/` que
+    hereda el proyecto, así que una semilla nueva del núcleo vuelve por defecto. Sin lista nueva en `core.json`.
+  - **El kit, en la versión del lock (fase 2, aprobado en el resumen).** El modo copia semillas y deja los archivos
+    del kit como estaban, así que unas y otros tienen que ser de la misma versión: si el lock dice otra, para sin
+    tocar nada y pide `--upgrade`.
+  - **Sin confirmación (fase 2, aprobado en el resumen).** El repo recién creado está en git y `--dry-run` dice antes
+    qué borra. Los marcadores que quedan los lista la ejecución real, no `--dry-run`.
+  - **`CLAUDE.md` y la semilla `.ai/project/README.md` no cambian (fase 2, aprobado en el resumen).** Dicen que el
+    instalador no toca `.ai/project/`, pero hablan del upgrade, y cambiarlos movería el arranque del ejecutor.
+  - **El CHANGELOG (fase 2).** El modo va en `core/CHANGELOG.md` («Sin publicar», Añadido): el instalador no es de
+    ningún paquete y el modo usa las semillas del núcleo. El núcleo sigue en 2.2.0-dev.
 - **Lo que la siguiente fase necesita saber:**
   - (fase 1) `.ai/project/CROSS-CUTTING.md §Idiomas` (semilla) es una lista con cinco marcadores: idioma por
     defecto, los demás, librería, dónde viven las traducciones y cómo va el idioma en la URL (o cómo llega, en una
@@ -257,3 +275,14 @@ contraseña, panel, página de inicio pública y dos idiomas.
   - (fase 1) Un proyecto que ya tiene textos en el JSX los congela como deuda con
     `npx eslint . --suppress-rule react/jsx-no-literals` y `MAX_SUPPRESSIONS` (`stacks/nextjs/CHANGELOG.md`,
     «Al actualizar un proyecto»); probado con ESLint 9.39.
+  - (fase 2) Para las fases 3 y 4: lo que cada plantilla lega al proyecto nuevo va en lo que el modo conserva:
+    `.ai/project/` salvo `README.md` y `SENSITIVE-ZONES.md`, las semillas del stack (`verify.conf`,
+    `lighthouse.json`…) y el código. Lo que escriba en la memoria, en esos dos archivos, en `.ai/stages/` (su copia
+    del paquete) o en `.ai/handoffs/` no llega al proyecto nuevo, y `docs/runbooks/release.md` vuelve vacío.
+  - (fase 2) Para la fase 5: el modo pide el kit en la versión del lock de la plantilla. Si las plantillas siguen en
+    `-dev` cuando el kit ya publicó, primero `--upgrade` y después `--new-project`.
+  - (fase 2) El modo no cambia lo que lleva el nombre de la plantilla en el código (el `README.md` del repo, el
+    nombre de `composer.json` o `package.json`): README §Proyecto nuevo desde una plantilla lo pide a mano. La fase 5
+    dirá si falta algo más.
+  - (fase 2) `tests/run.sh` (`test_new_project`) prueba el modo sobre una copia de la instalación de prueba; los e2e
+    no lo corren.

@@ -47,7 +47,17 @@
 #      actualiza lo que el proyecto no tocó, deja como conflicto lo que sí
 #      tocó, retira lo que ya no trae (con su carpeta si queda vacía) y no toca
 #      la memoria; y no instala un stack incompatible con el núcleo.
-#   7. Prueba la protección del protocolo (bin/check-protocol.sh) en una copia
+#   7. Prueba el modo de proyecto nuevo (install.sh --new-project) en una copia
+#      de la instalación como una plantilla ya usada: con la épica de prueba,
+#      el paquete E1, una entrega, una evidencia y una línea de más en cada
+#      semilla del núcleo. --dry-run no escribe nada. Después, la memoria,
+#      README.md y SENSITIVE-ZONES.md de .ai/project/ son la semilla y las
+#      carpetas de la memoria sólo tienen lo del kit; el lock, los archivos del
+#      kit, lo que hereda el proyecto y el código no cambian; lista los
+#      {{RELLENAR}} que quedan y el guardián falla sólo en «instalación» hasta
+#      rellenarlos. Un --upgrade justo después dice «sin cambios». Sin lock, o
+#      con el kit en otra versión que el lock, falla.
+#   8. Prueba la protección del protocolo (bin/check-protocol.sh) en una copia
 #      de la instalación hecha repositorio git: una rama de fase que edita
 #      CLAUDE.md, o el propio script, en un commit que no es de ámbito protocol
 #      falla; el mismo cambio en un commit chore(protocol) pasa, y también los
@@ -293,6 +303,110 @@ test_upgrade_1x() {
     fi
     if [ "$(memory "$old")" = "$before" ]; then ok '1.x: --upgrade no toca la memoria (STATE, DOMAIN, BACKLOG, PROTOCOL y las épicas)'
     else fail '1.x: --upgrade modificó la memoria'; fi
+}
+
+# ── El modo de proyecto nuevo (install.sh --new-project) ────────────────────
+# reset_seeds: lo que vuelve a la semilla, las semillas del núcleo salvo lo que el proyecto hereda en .ai/project/.
+reset_seeds() {
+    json_list "$ROOT/core/core.json" seed \
+        | grep -vxE '\.ai/project/(ARCHITECTURE|COMMIT-SCOPES|CONTRACT|CROSS-CUTTING|DECISIONS|FEATURES|GLOSSARY)\.md'
+}
+
+# kept <dir>: el snapshot de lo que el modo no toca: todo menos esas semillas y las carpetas de la memoria.
+kept() {
+    snapshot "$1" | awk -v r="$(reset_seeds | tr '\n' ' ')" '
+        BEGIN { n = split(r, s, " "); for (i = 1; i <= n; i++) skip["./" s[i]] = 1 }
+        !($2 in skip) && $2 !~ /^\.\/\.ai\/(archive|epics|handoffs|stages)\//'
+}
+
+# Sobre una copia de la instalación de prueba, como una plantilla ya usada: la capa del proyecto rellena, las dos
+# épicas de prueba y el paquete E1, y además una entrega, una evidencia y una línea de más en cada semilla del núcleo.
+test_new_project() {
+    printf '  ◆ proyecto nuevo\n'
+    np="$WORK/$KIT-new"
+    cp -R "$BASE" "$np"
+    mkdir -p "$np/.ai/handoffs/$DATE-demo" "$np/.ai/epics/01-demo/evidence"
+    echo 'Rutas.' > "$np/.ai/handoffs/$DATE-demo/routes.md"
+    echo ok > "$np/.ai/epics/01-demo/evidence/02-verify.txt"
+    for f in $(json_list "$ROOT/core/core.json" seed); do printf '\nDe la plantilla.\n' >> "$np/$f"; done
+
+    before=$(snapshot "$np")
+    out=$(sh "$ROOT/install.sh" --new-project --target "$np" --dry-run 2>&1)
+    rc=$?
+    if [ "$rc" -eq 0 ] && [ "$(snapshot "$np")" = "$before" ] && printf '%s\n' "$out" | grep -qE '↺ \.ai/STATE\.md +vuelve a la semilla' \
+       && printf '%s\n' "$out" | grep -qE -- '- \.ai/stages/E1\.md +de la plantilla'; then
+        ok '--dry-run dice qué haría y no escribe nada'
+    else
+        fail "--dry-run salió $rc o escribió algo:"; printf '%s\n' "$out" | sed 's/^/      /'
+    fi
+
+    was_kept=$(kept "$np")
+    out=$(sh "$ROOT/install.sh" --new-project --target "$np" 2>&1)
+    rc=$?
+    if [ "$rc" -ne 0 ]; then fail "--new-project salió $rc:"; printf '%s\n' "$out" | sed 's/^/      /'; return; fi
+
+    differ=$(for f in $(reset_seeds); do cmp -s "$np/$f" "$ROOT/core/$f" || printf '%s ' "$f"; done)
+    left=$(cd "$np" && find .ai/archive .ai/epics .ai/handoffs .ai/stages | sort | tr '\n' ' ')
+    want='.ai/archive .ai/archive/BACKLOG.md .ai/archive/DOMAIN.md .ai/archive/PROTOCOL.md .ai/epics .ai/epics/.gitkeep '
+    want="$want.ai/handoffs .ai/handoffs/README.md .ai/stages .ai/stages/README.md "
+    if [ -z "$differ" ] && [ "$left" = "$want" ]; then
+        ok 'la memoria, README.md y SENSITIVE-ZONES.md son la semilla, sin épicas, paquetes ni entregas'
+    else
+        fail "no es la semilla: ${differ:-}· queda: $left"
+    fi
+    bad_kit=$(awk '$1 == "file" && $2 == "kit" { print $3, $4 }' "$np/.ai/protocol.lock" | while read -r s p; do
+                  [ "$(sha "$np/$p")" = "$s" ] || printf '%s ' "$p"; done)
+    if [ "$(kept "$np")" = "$was_kept" ] && [ -z "$bad_kit" ]; then
+        ok 'no cambian el lock, los archivos del kit, lo que hereda el proyecto ni el código'
+    else
+        fail "cambió algo que se conserva: ${bad_kit:-}"
+        printf '%s\n' "$was_kept" > "$WORK/$KIT-kept"; kept "$np" | diff "$WORK/$KIT-kept" - | sed 's/^/      /'
+    fi
+    n=$(cd "$np" && grep -rn '{{RELLENAR' CLAUDE.md .ai docs 2>/dev/null | grep -c .)
+    listed=$(printf '%s\n' "$out" | grep -E '^    [^ :]+:[0-9]+:' | grep -cF '{{RELLENAR')
+    if [ "$n" -gt 0 ] && [ "$listed" -eq "$n" ]; then ok "al terminar, lista los $n {{RELLENAR}} que quedan"
+    else fail "lista $listed {{RELLENAR}} y quedan $n:"; printf '%s\n' "$out" | sed 's/^/      /'; fi
+
+    out=$(sh "$np/bin/check-docs.sh" --strict 2>&1)
+    rc=$?
+    if [ "$rc" -ne 0 ] && printf '%s\n' "$out" | grep -qF 'la instalación del protocolo no está terminada' \
+       && printf '%s\n' "$out" | grep -qF '1 chequeo(s) en rojo, 0 aviso(s)'; then
+        ok 'el guardián falla sólo en «instalación» mientras quedan marcadores'
+    else
+        fail "el guardián salió $rc y no falla sólo en «instalación»:"; printf '%s\n' "$out" | grep -E '✗|⚠' | sed 's/^/      /'
+    fi
+
+    before=$(snapshot "$np")
+    out=$(sh "$ROOT/install.sh" --upgrade --target "$np" 2>&1)
+    rc=$?
+    if [ "$rc" -eq 0 ] && printf '%s\n' "$out" | grep -qF 'sin cambios' && [ "$(snapshot "$np")" = "$before" ]; then
+        ok 'un --upgrade justo después dice «sin cambios»'
+    else
+        fail "un --upgrade justo después salió $rc o cambió algo:"; printf '%s\n' "$out" | sed 's/^/      /'
+    fi
+
+    ( cd "$np" && find . -type f -name '*.md' -exec grep -lF '{{RELLENAR' {} + | while read -r f; do fill_markers "$f" "$SIBLING"; done )
+    if out=$(sh "$np/bin/check-docs.sh" --strict 2>&1); then ok 'con los marcadores rellenos, el guardián pasa (--strict)'
+    else fail 'con los marcadores rellenos, el guardián no pasa:'; printf '%s\n' "$out" | grep -E '✗|⚠' | sed 's/^/      /'; fi
+
+    mkdir -p "$WORK/$KIT-nolock"
+    if out=$(sh "$ROOT/install.sh" --new-project --target "$WORK/$KIT-nolock" 2>&1); then
+        fail '--new-project sin lock no falla'
+    elif printf '%s\n' "$out" | grep -qF 'no tiene .ai/protocol.lock'; then
+        ok 'sin lock, falla: el modo es para un proyecto con el protocolo instalado'
+    else
+        fail "sin lock, falla, pero sin decir por qué: $out"
+    fi
+    kit_copy "$WORK/$KIT-kit4"
+    edit "$WORK/$KIT-kit4/stacks/$KIT/stack.json" 's/"version": ".*"/"version": "9.9.9"/'
+    before=$(snapshot "$np")
+    if out=$(sh "$WORK/$KIT-kit4/install.sh" --new-project --target "$np" 2>&1); then
+        fail '--new-project con el kit en otra versión que el lock no falla'
+    elif printf '%s\n' "$out" | grep -qF 'actualízalo antes con --upgrade' && [ "$(snapshot "$np")" = "$before" ]; then
+        ok 'con el kit en otra versión que el lock, falla sin tocar nada y pide --upgrade'
+    else
+        fail "con el kit en otra versión que el lock, falla, pero no por eso o tocando algo: $out"
+    fi
 }
 
 # ── La protección del protocolo (bin/check-protocol.sh), en un repositorio git ──
@@ -549,6 +663,7 @@ for KIT in $KITS; do
     guardian_cases "$BASE"
 
     test_installer
+    test_new_project
     test_protocol
 done
 
