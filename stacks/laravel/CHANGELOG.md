@@ -3,6 +3,25 @@
 El stack Laravel: lo que añade al núcleo. Versiones con [SemVer](https://semver.org/lang/es/) y etiqueta
 `laravel-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, arriba.
 
+## Sin publicar
+
+Compatible con el núcleo `>=2.0.0 <3.0.0`.
+
+### Cambiado
+
+- `.ai/RULES.md §Lista negra` y `.ai/rules/arquitectura.md` (§1.1): los textos para el usuario van siempre en las
+  traducciones y, con los slugs públicos y los datos semilla, en el idioma de `.ai/project/CROSS-CUTTING.md §Idiomas`,
+  no en español. El ejemplo de Value Object de `.ai/rules/arquitectura.md` lanza su excepción con una clave de
+  traducción (`orders.invalid_quantity`), como pide §1.1, y no con un texto escrito.
+- Todos los proyectos usan PostgreSQL, y PostGIS es opcional: `.ai/rules/tests.md` y los comentarios de
+  `.github/workflows/verify.yml` y de `.env.testing` (semilla) dicen «PostgreSQL». La CI sigue con la imagen
+  `postgis/postgis`, que trae la extensión para el proyecto que la activa con una migración.
+
+### Al actualizar un proyecto
+
+Nada obligatorio: cambian la redacción de las reglas y dos comentarios. `.env.testing` es del proyecto y el upgrade
+no lo toca.
+
 ## [2.0.0] — 2026-10-06
 
 Compatible con el núcleo `>=2.0.0 <3.0.0`.

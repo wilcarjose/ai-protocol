@@ -6,15 +6,17 @@
 #   1. Crea un proyecto nuevo con create-next-app y le añade los paquetes de
 #      .ai/RULES.md §Stack y versiones exactas, en las versiones de abajo.
 #   2. Instala el stack con install.sh, rellena la capa del proyecto como
-#      tests/run.sh (tests/lib.sh), copia el OpenAPI de ejemplo y la feature que
-#      lo usa (tests/fixtures/nextjs-e2e/), crea la épica de prueba desde el
+#      tests/run.sh (tests/lib.sh), copia el OpenAPI de ejemplo, la feature que
+#      lo usa y una página de inicio con su texto en las traducciones
+#      (tests/fixtures/nextjs-e2e/), crea la épica de prueba desde el
 #      paquete de tareas tests/fixtures/stages/E1.md (make_test_epics), genera
 #      el cliente y lo versiona todo en un repo git.
 #   3. Comprueba que el guardián pasa con esa épica y que `sh bin/verify.sh`
 #      completo, con `next build`, termina en verde.
-#   4. Provoca los dos fallos que el stack promete detectar: un import que
-#      rompe las capas hace fallar ESLint, y un cambio en el OpenAPI sin
-#      regenerar el cliente hace fallar el gate «contrato».
+#   4. Provoca los tres fallos que el stack promete detectar: un import que
+#      rompe las capas hace fallar ESLint, un texto escrito en el JSX hace
+#      fallar el gate «estilo», y un cambio en el OpenAPI sin regenerar el
+#      cliente hace fallar el gate «contrato».
 #   5. Provoca sobre el proyecto cada fallo de la cabecera de
 #      bin/check-docs.sh, como tests/run.sh (guardian_cases), y uno a través
 #      de `bin/verify.sh --fast`, que tiene que caer en su gate «docs».
@@ -27,6 +29,8 @@
 #   porque el instalador nunca pisa un archivo del proyecto: los dos primeros
 #   son los del kit, y el tercero, la semilla que importa eslint.layers.mjs.
 #   Un proyecto que ya existe los integra a mano (stacks/nextjs/CHANGELOG.md).
+#   Su página de inicio escribe los textos en el JSX, y la regla de los textos
+#   la rechaza: la del fixture la sustituye.
 #
 # ◆ HERRAMIENTAS
 #   Node 22 o superior con npm, git y gitleaks; y red, para npm y la auditoría.
@@ -143,6 +147,17 @@ else
     fail 'capas: ESLint falla, pero no por la regla de capas'
 fi
 rm -rf "$APP/src/features/other"
+
+# Un texto escrito a mano en el JSX: la regla de los textos de eslint.layers.mjs, en el gate «estilo».
+printf 'export function Greeting() {\n  return <p>Hello</p>;\n}\n' > "$APP/src/app/Greeting.tsx"
+(cd "$APP" && sh bin/verify.sh --fast > "$WORK/texts-gate.log" 2>&1)
+if gate_fails "$WORK/texts-gate.log" estilo && grep -q 'react/jsx-no-literals' "$WORK/texts-gate.log"; then
+    ok 'textos: un texto escrito en el JSX hace fallar el gate «estilo» (react/jsx-no-literals)'
+else
+    sed 's/^/      /' "$WORK/texts-gate.log"
+    fail 'textos: el gate «estilo» no detecta un texto escrito en el JSX'
+fi
+rm -f "$APP/src/app/Greeting.tsx"
 
 # Una ruta nueva en el OpenAPI, sin regenerar el cliente: el gate «contrato».
 edit "$APP/docs/contract/openapi.json" 's#"/demos/{id}": {#"/demos": { "get": { "responses": { "204": { "description": "Empty" } } } },\n    "/demos/{id}": {#'

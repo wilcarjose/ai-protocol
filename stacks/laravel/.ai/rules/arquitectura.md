@@ -55,8 +55,9 @@ Route → Middleware → FormRequest (authorize + rules) → Controller (sin ló
 
 - Toda excepción de negocio hereda de `App\Exceptions\ApiException`, que lleva su `errorCode` (mayúsculas, estable:
   es el contrato), su status HTTP y un contexto, que va al log y nunca a la respuesta. Su mensaje es una **clave de
-  traducción** en inglés (`listings.not_found`): el texto para el usuario vive en las traducciones, en español, y
-  `ProblemDetails` lo traduce al escribir `detail`, con el contexto como parámetros (`:id`).
+  traducción** en inglés (`listings.not_found`): el texto para el usuario vive en las traducciones, en el idioma de
+  `.ai/project/CROSS-CUTTING.md §Idiomas`, y `ProblemDetails` lo traduce al escribir `detail`, con el contexto como
+  parámetros (`:id`).
 - **Los errores salen en `application/problem+json` (RFC 9457)**: `type`, `title`, `status`, `detail` y la extensión
   `code`, que es el `errorCode`; un error de validación añade `errors` por campo. El cliente discrimina por `code`.
   La forma se da en un solo sitio, `App\Http\ProblemDetails`, registrado en `bootstrap/app.php` (`withExceptions`);
@@ -164,7 +165,7 @@ final readonly class Quantity
     public static function from(int $value): self
     {
         if ($value < 1 || $value > 99) {
-            throw new OrderException('La cantidad debe estar entre 1 y 99.', OrderException::INVALID_QUANTITY, ['value' => $value], 422);
+            throw new OrderException('orders.invalid_quantity', OrderException::INVALID_QUANTITY, ['value' => $value], 422);
         }
 
         return new self($value);

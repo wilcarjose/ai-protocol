@@ -11,7 +11,7 @@
 
 | Fase | Objetivo | Depende de | Estado | PR |
 |---|---|---|---|---|
-| 1 | Idiomas y PostgreSQL en las reglas | — | pendiente | |
+| 1 | Idiomas y PostgreSQL en las reglas | — | en revisión | #17 |
 | 2 | Proyecto nuevo desde una plantilla | 1 | pendiente | |
 | 3 | Plantilla de la API (`base-api`) | 1 | pendiente | |
 | 4 | Plantilla web (`base-web`) | 3 | pendiente | |
@@ -222,6 +222,38 @@ contraseña, panel, página de inicio pública y dos idiomas.
 ## Registro
 
 - **Decisiones tomadas durante el plan:**
-  - (vacío)
+  - **La regla de los textos, en `eslint.layers.mjs` (fase 1).** Es del kit y todo proyecto ya lo importa (lo vigila
+    el gate «capas»), así que la regla llega con `--upgrade` sin tocar `eslint.config.mjs` ni `bin/verify.sh`.
+    `react/jsx-no-literals` con `noStrings` e `ignoreProps`, en `src/**/*.{jsx,tsx}` salvo los tests; falla en el
+    gate «estilo». Sin dependencias nuevas: el plugin `react` lo registra `eslint-config-next`.
+  - **La excepción de rendimiento (fase 1, aprobada en el resumen).** La fase la autoriza por escrito, con su
+    medición, y el código la declara en su línea con `eslint-disable-next-line react/jsx-no-literals -- <ruta de la
+    fase>`. La regla no se baja en la configuración, y un `grep` encuentra cada excepción.
+  - **Lo que el linter no ve lo mira el revisor (fase 1).** El texto de los atributos (`alt`, `placeholder`…), los
+    metadatos, las constantes, los ternarios y los textos de Laravel: el punto 11 de `.claude/agents/reviewer.md`
+    marca un texto para el usuario fuera de las traducciones.
+  - **Fuera de la lista de la fase (fase 1, aprobado en el resumen).** README §Instalación y `docs/guia.md`, porque
+    la página de ejemplo de create-next-app no pasa la regla y porque decían «PostgreSQL con PostGIS». Y el ejemplo
+    de Value Object de `stacks/laravel/.ai/rules/arquitectura.md`, que lanzaba un texto en español en vez de una
+    clave de traducción.
+  - **Versiones (fase 1).** `core` 2.2.0-dev y `laravel` 2.1.0-dev, menores; `nextjs` 3.0.0-dev, mayor, porque
+    `react/jsx-no-literals` es un chequeo que antes no fallaba. Los rangos del núcleo no cambian.
+  - **Contexto (fase 1).** El ejecutor sube 77 caracteres en cada stack (Laravel 53 304, Next.js 54 934, un 0,14 %):
+    `RULES.md §Lista negra` cita `.ai/project/CROSS-CUTTING.md §Idiomas`. `tests/context-baseline.txt` tiene los
+    valores nuevos.
 - **Lo que la siguiente fase necesita saber:**
-  - (vacío)
+  - (fase 1) `.ai/project/CROSS-CUTTING.md §Idiomas` (semilla) es una lista con cinco marcadores: idioma por
+    defecto, los demás, librería, dónde viven las traducciones y cómo va el idioma en la URL (o cómo llega, en una
+    API). La fase 2 la conserva, porque es técnica: cada plantilla la deja rellena.
+  - (fase 1) Para las fases 3 y 4: shadcn/ui genera en `src/shared/ui` textos para lectores de pantalla («Close»,
+    «Toggle Sidebar»…), y los bloques `sidebar-07`, `dashboard-01` y los de Tailark traen textos de ejemplo. El gate
+    «estilo» los rechaza hasta que pasan por las traducciones (por props o con la librería).
+  - (fase 1) El e2e de Next.js sustituye la página de inicio de create-next-app por
+    `tests/fixtures/nextjs-e2e/src/app/page.tsx`, con su texto en `src/shared/i18n/`, un sustituto de la librería
+    de traducciones. Provoca además un `<p>Hello</p>` y comprueba que el gate «estilo» falla.
+  - (fase 1) Un `export default [...]` en un `.mjs` de configuración da `import/no-anonymous-default-export`, un
+    aviso de `eslint-config-next` que con `--max-warnings=0` tumba el gate «estilo»: se asigna a una constante
+    antes de exportarlo.
+  - (fase 1) Un proyecto que ya tiene textos en el JSX los congela como deuda con
+    `npx eslint . --suppress-rule react/jsx-no-literals` y `MAX_SUPPRESSIONS` (`stacks/nextjs/CHANGELOG.md`,
+    «Al actualizar un proyecto»); probado con ESLint 9.39.

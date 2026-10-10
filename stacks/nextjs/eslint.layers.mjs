@@ -1,4 +1,5 @@
-// eslint.layers.mjs — la regla de capas de .ai/RULES.md §Estructura y regla de dependencias, aplicada por el linter.
+// eslint.layers.mjs — las reglas del kit que aplica el linter: la de capas de .ai/RULES.md §Estructura y regla de
+// dependencias y la de los textos de .ai/rules/arquitectura.md §Componentes, textos e identificadores.
 //
 // Es del kit ai-protocol: la actualiza install.sh --upgrade y una fase no la cambia (.ai/WORKFLOW.md §Archivos del
 // protocolo). eslint.config.mjs, que es del proyecto, la importa; el gate «capas» de bin/verify.sh comprueba que
@@ -52,4 +53,20 @@ const layers = [
   },
 ];
 
-export default layers;
+// Los textos: cero texto escrito a mano en el JSX de src/, aunque el proyecto tenga un solo idioma. Con noStrings,
+// react/jsx-no-literals rechaza el texto entre etiquetas, también entre llaves, en una plantilla o concatenado; con
+// ignoreProps, no mira las props (className, data-testid…). Los tests quedan fuera. Su plugin, «react», lo registra
+// eslint-config-next, que eslint.config.mjs carga, para todos los .jsx y .tsx.
+const texts = [
+  {
+    files: ["src/**/*.{jsx,tsx}"],
+    ignores: ["src/**/*.test.{jsx,tsx}"],
+    rules: {
+      "react/jsx-no-literals": [2, { noStrings: true, ignoreProps: true }],
+    },
+  },
+];
+
+const rules = [...layers, ...texts];
+
+export default rules;

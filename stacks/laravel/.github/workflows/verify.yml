@@ -3,7 +3,8 @@
 #
 # La versión de PHP sale de .php-version (p. ej. «8.4»), como la lee shivammathur/setup-php; sin ese archivo, la
 # acción usa la última. gitleaks va en su versión fijada para que el gate «secretos» no cambie con el runner. La suite
-# corre contra PostgreSQL con PostGIS, con la conexión de .env.testing (.ai/rules/tests.md §Tests).
+# corre contra PostgreSQL, con la conexión de .env.testing (.ai/rules/tests.md §Tests). La imagen trae PostGIS, que el
+# proyecto activa con una migración si lo necesita.
 name: verify
 
 on:
