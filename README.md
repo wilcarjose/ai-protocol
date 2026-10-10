@@ -31,7 +31,8 @@ una fase al cierre de la épica, para qué sirve cada pieza y un ejemplo de inic
 
 Un stack depende sólo del núcleo, nunca de otro stack, y declara en su `stack.json` el rango del núcleo con el que
 funciona. El instalador copia núcleo + stack en el proyecto, que no depende de este repo para funcionar. La capa del
-proyecto se crea una vez y el instalador ya no la toca. Hay stacks de **Laravel** y **Next.js**; `stacks/expo/` sólo
+proyecto se crea una vez y el instalador ya no la toca, salvo para dejar como nuevo un proyecto que sale de una
+plantilla (§Proyecto nuevo desde una plantilla). Hay stacks de **Laravel** y **Next.js**; `stacks/expo/` sólo
 anuncia el de Expo.
 
 ```
@@ -39,7 +40,7 @@ core/                     El núcleo.                  core.json: versión, arch
 stacks/laravel/           El stack de Laravel.        stack.json: versión, rango del núcleo, archivos y gates.
 stacks/nextjs/            El stack de Next.js.
 stacks/expo/              Sólo un README que anuncia el stack.
-install.sh                Instala o actualiza núcleo + stack en un proyecto.
+install.sh                Instala o actualiza núcleo + stack en un proyecto, o deja como nuevo uno que sale de una plantilla.
 tests/                    Las pruebas del kit: structure.sh, run.sh, los e2e de cada stack y sus fixtures.
 docs/                     Documentación del propio kit: la guía práctica, los modos de ejecución, los planes y, en
                           vps/, el doctor y la unidad de systemd del modo VPS.
@@ -97,6 +98,48 @@ Además, cada stack trae lo suyo, en su `stack.json`:
   (`eslint.layers.mjs`, del kit, que importa `eslint.config.mjs`, semilla), el cliente generado del OpenAPI en
   `src/shared/api/` (semilla), las configuraciones de Vitest y Playwright, los presupuestos de Lighthouse
   (`.ai/project/lighthouse.json`) y `docs/vendor/INDEX.md`.
+
+## Proyecto nuevo desde una plantilla
+
+Una plantilla es un repo de GitHub marcado como *template repository* que ya tiene el kit instalado, con su
+`.ai/protocol.lock`, la capa del proyecto rellena y el código de una base, como `base-api` (Laravel) o `base-web`
+(Next.js). Es el camino recomendado para un proyecto nuevo cuando hay una plantilla de su stack; si no la hay, o el
+proyecto ya existe, §Instalación en un proyecto nuevo.
+
+1. **El repo.** En la plantilla, *Use this template* → *Create a new repository*. El repo nuevo empieza con un solo
+   commit, sin la historia de la plantilla. Clónalo junto a `ai-protocol` y prepáralo como cualquier clon: sus
+   dependencias (`composer install` o `npm ci`) y, en Laravel, su `.env`, que no se versiona
+   (`cp .env.example .env` y `php artisan key:generate`).
+2. **Dejarlo como nuevo.** La plantilla trae su memoria y su contexto, que no son los del proyecto:
+
+   ```bash
+   sh ai-protocol/install.sh --new-project --target mi-proyecto --dry-run   # qué haría
+   sh ai-protocol/install.sh --new-project --target mi-proyecto
+   ```
+
+   Vuelven a la semilla, con sus `{{RELLENAR}}`, la memoria (`STATE`, `DOMAIN`, `BACKLOG`, `PROTOCOL` y
+   `.ai/archive/`, sin épicas, paquetes ni entregas, y `docs/runbooks/release.md` vacío) y, de `.ai/project/`,
+   `README.md` (nombre, contexto operativo y repos hermanos) y `SENSITIVE-ZONES.md`. Se queda lo que el proyecto
+   hereda de la plantilla: el resto de `.ai/project/` (versiones, arquitectura, contrato, idiomas, funcionalidades,
+   glosario y ámbitos de commit, que describen su código), lo del stack, como `verify.conf`, y el código; tampoco
+   cambian los archivos del kit ni el lock. El kit tiene que estar en la versión del lock; si no, primero
+   `--upgrade` (§Actualizar un proyecto).
+3. **Rellenar.** Al terminar, lista los marcadores que quedan, y cada uno dice qué va (§Instalación en un proyecto
+   nuevo, paso 3). El guardián no deja pasar `bin/verify.sh` mientras quede alguno. Lo que lleva el nombre de la
+   plantilla en el código, como el `README.md` del repo o el nombre de `composer.json` o `package.json`, se cambia a
+   mano.
+4. **Primer verde y primer commit.**
+
+   ```bash
+   bash bin/verify.sh
+   git add -A && git commit -m "chore(protocol): start the project from the template"
+   ```
+
+5. **Lo que GitHub no copia de la plantilla.**
+   - La protección de `main`: el *ruleset* que exige PR y el check `verify` (`docs/modos.md §Proteger main en
+     GitHub`).
+   - Los secretos y las variables de Actions, y los entornos: el proyecto pone los suyos.
+6. **La primera épica**, como en §Instalación en un proyecto nuevo (paso 6).
 
 ## Instalación en un proyecto nuevo
 
@@ -415,7 +458,8 @@ separan igual, con `--path core/ --path install.sh`).
   - `shellcheck -s sh` sobre los scripts y `actionlint` sobre sus workflows y los de cada stack.
   - `sh tests/structure.sh`, y `sh tests/run.sh` en el host y en Alpine (busybox, con git): instala cada stack con
     la épica de prueba, provoca cada fallo del guardián, prueba el instalador (también el upgrade de una instalación
-    1.x sin tocar su memoria), la protección del protocolo (también dentro de un git worktree), el contexto de
+    1.x sin tocar su memoria y el modo de proyecto nuevo), la protección del protocolo (también dentro de un git
+    worktree), el contexto de
     arranque, `docs/vps/doctor.sh` con un `PATH` de stubs y que cada ruta que cita `docs/guia.md` existe.
   - `e2e-laravel` y `e2e-nextjs` (`sh tests/e2e-<stack>.sh`): crean un proyecto nuevo de verdad, instalan el stack,
     generan la épica de prueba desde el paquete `tests/fixtures/stages/E1.md`, pasan el guardián y `bin/verify.sh`
