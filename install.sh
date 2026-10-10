@@ -1,10 +1,12 @@
 #!/bin/sh
 # ─────────────────────────────────────────────────────────────────────────────
-# install.sh — instala o actualiza el protocolo (núcleo + un stack) en un proyecto.
+# install.sh — instala o actualiza el protocolo (núcleo + un stack) en un proyecto,
+# o deja como nuevo uno creado desde una plantilla.
 #
 # ◆ USO
 #   sh install.sh --stack <stack> --target <dir> [--dry-run]
 #   sh install.sh --upgrade --target <dir> [--stack <stack>] [--dry-run]
+#   sh install.sh --new-project --target <dir> [--dry-run]
 #
 #   <stack> es una carpeta de stacks/ con stack.json (laravel, nextjs). Con
 #   --dry-run dice lo que haría, diffs incluidos, sin escribir nada.
@@ -41,6 +43,22 @@
 #   copian si faltan: el upgrade nunca las toca. Si nada cambia,
 #   dice «sin cambios» y no escribe nada, tampoco el lock.
 #
+# ◆ PROYECTO NUEVO
+#   Un repo creado desde una plantilla (un proyecto con el protocolo instalado
+#   y su lock) trae la memoria y el contexto de la plantilla. Este modo
+#   devuelve a la semilla del kit, con sus {{RELLENAR}}, las semillas del
+#   núcleo: la memoria (STATE, DOMAIN, BACKLOG, PROTOCOL, .ai/archive/,
+#   .ai/epics/ y docs/runbooks/release.md) y, de .ai/project/, README.md
+#   (nombre, contexto y repos hermanos) y SENSITIVE-ZONES.md. Borra lo que el
+#   kit no trae en .ai/archive/, .ai/epics/, .ai/stages/ y .ai/handoffs/, con
+#   las carpetas que deja vacías. Lo que el proyecto hereda de la plantilla no
+#   se toca: el resto de .ai/project/ (DECISIONS, ARCHITECTURE, CONTRACT,
+#   CROSS-CUTTING, FEATURES, GLOSSARY y COMMIT-SCOPES), las semillas del
+#   stack y el código; tampoco los archivos del kit ni el lock. El kit tiene
+#   que estar en la versión del lock, porque las semillas son las de su
+#   versión: si no, --upgrade antes. Al terminar, lista los {{RELLENAR}} que
+#   quedan.
+#
 # ◆ FORMATO DE LOS MANIFIESTOS Y DEL LOCK
 #   Los manifiestos son JSON con un valor por línea (tests/structure.sh lo
 #   comprueba); se leen con awk y sed porque Alpine no trae jq. El lock:
@@ -56,9 +74,10 @@
 #   POSIX sh, como el resto de scripts del kit: corre en busybox (Alpine).
 #
 # ◆ CONTRATO
-#   Sale 0 si instala o actualiza (también con conflictos, que se listan al
-#   final) y != 0 si no puede: argumentos, stack incompatible, lock ausente o
-#   presente cuando no toca.
+#   Sale 0 si instala, actualiza (también con conflictos, que se listan al
+#   final) o deja el proyecto nuevo, y != 0 si no puede: argumentos, stack
+#   incompatible, lock ausente o presente cuando no toca, o un proyecto nuevo
+#   con el kit en otra versión que el lock.
 # ─────────────────────────────────────────────────────────────────────────────
 set -u
 export LC_ALL=C
@@ -83,12 +102,13 @@ while [ $# -gt 0 ]; do
         --stack)   [ $# -ge 2 ] || usage; STACK=$2; shift 2 ;;
         --target)  [ $# -ge 2 ] || usage; TARGET=$2; shift 2 ;;
         --upgrade) MODE=upgrade; shift ;;
+        --new-project) MODE='new-project'; shift ;;
         --dry-run) DRY=1; shift ;;
         *) usage ;;
     esac
 done
 [ -n "$TARGET" ] || usage
-[ "$MODE" = upgrade ] || [ -n "$STACK" ] || usage
+[ "$MODE" != install ] || [ -n "$STACK" ] || usage
 
 # ── Helpers ─────────────────────────────────────────────────────────────────
 # json_str <archivo> <clave>: el valor de una clave de texto («"clave": "valor"» en su línea).
@@ -143,19 +163,19 @@ show_diff() {
 [ -d "$TARGET" ] || [ "$MODE" = install ] || die "no existe $TARGET"
 LOCK="$TARGET/$LOCK_REL"
 OLD_LOCK=''
-if [ "$MODE" = upgrade ]; then
-    if [ -f "$LOCK" ]; then
-        OLD_LOCK=$LOCK
-        locked=$(awk '$1 == "package" && $2 != "core" { print $2; exit }' "$LOCK")
-        [ -n "$locked" ] || die "$LOCK_REL no dice qué stack hay instalado"
-        [ -z "$STACK" ] || [ "$STACK" = "$locked" ] \
-            || die "el proyecto tiene instalado el stack «$locked», no «$STACK»; cambiar de stack no es un upgrade"
-        STACK=$locked
-    else
-        [ -n "$STACK" ] || die "$TARGET no tiene $LOCK_REL: di qué stack tiene con --stack y todo archivo que difiera del kit saldrá como conflicto"
-    fi
+if [ "$MODE" = install ]; then
+    [ ! -f "$LOCK" ] || die "$TARGET ya tiene $LOCK_REL: para actualizarlo, --upgrade"
 elif [ -f "$LOCK" ]; then
-    die "$TARGET ya tiene $LOCK_REL: para actualizarlo, --upgrade"
+    OLD_LOCK=$LOCK
+    locked=$(awk '$1 == "package" && $2 != "core" { print $2; exit }' "$LOCK")
+    [ -n "$locked" ] || die "$LOCK_REL no dice qué stack hay instalado"
+    [ -z "$STACK" ] || [ "$STACK" = "$locked" ] \
+        || die "el proyecto tiene instalado el stack «$locked», no «$STACK»; cambiar de stack no es un upgrade"
+    STACK=$locked
+elif [ "$MODE" = upgrade ]; then
+    [ -n "$STACK" ] || die "$TARGET no tiene $LOCK_REL: di qué stack tiene con --stack y todo archivo que difiera del kit saldrá como conflicto"
+else
+    die "$TARGET no tiene $LOCK_REL: un proyecto nuevo sale de una plantilla que ya tiene el protocolo instalado"
 fi
 
 case "$STACK" in *[!a-z0-9-]*|'') die "stack inválido: «$STACK»" ;; esac
@@ -169,6 +189,13 @@ CORE_V=$(json_str "$CORE_JSON" version)
 STACK_V=$(json_str "$STACK_JSON" version)
 RANGE=$(json_str "$STACK_JSON" core)
 in_range "$CORE_V" "$RANGE" || die "el stack $STACK $STACK_V pide el núcleo «$RANGE» y el kit trae $CORE_V"
+# Un proyecto nuevo recibe semillas del kit y se queda con sus archivos del kit: tienen que ser de la misma versión.
+if [ "$MODE" = new-project ]; then
+    have=$(awk -v s="$STACK" '$1 == "package" && $2 == "core" { c = $3 } $1 == "package" && $2 == s { v = $3 }
+                              END { printf "núcleo %s + %s %s", c, s, v }' "$LOCK")
+    [ "$have" = "núcleo $CORE_V + $STACK $STACK_V" ] \
+        || die "el proyecto tiene $have y el kit trae núcleo $CORE_V + $STACK $STACK_V: actualízalo antes con --upgrade, para que las semillas sean las de su versión"
+fi
 
 TMPD=$(mktemp -d)
 trap 'rm -rf "$TMPD"' EXIT
@@ -200,11 +227,45 @@ if [ "$DRY" -eq 1 ]; then printf ' (--dry-run: no se escribe nada)\n'; else prin
 
 : > "$TMPD/counts"
 note() { printf '  %s %-44s %s\n' "$1" "$2" "$3"; printf '%s\n' "$4" >> "$TMPD/counts"; }
+count() { grep -cx "$1" "$TMPD/counts"; }
 
 put() {
     [ "$DRY" -eq 1 ] && return 0
     mkdir -p "$(dirname "$TARGET/$2")" && cp "$1" "$TARGET/$2"
 }
+
+# ── Proyecto nuevo ──────────────────────────────────────────────────────────
+# Vuelven a la semilla las del núcleo, salvo lo que el proyecto hereda de la plantilla en .ai/project/, y en las
+# carpetas de la memoria sólo queda lo que trae el kit. El lock, los archivos del kit y el código no cambian.
+if [ "$MODE" = new-project ]; then
+    awk -F "$TAB" '$1 == "project" && $2 == "core" { print $3 }' "$TMPD/plan" \
+        | grep -vxE '\.ai/project/(ARCHITECTURE|COMMIT-SCOPES|CONTRACT|CROSS-CUTTING|DECISIONS|FEATURES|GLOSSARY)\.md' \
+        | while read -r path; do
+            cmp -s "$KIT/core/$path" "$TARGET/$path" 2>/dev/null && continue
+            put "$KIT/core/$path" "$path"; note '↺' "$path" 'vuelve a la semilla' reset
+        done
+    ( cd "$TARGET" && find .ai/archive .ai/epics .ai/handoffs .ai/stages -type f 2>/dev/null ) | sort | while read -r path; do
+        cut -f 3 "$TMPD/plan" | grep -qxF -- "$path" && continue
+        note - "$path" 'de la plantilla: se borra' gone
+        # Y las carpetas que deja vacías, como al retirar un archivo del kit.
+        [ "$DRY" -eq 1 ] || { rm -f "$TARGET/$path"; ( cd "$TARGET" && rmdir -p "$(dirname "$path")" 2>/dev/null ); }
+    done
+
+    printf '\n'
+    if [ "$(count reset)" -eq 0 ] && [ "$(count gone)" -eq 0 ]; then
+        echo '✓ sin cambios: la memoria y lo propio del proyecto ya son la semilla'
+    else
+        printf '✓ proyecto nuevo: %s semilla(s) restaurada(s) y %s archivo(s) de la plantilla borrado(s); lo demás no cambia\n' \
+            "$(count reset)" "$(count gone)"
+    fi
+    [ "$DRY" -eq 0 ] || { echo '  (--dry-run: no se ha escrito nada)'; exit 0; }
+    ( cd "$TARGET" && grep -rn '{{RELLENAR' CLAUDE.md .ai docs 2>/dev/null ) | sort -t : -k 1,1 -k 2,2n > "$TMPD/markers"
+    if [ -s "$TMPD/markers" ]; then
+        printf '  Siguiente paso: rellena estos %s marcador(es); cada uno dice qué va.\n' "$(grep -c . "$TMPD/markers")"
+        sed 's/^/    /' "$TMPD/markers"
+    fi
+    exit 0
+fi
 
 {
     printf '# %s — lo que instaló ai-protocol (install.sh). No se edita a mano: lo reescribe --upgrade.\n' "$LOCK_REL"
@@ -264,7 +325,6 @@ if [ -n "$OLD_LOCK" ]; then
 fi
 
 # ── Lock y resumen ──────────────────────────────────────────────────────────
-count() { grep -cx "$1" "$TMPD/counts"; }
 lock_changed=1
 [ -n "$OLD_LOCK" ] && cmp -s "$TMPD/lock" "$OLD_LOCK" && lock_changed=0
 

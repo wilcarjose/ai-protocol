@@ -5,6 +5,17 @@ etiqueta `core-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, ar
 
 ## Sin publicar
 
+### Añadido
+
+- `install.sh --new-project --target <dir> [--dry-run]`: deja como un proyecto nuevo un repo creado desde una
+  plantilla, que trae el protocolo instalado con su lock. Las semillas del núcleo vuelven a ser las del kit, con sus
+  `{{RELLENAR}}`: la memoria (`STATE`, `DOMAIN`, `BACKLOG`, `PROTOCOL`, `.ai/archive/`, `.ai/epics/` y
+  `docs/runbooks/release.md`) y, de `.ai/project/`, `README.md` y `SENSITIVE-ZONES.md`. Borra lo que el kit no trae en
+  `.ai/archive/`, `.ai/epics/`, `.ai/stages/` y `.ai/handoffs/`. No toca lo que el proyecto hereda de la plantilla
+  (el resto de `.ai/project/`, las semillas del stack y el código), los archivos del kit ni el lock. Pide el kit en la
+  versión del lock, y al terminar lista los marcadores que quedan: el guardián no deja pasar `bin/verify.sh` hasta
+  rellenarlos.
+
 ### Cambiado
 
 - Los textos para el usuario ya no se dan por hechos en español: el revisor (punto 11 de
