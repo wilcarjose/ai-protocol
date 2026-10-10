@@ -50,9 +50,11 @@ regla, no es bloqueante.
    `.ai/project/SENSITIVE-ZONES.md` que la fase no describe con precisión.
 10. **Capa del proyecto.** Lo que contradice `.ai/project/`.
 11. **Idioma y glosario.** Un nombre del código en español (archivo, carpeta, clase, método, variable, tabla,
-    columna, ruta, clave de traducción, código de error), un log, un test o un comentario en español, o un término
-    de `.ai/project/GLOSSARY.md` con otro nombre en el código, o un término nuevo sin su fila
-    (`.ai/RULES.md §Lista negra`). Los textos para el usuario, los slugs públicos y los datos semilla van en español.
+    columna, ruta, clave de traducción, código de error), un log, un test o un comentario en español; un término de
+    `.ai/project/GLOSSARY.md` con otro nombre en el código, o uno nuevo sin su fila; o un texto para el usuario fuera
+    de las traducciones, salvo la excepción de rendimiento que la fase autorice con su medición
+    (`.ai/RULES.md §Lista negra`). Los textos para el usuario, los slugs públicos y los datos semilla van en el
+    idioma de `.ai/project/CROSS-CUTTING.md §Idiomas`.
 
 **No bloqueante** es una mejora que ninguna regla exige: un caso límite sin test, un nombre confuso, documentación
 que falta. No clasifiques por gravedad dentro de cada clase: describe el impacto observable.

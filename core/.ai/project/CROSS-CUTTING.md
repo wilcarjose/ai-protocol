@@ -4,8 +4,15 @@
 
 ## Idiomas
 
-{{RELLENAR: los idiomas de la interfaz y de los mensajes, la librería de i18n y dónde viven las traducciones; o «Un
-solo idioma: los textos van en el código.»}}
+<!-- Los textos para el usuario pasan siempre por las traducciones, aunque haya un solo idioma
+     (`.ai/RULES.md §Lista negra`). -->
+
+- **Por defecto:** {{RELLENAR: el idioma por defecto, con su código (p. ej. `en` o `pt-BR`)}}
+- **Los demás:** {{RELLENAR: los otros idiomas, con su código, o «ninguno»}}
+- **Librería:** {{RELLENAR: la librería de traducciones}}
+- **Traducciones:** {{RELLENAR: dónde viven los archivos de traducción}}
+- **En la URL:** {{RELLENAR: cómo va el idioma en la URL (p. ej. sólo con prefijo los que no son el de por defecto)
+  o, si no va en ella, cómo llega (p. ej. la cabecera `Accept-Language`)}}
 
 ## Tenant
 

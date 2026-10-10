@@ -89,7 +89,8 @@ plantilla lo pide, «Migraciones: ninguna».
   (`.claude/agents/reviewer.md`): un tema que no está aquí no lo revisa nadie.
 - **Nombres.** Lo que crea la fase (carpetas, clases, tablas, rutas, claves de traducción, códigos de error) se
   nombra en inglés con los términos de `.ai/project/GLOSSARY.md` (`.ai/RULES.md §Lista negra`). Un término nuevo es
-  una fila más, y §4 lista ese archivo; los textos para el usuario siguen en español.
+  una fila más, y §4 lista ese archivo; los textos para el usuario van en las traducciones, en el idioma de
+  `.ai/project/CROSS-CUTTING.md §Idiomas`.
 - **No tocar (§4).** Sólo exclusiones específicas de esta fase. Los mínimos del proyecto viven en
   `.ai/RULES.md §Alcance` y en `CLAUDE.md §Cosas que no se hacen`; no los repitas.
 - **Restricciones (§6).** Sólo las de esta fase; las generales no se copian.

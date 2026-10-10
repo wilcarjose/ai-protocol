@@ -3,6 +3,27 @@
 El núcleo del protocolo: lo que es igual en todos los stacks. Versiones con [SemVer](https://semver.org/lang/es/) y
 etiqueta `core-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, arriba.
 
+## Sin publicar
+
+### Cambiado
+
+- Los textos para el usuario ya no se dan por hechos en español: el revisor (punto 11 de
+  `.claude/agents/reviewer.md`), `/plan-phase` («Nombres», en su coherencia interna) y la semilla
+  `.ai/project/GLOSSARY.md` los ponen, con los slugs públicos y los datos semilla, en el idioma de
+  `.ai/project/CROSS-CUTTING.md §Idiomas`. El código sigue en inglés.
+- El revisor marca además un texto para el usuario fuera de las traducciones, salvo la excepción de rendimiento que
+  la fase autorice con su medición: los textos pasan siempre por las traducciones, aunque el proyecto tenga un solo
+  idioma.
+- `.ai/project/CROSS-CUTTING.md §Idiomas` (semilla) pide el idioma por defecto, los demás, la librería, dónde viven
+  las traducciones y cómo va el idioma en la URL (o cómo llega, en una API). Ya no ofrece «Un solo idioma: los
+  textos van en el código».
+
+### Al actualizar un proyecto
+
+- `.ai/project/` es del proyecto y el upgrade no la toca. Si `CROSS-CUTTING.md §Idiomas` dice «Un solo idioma: los
+  textos van en el código», escribe lo que pide la semilla nueva y pasa esos textos a las traducciones: el revisor ya
+  no los acepta en el código. El comentario de `GLOSSARY.md` que pone los textos en español queda desfasado.
+
 ## [2.1.0] — 2026-10-06
 
 ### Añadido
