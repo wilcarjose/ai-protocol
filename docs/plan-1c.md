@@ -12,8 +12,8 @@
 | Fase | Objetivo | Depende de | Estado | PR |
 |---|---|---|---|---|
 | 1 | Idiomas y PostgreSQL en las reglas | — | hecha | #17 |
-| 2 | Proyecto nuevo desde una plantilla | 1 | en revisión | #18 |
-| 3 | Plantilla de la API (`base-api`) | 1 | pendiente | |
+| 2 | Proyecto nuevo desde una plantilla | 1 | hecha | #18 |
+| 3 | Plantilla de la API (`base-api`) | 1 | en curso | |
 | 4 | Plantilla web (`base-web`) | 3 | pendiente | |
 | 5 | Validación de punta a punta | 2, 4 | pendiente | |
 
@@ -195,8 +195,8 @@ contraseña, panel, página de inicio pública y dos idiomas.
 
 | ID | Tarea | Repo | Criterio de aceptación | Depende de |
 |---|---|---|---|---|
-| BA-01 | Convenciones de la API: prefijo /v1, errores problem+json traducidos e idioma por la cabecera Accept-Language, con español por defecto e inglés | base-api | Un error de ejemplo bajo /v1 sale como problem+json en español sin cabecera y en inglés con Accept-Language en | — |
-| BA-02 | Registro, inicio y cierre de sesión con tokens Bearer de Sanctum, y consulta del usuario actual | base-api | Un usuario se registra, inicia sesión, consulta /v1/auth/me con su token y, después de cerrar sesión, ese token recibe 401 | BA-01 |
+| BA-01 | Convenciones de la API: prefijo /api/v1, errores problem+json traducidos e idioma por la cabecera Accept-Language, con español por defecto e inglés | base-api | Un error de ejemplo bajo /api/v1 sale como problem+json en español sin cabecera y en inglés con Accept-Language en | — |
+| BA-02 | Registro, inicio y cierre de sesión con tokens Bearer de Sanctum, y consulta del usuario actual | base-api | Un usuario se registra, inicia sesión, consulta /api/v1/auth/me con su token y, después de cerrar sesión, ese token recibe 401 | BA-01 |
 | BA-03 | Recuperación de contraseña por correo, con el enlace hacia la web | base-api | Con el enlace del correo el usuario fija una contraseña nueva y la anterior deja de servir | BA-02 |
 | BA-04 | Límites de tasa en registro, inicio de sesión y recuperación | base-api | El sexto intento fallido de inicio de sesión en un minuto recibe 429 como problem+json | BA-02 |
 | BW-01 | Idiomas con next-intl: español por defecto e inglés, y el cliente único enviando Accept-Language | base-web | La página de inicio se ve en español en / y en inglés en /en, sin redirección en / y sin texto escrito en el JSX | — |
@@ -204,7 +204,7 @@ contraseña, panel, página de inicio pública y dos idiomas.
 | BW-03 | Grupos de rutas (public), (auth) y (panel) con layouts separados, y una página de inicio pública con bloques de Tailark | base-web | La página de inicio cumple el presupuesto de Lighthouse y no carga JavaScript del panel | BW-02 |
 | BW-04 | Sesión por el BFF: Route Handlers con lista blanca, token en cookie HttpOnly y protección del panel | base-web | Después de iniciar sesión el token sólo existe en una cookie HttpOnly, y sin ella el panel redirige al inicio de sesión | BW-03, BA-02 |
 | BW-05 | Pantallas de registro, inicio de sesión y recuperación de contraseña con Server Actions | base-web | Un E2E, con base-api levantada en local, registra un usuario, entra al panel, cierra sesión y recupera su contraseña | BW-04, BA-03 |
-| BW-06 | Shell del panel a partir de los bloques sidebar-07 y dashboard-01, sin sus datos de ejemplo | base-web | En móvil y en escritorio el panel muestra el nombre que devuelve /v1/auth/me y su navegación funciona con teclado | BW-04 |
+| BW-06 | Shell del panel a partir de los bloques sidebar-07 y dashboard-01, sin sus datos de ejemplo | base-web | En móvil y en escritorio el panel muestra el nombre que devuelve /api/v1/auth/me y su navegación funciona con teclado | BW-04 |
 
 ## Decisiones vigentes
 
@@ -259,6 +259,16 @@ contraseña, panel, página de inicio pública y dos idiomas.
     instalador no toca `.ai/project/`, pero hablan del upgrade, y cambiarlos movería el arranque del ejecutor.
   - **El CHANGELOG (fase 2).** El modo va en `core/CHANGELOG.md` («Sin publicar», Añadido): el instalador no es de
     ningún paquete y el modo usa las semillas del núcleo. El núcleo sigue en 2.2.0-dev.
+  - **La API, bajo `/api/v1` (fase 3, elegido en el resumen).** El paquete decía `/v1`, pero
+    `scripts/normalize-routes.php`, que es del kit, sólo mira las rutas bajo `api/`, igual que `ProblemDetails` y
+    Scramble por defecto: con `/v1` en la raíz, el gate «rutas» no vería ninguna ruta y pasaría siempre. BA-01, BA-02
+    y BW-06 dicen ahora `/api/v1`. Un prefijo configurable sería un cambio del kit, fuera de esta fase.
+  - **`main` de `base-api` sin proteger (fase 3, aceptado por la persona).** El repo es privado y la cuenta no tiene
+    GitHub Pro: la API de GitHub responde 403 a los *rulesets* y a la protección de ramas. Queda pendiente; hasta
+    entonces, la única barrera es `.claude/settings.json`.
+  - **Las fases BA, cada una en su sesión (fase 3, elegido en el resumen).** Esta sesión crea el proyecto, instala el
+    kit y planifica la épica; cada tarea se ejecuta con `/phase` en una sesión abierta en `base-api`, que arranca en
+    frío y con sus permisos (la skill no la invoca el agente: `disable-model-invocation`).
 - **Lo que la siguiente fase necesita saber:**
   - (fase 1) `.ai/project/CROSS-CUTTING.md §Idiomas` (semilla) es una lista con cinco marcadores: idioma por
     defecto, los demás, librería, dónde viven las traducciones y cómo va el idioma en la URL (o cómo llega, en una
