@@ -27,9 +27,16 @@ Next instalada: `docs/vendor/INDEX.md`).
 - **Un componente de presentación renderiza**: recibe datos y callbacks. Prohibido dentro: red, WebSockets,
   `document.cookie`, `localStorage`/`sessionStorage`, `window.location.href = …` (se usa el router) y cálculos de
   negocio.
-- **Cero texto visible escrito a mano en JSX** si el proyecto tiene más de un idioma: toda cadena pasa por las
-  traducciones, y una clave nueva se añade a **todos** los idiomas a la vez. Los idiomas, la librería y dónde
-  viven los mensajes: `.ai/project/CROSS-CUTTING.md §Idiomas`.
+- **Cero texto visible escrito a mano en JSX**, aunque el proyecto tenga un solo idioma: toda cadena que ve el
+  usuario, también la de `alt`, `aria-label`, `placeholder`, `title` y los metadatos de la página, pasa por las
+  traducciones, y una clave nueva se añade a **todos** los idiomas a la vez. Los idiomas, la librería y dónde viven
+  los mensajes: `.ai/project/CROSS-CUTTING.md §Idiomas`. `react/jsx-no-literals`, en `eslint.layers.mjs`, rechaza
+  el texto entre etiquetas en `src/`, salvo en los tests; el de los atributos, los metadatos y las constantes lo
+  comprueba el revisor.
+- **La única excepción es un impacto de rendimiento medido.** La fase la autoriza por escrito, con su medición
+  (`.ai/WORKFLOW.md §Obediencia arquitectónica`), y el código la declara en su línea, con la fase como motivo:
+  `eslint-disable-next-line react/jsx-no-literals -- .ai/epics/<NN-slug>/phase-<FF>.md`. La regla no se baja en
+  `eslint.config.mjs`.
 - **Todo elemento interactivo lleva `data-testid`** con el formato `<dominio>-<elemento>[-<variante>]`, en
   kebab-case y en inglés (`auth-login-email`, `orders-row-${id}`). Cambiar uno rompe sus E2E: se cambian en el mismo
   commit o no se cambia.

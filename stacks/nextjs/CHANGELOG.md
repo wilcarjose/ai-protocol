@@ -3,6 +3,36 @@
 El stack Next.js: lo que añade al núcleo. Versiones con [SemVer](https://semver.org/lang/es/) y etiqueta
 `nextjs-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, arriba.
 
+## Sin publicar
+
+Compatible con el núcleo `>=2.0.0 <3.0.0`. Versión mayor: un chequeo que antes no fallaba.
+
+### Añadido
+
+- `eslint.layers.mjs`: `react/jsx-no-literals` en `src/**/*.{jsx,tsx}`, salvo los tests, con `noStrings` e
+  `ignoreProps`. Rechaza el texto escrito entre etiquetas, también entre llaves, en una plantilla o concatenado, y
+  deja pasar las props, `t("…")`, los espacios y los números. Falla en el gate «estilo». Sin dependencias nuevas: el
+  plugin `react` lo registra `eslint-config-next`.
+
+### Cambiado
+
+- `.ai/rules/arquitectura.md §Componentes, textos e identificadores`: cero texto visible escrito a mano en el JSX
+  aunque el proyecto tenga un solo idioma (antes, sólo con más de uno), también en `alt`, `aria-label`,
+  `placeholder`, `title` y los metadatos. El linter ve el texto entre etiquetas; los atributos, los metadatos y las
+  constantes, el revisor. La única excepción es un impacto de rendimiento medido: la fase la autoriza por escrito,
+  con su medición, y la línea lleva `eslint-disable-next-line react/jsx-no-literals -- <la fase>`.
+- `.ai/RULES.md §Lista negra`: los textos para el usuario van siempre en las traducciones y, con los slugs públicos y
+  los datos semilla, en el idioma de `.ai/project/CROSS-CUTTING.md §Idiomas`, no en español.
+
+### Al actualizar un proyecto
+
+- El gate «estilo» falla con cada texto escrito en el JSX de `src/`, también con la página de ejemplo de
+  create-next-app. Pásalos a las traducciones de `.ai/project/CROSS-CUTTING.md §Idiomas`. Si son muchos, congélalos
+  como deuda con `npx eslint . --suppress-rule react/jsx-no-literals` y pon en `MAX_SUPPRESSIONS` de
+  `.ai/project/verify.conf` el total de `eslint-suppressions.json`, que sólo puede bajar.
+- La regla necesita que `eslint.config.mjs` cargue `eslint-config-next`, como la semilla: sin él, ESLint no encuentra
+  el plugin `react` y falla entero.
+
 ## [2.0.1] — 2026-10-10
 
 Compatible con el núcleo `>=2.0.0 <3.0.0`.

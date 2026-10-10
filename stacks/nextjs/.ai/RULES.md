@@ -208,7 +208,8 @@ dependencias nuevas (`.ai/WORKFLOW.md §Dependencia nueva`) y exenciones a un ga
     documentos. El porqué que debe sobrevivir va a `.ai/DOMAIN.md` o a `docs/adr/`.
 11. ⛔ **No escribas el código en español**: nombres (archivos, clases, métodos, tablas, rutas…), claves de
     traducción, códigos de error, logs, tests y comentarios, en inglés y con los términos de
-    `.ai/project/GLOSSARY.md`. En español, sólo los textos para el usuario, los slugs públicos y los datos semilla.
+    `.ai/project/GLOSSARY.md`. Los textos para el usuario (siempre en las traducciones), los slugs públicos y los
+    datos semilla van en el idioma de `.ai/project/CROSS-CUTTING.md §Idiomas`.
 
 ### Archivos que NO se usan como referencia
 
