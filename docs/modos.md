@@ -41,10 +41,13 @@ Una vez por VPS. Cuando haya que dar una orden como root, va con `sudo`; el rest
 (`sudo -iu agentes`).
 
 1. **Un usuario propio para los agentes**, sin `sudo`: `sudo adduser agentes`.
-2. **Las herramientas, sin Docker:** git, tmux, gh, PHP 8.4 con Composer, Node 22, PostgreSQL con PostGIS y gitleaks.
+2. **Las herramientas, sin Docker:** git, tmux, gh, PHP 8.4 con Composer, Node 22, PostgreSQL 17 con PostGIS y
+   gitleaks. PostgreSQL 17 es la versión de la CI del stack de Laravel (`postgis/postgis:17-3.5`); Ubuntu 24.04 trae
+   la 16, así que se instala desde el repositorio oficial de PostgreSQL.
 
    ```bash
-   sudo apt-get update && sudo apt-get install -y git tmux gh unzip postgresql-16-postgis-3 software-properties-common
+   sudo apt-get update && sudo apt-get install -y git tmux gh unzip postgresql-common software-properties-common
+   sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y && sudo apt-get install -y postgresql-17-postgis-3
    sudo add-apt-repository -y ppa:ondrej/php
    sudo apt-get install -y php8.4-cli php8.4-mbstring php8.4-xml php8.4-curl php8.4-zip php8.4-intl php8.4-bcmath \
        php8.4-pgsql php8.4-sqlite3
