@@ -39,9 +39,12 @@ Necesitas `git`, `gh` (con `gh auth login`), gitleaks y las herramientas del sta
 
 ```bash
 laravel new mi-proyecto --pest && cd mi-proyecto && git init
+rm -f AGENTS.md CLAUDE.md                                # los del esqueleto: el kit trae los suyos
 composer require dedoc/scramble && composer require --dev larastan/larastan
 php artisan install:api                                  # si expone una API
 echo 8.4 > .php-version                                  # la versión de PHP de la CI
+composer require 'php:^8.4' --no-update && composer update --lock
+rm -f tests/*/ExampleTest.php && ./vendor/bin/pest --init   # Pest inicializado, con sus ejemplos
 cd .. && sh ai-protocol/install.sh --stack laravel --target mi-proyecto && cd mi-proyecto
 grep -rn '{{RELLENAR' CLAUDE.md .ai docs                 # rellena cada marcador: dice qué va
 php artisan key:generate --env=testing
@@ -54,17 +57,18 @@ bash bin/verify.sh && git add -A && git commit -m "chore(protocol): install ai-p
 ```bash
 npx create-next-app@latest mi-front --ts --eslint --app --src-dir && cd mi-front && git init
 rm AGENTS.md CLAUDE.md eslint.config.mjs                 # los del kit los sustituyen
-npm i zod openapi-fetch @tanstack/react-query zustand
-npm i -D openapi-typescript vitest @playwright/test eslint-plugin-boundaries eslint-import-resolver-typescript
+npm i --save-exact zod openapi-fetch @tanstack/react-query zustand
+npm i -D --save-exact @types/node@22 openapi-typescript vitest @playwright/test eslint-plugin-boundaries \
+    eslint-import-resolver-typescript
 npm pkg set engines.node=22.x                            # la versión de Node de la CI
 cd .. && sh ai-protocol/install.sh --stack nextjs --target mi-front && cd mi-front
 grep -rn '{{RELLENAR' CLAUDE.md .ai docs
-sh bin/contract.sh
+sh bin/contract.sh                                       # antes, copia aquí el docs/contract/openapi.json del backend
 bash bin/verify.sh && git add -A && git commit -m "chore(protocol): install ai-protocol"
 ```
 
-Los ajustes a mano de cada stack (la base de datos de los tests y los errores RFC 9457 en Laravel, `agentRules: false`
-en Next.js…) y qué va en cada marcador están en [README §Instalación en un proyecto nuevo](../README.md#instalación-en-un-proyecto-nuevo). Después, súbelo a
+Los ajustes a mano de cada stack (la base de datos de los tests, `APP_URL` y los errores RFC 9457 en Laravel,
+`agentRules: false` en Next.js…) y qué va en cada marcador están en [README §Instalación en un proyecto nuevo](../README.md#instalación-en-un-proyecto-nuevo). Después, súbelo a
 GitHub y protege `main` con un *ruleset* que exija PR y el check `verify`
 ([`docs/modos.md` §Proteger main en GitHub](modos.md#proteger-main-en-github)). Si vas a usar el VPS, prepáralo una
 vez ([`docs/modos.md` §VPS](modos.md#vps)).
