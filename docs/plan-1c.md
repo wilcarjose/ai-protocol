@@ -12,8 +12,8 @@
 | Fase | Objetivo | Depende de | Estado | PR |
 |---|---|---|---|---|
 | 1 | Idiomas y PostgreSQL en las reglas | — | hecha | #17 |
-| 2 | Proyecto nuevo desde una plantilla | 1 | en revisión | #18 |
-| 3 | Plantilla de la API (`base-api`) | 1 | pendiente | |
+| 2 | Proyecto nuevo desde una plantilla | 1 | hecha | #18 |
+| 3 | Plantilla de la API (`base-api`) | 1 | en revisión | #20 |
 | 4 | Plantilla web (`base-web`) | 3 | pendiente | |
 | 5 | Validación de punta a punta | 2, 4 | pendiente | |
 
@@ -195,8 +195,8 @@ contraseña, panel, página de inicio pública y dos idiomas.
 
 | ID | Tarea | Repo | Criterio de aceptación | Depende de |
 |---|---|---|---|---|
-| BA-01 | Convenciones de la API: prefijo /v1, errores problem+json traducidos e idioma por la cabecera Accept-Language, con español por defecto e inglés | base-api | Un error de ejemplo bajo /v1 sale como problem+json en español sin cabecera y en inglés con Accept-Language en | — |
-| BA-02 | Registro, inicio y cierre de sesión con tokens Bearer de Sanctum, y consulta del usuario actual | base-api | Un usuario se registra, inicia sesión, consulta /v1/auth/me con su token y, después de cerrar sesión, ese token recibe 401 | BA-01 |
+| BA-01 | Convenciones de la API: prefijo /api/v1, errores problem+json traducidos e idioma por la cabecera Accept-Language, con español por defecto e inglés | base-api | Un error de ejemplo bajo /api/v1 sale como problem+json en español sin cabecera y en inglés con Accept-Language en | — |
+| BA-02 | Registro, inicio y cierre de sesión con tokens Bearer de Sanctum, y consulta del usuario actual | base-api | Un usuario se registra, inicia sesión, consulta /api/v1/auth/me con su token y, después de cerrar sesión, ese token recibe 401 | BA-01 |
 | BA-03 | Recuperación de contraseña por correo, con el enlace hacia la web | base-api | Con el enlace del correo el usuario fija una contraseña nueva y la anterior deja de servir | BA-02 |
 | BA-04 | Límites de tasa en registro, inicio de sesión y recuperación | base-api | El sexto intento fallido de inicio de sesión en un minuto recibe 429 como problem+json | BA-02 |
 | BW-01 | Idiomas con next-intl: español por defecto e inglés, y el cliente único enviando Accept-Language | base-web | La página de inicio se ve en español en / y en inglés en /en, sin redirección en / y sin texto escrito en el JSX | — |
@@ -204,7 +204,7 @@ contraseña, panel, página de inicio pública y dos idiomas.
 | BW-03 | Grupos de rutas (public), (auth) y (panel) con layouts separados, y una página de inicio pública con bloques de Tailark | base-web | La página de inicio cumple el presupuesto de Lighthouse y no carga JavaScript del panel | BW-02 |
 | BW-04 | Sesión por el BFF: Route Handlers con lista blanca, token en cookie HttpOnly y protección del panel | base-web | Después de iniciar sesión el token sólo existe en una cookie HttpOnly, y sin ella el panel redirige al inicio de sesión | BW-03, BA-02 |
 | BW-05 | Pantallas de registro, inicio de sesión y recuperación de contraseña con Server Actions | base-web | Un E2E, con base-api levantada en local, registra un usuario, entra al panel, cierra sesión y recupera su contraseña | BW-04, BA-03 |
-| BW-06 | Shell del panel a partir de los bloques sidebar-07 y dashboard-01, sin sus datos de ejemplo | base-web | En móvil y en escritorio el panel muestra el nombre que devuelve /v1/auth/me y su navegación funciona con teclado | BW-04 |
+| BW-06 | Shell del panel a partir de los bloques sidebar-07 y dashboard-01, sin sus datos de ejemplo | base-web | En móvil y en escritorio el panel muestra el nombre que devuelve /api/v1/auth/me y su navegación funciona con teclado | BW-04 |
 
 ## Decisiones vigentes
 
@@ -259,6 +259,41 @@ contraseña, panel, página de inicio pública y dos idiomas.
     instalador no toca `.ai/project/`, pero hablan del upgrade, y cambiarlos movería el arranque del ejecutor.
   - **El CHANGELOG (fase 2).** El modo va en `core/CHANGELOG.md` («Sin publicar», Añadido): el instalador no es de
     ningún paquete y el modo usa las semillas del núcleo. El núcleo sigue en 2.2.0-dev.
+  - **La API, bajo `/api/v1` (fase 3, elegido en el resumen).** El paquete decía `/v1`, pero
+    `scripts/normalize-routes.php`, que es del kit, sólo mira las rutas bajo `api/`, igual que `ProblemDetails` y
+    Scramble por defecto: con `/v1` en la raíz, el gate «rutas» no vería ninguna ruta y pasaría siempre. BA-01, BA-02
+    y BW-06 dicen ahora `/api/v1`. Un prefijo configurable sería un cambio del kit, fuera de esta fase.
+  - **`main` de `base-api` sin proteger (fase 3, aceptado por la persona).** El repo es privado y la cuenta no tiene
+    GitHub Pro: la API de GitHub responde 403 a los *rulesets* y a la protección de ramas. Queda pendiente; hasta
+    entonces, la única barrera es `.claude/settings.json`.
+  - **Las fases BA, cada una en su sesión (fase 3, elegido en el resumen).** Esta sesión crea el proyecto, instala el
+    kit y planifica la épica; cada tarea se ejecuta con `/phase` en una sesión abierta en `base-api`, que arranca en
+    frío y con sus permisos (la skill no la invoca el agente: `disable-model-invocation`).
+  - **`base-api`, instalado (fase 3).** En `Repositories/base/base-api`, donde `base-web` irá al lado: el paquete y el
+    guardián usan el nombre de la carpeta. Laravel 13 (esqueleto 13.11.0, framework 13.35.0), PHP 8.4, Pest 5.3,
+    Larastan 3.13, Scramble 0.13.47 y Sanctum 4.3 por `install:api`, con PostgreSQL en `.env.example`. El lock dice
+    núcleo 2.2.0-dev y Laravel 2.1.0-dev. `MIN_TESTS=6` desde la instalación (los dos ejemplos de Pest y los cuatro
+    de `ProblemDetailsTest`). Commits `e99b3c4` (instalación) y `63a2917` (planificación), directos a `main`.
+  - **El contrato de la API, aprobado por la persona (fase 3).** Va en `.ai/DOMAIN.md` de `base-api` (2026-10-11 —
+    El contrato de la API de la plantilla), y las fases lo citan: JSON plano; registro e inicio de sesión dan
+    `{token, user}`; unas credenciales que no valen, 422 `INVALID_CREDENTIALS`; `forgot-password`, siempre 204; el
+    correo de recuperación, en cola y en el idioma de la petición; `reset-password` revoca todos los tokens; cinco
+    intentos por minuto. La caducidad de los tokens y la verificación del correo, para cada proyecto.
+  - **La épica `01-api-base` (fase 3).** Una fase por tarea, BA-01 a BA-04. La 04 depende de la 03 y no sólo de la
+    02, porque limita también las rutas de la recuperación. La persona aceptó que las fases 01, 02 y 03 pasen de unos
+    diez archivos: las tareas de un paquete no se parten, y lo que sobra son traducciones, baselines generados y
+    tablas de `.ai/project/`.
+  - **Las tareas BA, hechas (fase 3).** Una sesión por fase en `base-api`, cada una con su PR fusionado y su CI en
+    verde: BA-01 en [base-api#1](https://github.com/wilcarjose/base-api/pull/1), BA-02 en
+    [#4](https://github.com/wilcarjose/base-api/pull/4), BA-03 en [#5](https://github.com/wilcarjose/base-api/pull/5)
+    y BA-04 en [#6](https://github.com/wilcarjose/base-api/pull/6). La épica `01-api-base` está `CERRADA` con su
+    criterio de cierre marcado, y `bash bin/verify.sh` sale en verde en local sobre `main` (88 tests).
+  - **El gate «contrato» en la CI (fase 3).** En BA-01, la CI fallaba también en `main`: el `.env` que fabrica el
+    paso «entorno» no conecta con el Postgres del servicio, y Scramble lee el esquema de `users`. Se arregló en
+    `base-api` ([#2](https://github.com/wilcarjose/base-api/pull/2), con la memoria archivada en
+    [#3](https://github.com/wilcarjose/base-api/pull/3)) y en el kit,
+    [#19](https://github.com/wilcarjose/ai-protocol/pull/19). Los dos `verify.yml` son iguales:
+    `install.sh --upgrade` sobre `base-api` sólo reescribe la suma del lock.
 - **Lo que la siguiente fase necesita saber:**
   - (fase 1) `.ai/project/CROSS-CUTTING.md §Idiomas` (semilla) es una lista con cinco marcadores: idioma por
     defecto, los demás, librería, dónde viven las traducciones y cómo va el idioma en la URL (o cómo llega, en una
@@ -286,3 +321,33 @@ contraseña, panel, página de inicio pública y dos idiomas.
     dirá si falta algo más.
   - (fase 2) `tests/run.sh` (`test_new_project`) prueba el modo sobre una copia de la instalación de prueba; los e2e
     no lo corren.
+  - (fase 3) Para la fase 4: el paquete que se copia en `base-web` es el de este plan con `/api/v1`. Si la fase 4
+    empieza antes de que se fusione el PR de la fase 3, lo copia de la rama `plan-1c/fase-3`.
+  - (fase 3) Para la fase 4: cada fase BA deja en `.ai/BACKLOG.md` de `base-api` su traspaso, con Área `base-web` y
+    lo que hay que hacer allí, y el contrato es `docs/contract/openapi.json` de `base-api`, que `base-web` copia. El
+    enlace del correo es `<FRONTEND_URL>/reset-password?token=…&email=…`, con `/en` delante en inglés, y
+    `FRONTEND_URL` vale `http://localhost:3000` por defecto.
+  - (fase 3) **Un fallo del kit:** el chequeo «traspaso» de `bin/check-docs.sh` sólo busca la fila en
+    `.ai/BACKLOG.md`. Cuando la persona cierra un traspaso y la fila pasa a `.ai/archive/BACKLOG.md`, como exige el
+    chequeo «memoria», la fase `HECHA` que la dejó vuelve a fallar («cambia el contrato y nada lo traspasa»);
+    reproducido sobre una copia de `base-api`. Hasta que el kit lo arregle, los traspasos de `base-api` no se
+    cierran. El arreglo es del kit, en su propio PR: fuera de esta fase.
+  - (fase 3) Para la fase 4: los traspasos abiertos son las filas 1, 4, 8 y 15 de `.ai/BACKLOG.md` de `base-api`
+    (prefijo e idioma; registro y sesión; recuperación; límites). Sin `Accept-Language`, la API responde en español.
+    El OpenAPI generado no documenta `INVALID_CREDENTIALS`, `INVALID_RESET_TOKEN` ni el 429: el cliente ramifica por
+    `code`, nunca por `detail`.
+  - (fase 3) Para la fase 4: la decisión D2 de `base-api` sigue pendiente. Detrás del BFF, la API ve la IP del BFF, y
+    los límites por IP dejan de ser por persona: el registro se agota para todo el sitio con cinco altas en un minuto.
+    BW-04 (el BFF) tiene que saber cómo reenvía la IP del navegador, así que conviene decidirlo antes de planificar
+    esa tarea. La D1 (comparar el correo sin distinguir mayúsculas) también está pendiente.
+  - (fase 3) Para la fase 5: `install.sh --new-project` devuelve la memoria a la semilla, y con ella se pierden los
+    hallazgos abiertos de la plantilla y sus decisiones pendientes. En `base-api` son D1, D2 y las filas 2, 5 a 7 y
+    9 a 14 de su `.ai/BACKLOG.md`, algunas de seguridad: el token de recuperación viaja sin cifrar en la cola (fila
+    9), y la IP detrás del BFF (fila 14). O se resuelven en la plantilla antes de usarla, o el kit decide cómo llegan
+    al proyecto nuevo.
+  - (fase 3) Mejoras del protocolo que propusieron las fases BA (`.ai/PROTOCOL.md` de `base-api`, filas 1, 2 y 4 a 8):
+    medir contra el kernel el mensaje real de un error antes de planificar su traducción; mirar las cabeceras que
+    pone el cliente de test (`Accept-Language: en-us`); buscar en `tests/` la URI de una ruta que se retira; `/review`
+    exige el árbol limpio, pero el cierre ya escribe la memoria; el modo auto bloquea subir `MIN_TESTS`;
+    `strict_types` en el esqueleto, que una regla pide y la prueba de arquitectura excluye; citar `CONTRACT.md` en
+    toda fase que lea cabeceras o la IP de quien llama. Llegan al kit como issues (README §Principios).
