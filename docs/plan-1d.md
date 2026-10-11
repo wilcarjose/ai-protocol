@@ -15,7 +15,7 @@
 |---|---|---|---|---|
 | 1 | El canal | — | hecha | #36 |
 | 2 | El primer lote | 1 | hecha | #38 |
-| 3 | Versión y upgrade | 2 | en revisión | #PR |
+| 3 | Versión y upgrade | 2 | en revisión | #39 |
 
 ## Cómo se ejecuta una fase
 
