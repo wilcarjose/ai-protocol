@@ -14,8 +14,8 @@
 | Fase | Objetivo | Depende de | Estado | PR |
 |---|---|---|---|---|
 | 1 | El canal | — | hecha | #36 |
-| 2 | El primer lote | 1 | en revisión | #38 |
-| 3 | Versión y upgrade | 2 | pendiente | |
+| 2 | El primer lote | 1 | hecha | #38 |
+| 3 | Versión y upgrade | 2 | en revisión | #39 |
 
 ## Cómo se ejecuta una fase
 
@@ -171,7 +171,19 @@ Criterios de aceptación:
     `PAO_DISABLE=1 ./vendor/bin/pest *`, la orden de la evidencia que da `rules/tests.md`.
   - (fase 2) El chequeo de los permisos vive en `tests/structure.sh` (§6 «permisos»), porque compara dos paquetes del
     kit y no un proyecto: un proyecto no tiene `tests/` del kit.
+  - (fase 3) Una fila aplicada por el kit se marca `aplicada — kit core X.Y.Z + <stack> X.Y.Z`, con las dos
+    versiones del lock, porque cada paquete lleva la suya; el PR de upgrade se titula igual. Lo decidió la persona.
+    La semilla de `.ai/PROTOCOL.md` y el aviso de `install.sh --upgrade` dan ese texto.
+  - (fase 3) En `base-api`, la fila #9 (fase 02/01, posterior al plan) lleva el alcance `núcleo` y sigue en
+    `propuesta`: la envía la retro de su siguiente fase. Lo decidió la persona. Su `.ai/archive/PROTOCOL.md` también
+    lleva la columna `Alcance` (la #3, `stack`; la #1, `núcleo`), para que las filas archivadas conserven su forma.
+  - (fase 3) El arreglo del #21 estaba en el `CHANGELOG.md` del núcleo sin su número: ahora lo cita.
 - **Lo que la siguiente fase necesita saber:**
+  - (fase 3) El aviso de `install.sh --upgrade` se calcula antes de escribir el lock, que tiene las versiones de
+    antes. «Sin publicar» sólo cuenta si la versión nueva es `-dev`, y una misma versión no avisa de nada.
+  - (fase 3) El PR de upgrade de `base-api` se fusiona después del de esta fase y de sus etiquetas
+    (`core-v2.2.0`, `laravel-v2.1.0`, `nextjs-v3.0.0`): su lock cita esas versiones.
+  - (fase 3) Lo siguiente es la fase 4 del plan 1c (`base-web`), que nace con el kit publicado aquí.
   - (fase 2) Los pasos de `cierre.md §Cierre de fase` se renumeraron: el 1 es la revisión, el 10 la baseline, el 11
     las zonas derivadas, el 12 el estado y el puntero, el 15 el cuerpo del PR y el commit de cierre, el 16 la
     entrega, el 17 la retro y el 18 el reporte. Lo de la fase 1 de abajo cita los números de antes.

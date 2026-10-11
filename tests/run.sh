@@ -51,8 +51,10 @@
 #      --dry-run no escribe nada; instalar otra vez falla; un --upgrade sin
 #      cambios dice «sin cambios» y no toca ningún archivo; con un kit nuevo,
 #      actualiza lo que el proyecto no tocó, deja como conflicto lo que sí
-#      tocó, retira lo que ya no trae (con su carpeta si queda vacía) y no toca
-#      la memoria; y no instala un stack incompatible con el núcleo.
+#      tocó, retira lo que ya no trae (con su carpeta si queda vacía), no toca
+#      la memoria y avisa de la fila «enviada» de .ai/PROTOCOL.md cuyo issue
+#      cita el CHANGELOG.md de la versión nueva, y no de la que no cita; y no
+#      instala un stack incompatible con el núcleo.
 #   7. Prueba el modo de proyecto nuevo (install.sh --new-project) en una copia
 #      de la instalación como una plantilla ya usada: con la épica de prueba,
 #      el paquete E1, una entrega, una evidencia y una línea de más en cada
@@ -225,10 +227,15 @@ test_installer() {
     fi
 
     # Un kit nuevo cambia WORKFLOW.md (el proyecto no lo tocó) y CLAUDE.md (el proyecto sí), y retira la skill
-    # /close; el proyecto cambió además su STATE.md, que es memoria.
+    # /close; el proyecto cambió además su STATE.md, que es memoria. El núcleo sube de versión y su CHANGELOG.md
+    # cita el #901, que resuelve una fila «enviada» del proyecto; la del #90 sigue abierta.
     up="$WORK/$KIT-up"
     cp -R "$BASE" "$up"
+    printf '| 2 | %s | fase 01/01 | Prueba. | núcleo | enviada — ai-protocol#901 |\n' "$DATE" >> "$up/.ai/PROTOCOL.md"
+    printf '| 3 | %s | fase 01/01 | Prueba. | stack | enviada — ai-protocol#90 |\n' "$DATE" >> "$up/.ai/PROTOCOL.md"
     kit_copy "$WORK/$KIT-kit2"
+    edit "$WORK/$KIT-kit2/core/core.json" 's/"version": ".*"/"version": "2.99.0"/'
+    awk_edit "$WORK/$KIT-kit2/core/CHANGELOG.md" "!d && /^## \\[/ { print \"## [2.99.0] — $DATE\\n\\n- Arreglo (#901).\\n\"; d = 1 } 1"
     printf '\nNovedad del kit.\n' >> "$WORK/$KIT-kit2/core/.ai/WORKFLOW.md"
     printf '\nNovedad del kit.\n' >> "$WORK/$KIT-kit2/core/CLAUDE.md"
     rm -r "$WORK/$KIT-kit2/core/.claude/skills/close"
@@ -257,6 +264,13 @@ test_installer() {
     fi
     if [ "$(sha "$up/.ai/STATE.md")" = "$state" ]; then ok '--upgrade no toca la memoria (.ai/STATE.md)'
     else fail '--upgrade modificó .ai/STATE.md'; fi
+    if printf '%s\n' "$out" | grep -qF '#2  enviada — ai-protocol#901' && ! printf '%s\n' "$out" | grep -qF '#3  enviada' \
+       && printf '%s\n' "$out" | grep -qF "aplicada — kit core 2.99.0 + $KIT"; then
+        ok '--upgrade avisa de la fila «enviada» cuyo issue cita el CHANGELOG.md nuevo, y no de la otra'
+    else
+        fail '--upgrade no avisó de la fila #2 (ai-protocol#901) o avisó de la #3 (ai-protocol#90):'
+        printf '%s\n' "$out" | sed 's/^/      /'
+    fi
 
     [ -d "$FIXTURES/kit-1x/$KIT" ] && test_upgrade_1x
 
