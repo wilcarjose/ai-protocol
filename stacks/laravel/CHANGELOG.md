@@ -9,6 +9,16 @@ Compatible con el núcleo `>=2.0.0 <3.0.0`.
 
 ### Cambiado
 
+- `.claude/settings.json`: permite `gh pr edit *`, que usa la retro del núcleo para la sección «Protocolo» del PR
+  (#30), y `Edit(./.ai/project/verify.conf)`, para que el cierre suba la baseline aunque el modo auto de Claude Code
+  lo tome por saltarse la CI (#26). El kit comprueba que cada orden de `phase/cierre.md §Entrega` encaja con estos
+  patrones.
+- `.ai/rules/tests.md §Tests`: el cliente de test de Laravel pone `Accept-Language`, `Accept`, `User-Agent` y la IP
+  por defecto, y un test que depende de una de ellas la fija (#23); y la orden de Pest para la evidencia,
+  `PAO_DISABLE=1 ./vendor/bin/pest … --colors=never`, que `.claude/settings.json` permite (#33).
+- `.ai/rules/arquitectura.md §Tipado estricto y Value Objects`: `strict_types` en todo archivo nuevo o tocado salvo
+  los del esqueleto de Laravel, que lo llevan cuando una fase los toca enteros, como ya hacía
+  `tests/Architecture/ArchitectureTest.php` (#27).
 - `.ai/templates/phase.template.md`: el comentario de «Qué mejorarías del protocolo» pide anotar cada fricción
   cuando ocurre, con su evidencia; la retro la completa después de la entrega (núcleo,
   `phase/cierre.md §Retro del protocolo`). El encabezado no cambia (#29).

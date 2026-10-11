@@ -7,7 +7,8 @@ argument-hint: "[epica numero-de-fase]"
 # /review — revisar una fase
 
 Argumentos: `$ARGUMENTS`. Sin argumentos, la fase activa de `.ai/STATE.md`; con argumentos, `<epica>` y `<FF>`. Se
-ejecuta en la rama de la fase y con el árbol limpio: lo que no está commiteado no se revisa.
+ejecuta en la rama de la fase, sin nada por commitear fuera de `.ai/`: lo que no está commiteado no se revisa, y
+la memoria que el cierre ya escribió (o una revisión anterior) no es parte del diff.
 
 1. **La base** es el padre del commit de arranque:
    `git log --format=%h --grep='^chore(phase-<NN>-<FF>): start' | tail -n 1`, y su `^`. Sin commit de arranque no

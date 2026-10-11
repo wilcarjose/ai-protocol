@@ -33,6 +33,13 @@
   `respondWith()`). Viven en `tests/Fakes/` y se enlazan en el entorno de test. Si un test necesita `Http::fake()`,
   falta un contrato.
 - Ningún test llama a la red real: `Http::preventStrayRequests()` en el `setUp()` de `tests/TestCase.php`.
+- **El cliente de test pone cabeceras por defecto.** `getJson()` y compañía crean la petición con
+  `Request::create()`, que fija `Accept-Language: en-us,en;q=0.5`, `Accept`, `User-Agent` y `REMOTE_ADDR=127.0.0.1`
+  en toda petición que no los da. Un test cuyo comportamiento depende de una cabecera o de la IP la fija él mismo, o
+  `tests/TestCase.php` la vacía para todos; quien planifica una fase así cuenta ese archivo en sus «Archivos».
+- **La evidencia de Pest**, legible: `PAO_DISABLE=1 ./vendor/bin/pest <filtro> --colors=never`. laravel/pao, que
+  trae el esqueleto, cambia la salida por JSON cuando la ejecuta un agente, y un criterio que pide la salida entera
+  no se cumple con ese JSON. `bin/verify.sh` ya lo desactiva.
 
 ---
 

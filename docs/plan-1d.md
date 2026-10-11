@@ -13,8 +13,8 @@
 
 | Fase | Objetivo | Depende de | Estado | PR |
 |---|---|---|---|---|
-| 1 | El canal | — | en revisión | #36 |
-| 2 | El primer lote | 1 | pendiente | |
+| 1 | El canal | — | hecha | #36 |
+| 2 | El primer lote | 1 | en revisión | #38 |
 | 3 | Versión y upgrade | 2 | pendiente | |
 
 ## Cómo se ejecuta una fase
@@ -161,7 +161,24 @@ Criterios de aceptación:
   - (fase 1) Además de los entregables, por coherencia: el comentario de «Qué mejorarías del protocolo» en las dos
     plantillas de fase (+107 caracteres en el arranque del ejecutor, el 0,2 %), `.ai/WORKFLOW.md §Archivos del
     protocolo` (los archivos del kit sólo cambian con el upgrade, decisión 1) y dos párrafos de `docs/guia.md`.
+  - (fase 2) El cuerpo del PR va en `.ai/epics/<NN-slug>/evidence/<FF>-pr.md`, commiteado en el cierre y en la retro:
+    dentro del repo no pide permiso, y el árbol queda limpio. Lo decidió la persona.
+  - (fase 2) Además de `cierre.md`, `/review` acepta cambios sin commitear dentro de `.ai/` (#25): la segunda
+    revisión y la de `/close` también tropezaban con la memoria. `review/SKILL.md` no estaba en la fase; lo aceptó la
+    persona. `/close` cambia por coherencia: citaba el paso 3.
+  - (fase 2) Pint sigue saliendo en JSON en el gate «estilo» (el resto del #33): va al #37, porque
+    `stacks/laravel/bin/verify.sh` no estaba en la fase. El `settings.json` de Laravel permite, además,
+    `PAO_DISABLE=1 ./vendor/bin/pest *`, la orden de la evidencia que da `rules/tests.md`.
+  - (fase 2) El chequeo de los permisos vive en `tests/structure.sh` (§6 «permisos»), porque compara dos paquetes del
+    kit y no un proyecto: un proyecto no tiene `tests/` del kit.
 - **Lo que la siguiente fase necesita saber:**
+  - (fase 2) Los pasos de `cierre.md §Cierre de fase` se renumeraron: el 1 es la revisión, el 10 la baseline, el 11
+    las zonas derivadas, el 12 el estado y el puntero, el 15 el cuerpo del PR y el commit de cierre, el 16 la
+    entrega, el 17 la retro y el 18 el reporte. Lo de la fase 1 de abajo cita los números de antes.
+  - (fase 2) `.claude/settings.json` es archivo del kit en los dos stacks: el upgrade de la fase 3 trae los patrones
+    nuevos sin que `base-api` toque nada.
+  - (fase 2) Los `CHANGELOG.md` de los tres paquetes citan, en «Sin publicar», el issue de cada cambio: la fase 3 los
+    usa para el aviso de `install.sh --upgrade`.
   - (fase 1) Los pasos de `cierre.md §Cierre de fase` no se renumeraron: el 7 remite a §Retro del protocolo, el 11
     sigue siendo la baseline, el 16 es la retro y el 17 el reporte final. La retro hace un segundo `git push` y un
     `gh pr edit --body-file`: los patrones de #30 en `settings.json` tienen que cubrirlos también.

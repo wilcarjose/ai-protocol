@@ -16,6 +16,10 @@ Compatible con el núcleo `>=2.0.0 <3.0.0`. Versión mayor: un chequeo que antes
 
 ### Cambiado
 
+- `.claude/settings.json`: permite `gh pr edit *`, que usa la retro del núcleo para la sección «Protocolo» del PR
+  (#30), y `Edit(./.ai/project/verify.conf)`, para que el cierre suba la baseline aunque el modo auto de Claude Code
+  lo tome por saltarse la CI (#26). El kit comprueba que cada orden de `phase/cierre.md §Entrega` encaja con estos
+  patrones.
 - `.ai/templates/phase.template.md`: el comentario de «Qué mejorarías del protocolo» pide anotar cada fricción
   cuando ocurre, con su evidencia; la retro la completa después de la entrega (núcleo,
   `phase/cierre.md §Retro del protocolo`). El encabezado no cambia (#29).

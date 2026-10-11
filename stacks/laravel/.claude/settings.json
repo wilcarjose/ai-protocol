@@ -2,10 +2,10 @@
   "permissions": {
     "defaultMode": "dontAsk",
     "allow": [
-      "Read", "Edit", "Write", "Glob", "Grep",
+      "Read", "Edit", "Write", "Glob", "Grep", "Edit(./.ai/project/verify.conf)",
       "Bash(sh bin/check-docs.sh*)", "Bash(sh bin/check-protocol.sh*)", "Bash(sh bin/handoff.sh*)", "Bash(sh bin/measure-context.sh*)", "Bash(bash bin/verify.sh*)", "Bash(sh bin/verify.sh*)",
       "Bash(php artisan *)", "Bash(php scripts/normalize-routes.php*)", "Bash(sh bin/contract.sh*)",
-      "Bash(./vendor/bin/pest *)", "Bash(vendor/bin/pest *)",
+      "Bash(./vendor/bin/pest *)", "Bash(vendor/bin/pest *)", "Bash(PAO_DISABLE=1 ./vendor/bin/pest *)",
       "Bash(./vendor/bin/pint *)", "Bash(vendor/bin/pint *)",
       "Bash(./vendor/bin/phpstan *)", "Bash(vendor/bin/phpstan *)",
       "Bash(composer dump-autoload*)", "Bash(composer show*)", "Bash(composer validate*)",
@@ -14,7 +14,7 @@
       "Bash(git branch*)", "Bash(git switch *)",
       "Bash(git add *)", "Bash(git commit *)", "Bash(git reset --soft HEAD~1)",
       "Bash(git fetch*)", "Bash(git push origin phase/*)", "Bash(git push -u origin phase/*)",
-      "Bash(gh pr create *)", "Bash(gh pr view*)", "Bash(gh pr checks*)", "Bash(gh pr list*)",
+      "Bash(gh pr create *)", "Bash(gh pr edit *)", "Bash(gh pr view*)", "Bash(gh pr checks*)", "Bash(gh pr list*)",
       "Bash(composer audit*)", "Bash(gitleaks git*)"
     ],
     "deny": [

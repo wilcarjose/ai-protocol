@@ -18,6 +18,10 @@
 #   5. referencias  — ningún stack cita un archivo que sólo trae otro stack, ni
 #                     la carpeta de otro stack; el núcleo no cita un archivo
 #                     que no traigan todos los stacks.
+#   6. permisos     — cada orden de `git push` y `gh pr` de phase/cierre.md
+#                     (§Entrega y §Retro del protocolo) va suelta, y encaja
+#                     con un «allow» y con ningún «deny» del
+#                     .claude/settings.json de cada stack.
 #
 # ◆ FORMATO DE LOS MANIFIESTOS
 #   JSON con un valor por línea, como lo escribe cualquier formateador: los
@@ -140,6 +144,41 @@ for s in $STACKS; do cat "$TMPD/$s.listed"; done | sort | uniq -c \
     | awk -v n="$NSTACKS" '$1 < n { print $2 }' > "$TMPD/partial"
 refs core "$TMPD/partial" | while IFS="$(printf '\t')" read -r f p; do
     bad "$f cita «$p», que no traen todos los stacks"
+done
+
+# ── 6. Las órdenes de la entrega, frente a los permisos ─────────────────────
+printf '◆ permisos (las órdenes de la entrega frente a .claude/settings.json)\n'
+c=core/.claude/skills/phase/cierre.md
+# Los marcadores se rellenan como en una fase de verdad: la rama de la fase tiene que encajar con «phase/*».
+# shellcheck disable=SC2016  # las comillas invertidas son las del Markdown
+awk '/^## / { f = ($0 == "## Entrega" || $0 == "## Retro del protocolo") } f' "$c" \
+    | grep -oE '`(git push|gh pr) [^`]*`' | tr -d '`' \
+    | sed 's#<rama de la fase>#phase/01-demo/01#g; s#<rama base>#main#g; s#<[^>]*>#x#g' | sort -u > "$TMPD/orders"
+[ -s "$TMPD/orders" ] || bad "$c: §Entrega no tiene ninguna orden de git push ni de gh pr"
+grep -E '&&|\|\||;|\||<<' "$TMPD/orders" | while read -r o; do bad "$c: «$o» no va suelta"; done
+
+# perms <settings.json> <allow|deny>: los patrones Bash(…) de esa lista, sin el envoltorio.
+perms() {
+    awk -v k="\"$2\":" 'index($0, k) { f = 1; next } f && /^ *\]/ { exit } f' "$1" \
+        | grep -oE '"Bash\([^"]*\)"' | sed 's/^"Bash(//; s/)"$//'
+}
+# matches <orden> <archivo de patrones>: la orden encaja con alguno, con «*» como comodín, igual que Claude Code.
+# shellcheck disable=SC2254  # el patrón va sin comillas a propósito: es un glob
+matches() {
+    while read -r p; do
+        case "$1" in $p) return 0 ;; esac
+    done < "$2"
+    return 1
+}
+for s in $STACKS; do
+    f=stacks/$s/.claude/settings.json
+    [ -f "$f" ] || { bad "stacks/$s no trae .claude/settings.json"; continue; }
+    perms "$f" allow > "$TMPD/$s.allow"
+    perms "$f" deny > "$TMPD/$s.deny"
+    while read -r o; do
+        matches "$o" "$TMPD/$s.allow" || bad "$f no permite «$o», que pide $c"
+        if matches "$o" "$TMPD/$s.deny"; then bad "$f deniega «$o», que pide $c"; fi
+    done < "$TMPD/orders"
 done
 
 printf '\n'
