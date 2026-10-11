@@ -150,7 +150,9 @@ y su `handle()`. Un archivo, una clase, mismo nombre. Las reglas que se pueden c
 
 ## 3. Tipado estricto y Value Objects
 
-- `declare(strict_types=1)` en todo archivo nuevo o tocado.
+- `declare(strict_types=1)` en todo archivo nuevo o tocado, salvo los del esqueleto de Laravel (modelos, providers,
+  controlador base), que lo llevan cuando una fase los toca enteros: es la excepción de
+  `tests/Architecture/ArchitectureTest.php`, y el revisor no la señala.
 - Todo parámetro, propiedad y retorno tipado. Un `array` lleva su forma en PHPDoc (`@param array<string, int>`).
 - `?Type` explícito; nada de `mixed` salvo en un límite del framework que lo imponga.
 - Constantes de clase de estado (`const STATUS_ACCEPTED = 'accepted'`) → enum backed string, con el mismo valor.
