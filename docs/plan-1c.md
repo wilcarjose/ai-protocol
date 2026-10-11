@@ -283,6 +283,17 @@ contraseña, panel, página de inicio pública y dos idiomas.
     02, porque limita también las rutas de la recuperación. La persona aceptó que las fases 01, 02 y 03 pasen de unos
     diez archivos: las tareas de un paquete no se parten, y lo que sobra son traducciones, baselines generados y
     tablas de `.ai/project/`.
+  - **Las tareas BA, hechas (fase 3).** Una sesión por fase en `base-api`, cada una con su PR fusionado y su CI en
+    verde: BA-01 en [base-api#1](https://github.com/wilcarjose/base-api/pull/1), BA-02 en
+    [#4](https://github.com/wilcarjose/base-api/pull/4), BA-03 en [#5](https://github.com/wilcarjose/base-api/pull/5)
+    y BA-04 en [#6](https://github.com/wilcarjose/base-api/pull/6). La épica `01-api-base` está `CERRADA` con su
+    criterio de cierre marcado, y `bash bin/verify.sh` sale en verde en local sobre `main` (88 tests).
+  - **El gate «contrato» en la CI (fase 3).** En BA-01, la CI fallaba también en `main`: el `.env` que fabrica el
+    paso «entorno» no conecta con el Postgres del servicio, y Scramble lee el esquema de `users`. Se arregló en
+    `base-api` ([#2](https://github.com/wilcarjose/base-api/pull/2), con la memoria archivada en
+    [#3](https://github.com/wilcarjose/base-api/pull/3)) y en el kit,
+    [#19](https://github.com/wilcarjose/ai-protocol/pull/19). Los dos `verify.yml` son iguales:
+    `install.sh --upgrade` sobre `base-api` sólo reescribe la suma del lock.
 - **Lo que la siguiente fase necesita saber:**
   - (fase 1) `.ai/project/CROSS-CUTTING.md §Idiomas` (semilla) es una lista con cinco marcadores: idioma por
     defecto, los demás, librería, dónde viven las traducciones y cómo va el idioma en la URL (o cómo llega, en una
@@ -321,3 +332,22 @@ contraseña, panel, página de inicio pública y dos idiomas.
     chequeo «memoria», la fase `HECHA` que la dejó vuelve a fallar («cambia el contrato y nada lo traspasa»);
     reproducido sobre una copia de `base-api`. Hasta que el kit lo arregle, los traspasos de `base-api` no se
     cierran. El arreglo es del kit, en su propio PR: fuera de esta fase.
+  - (fase 3) Para la fase 4: los traspasos abiertos son las filas 1, 4, 8 y 15 de `.ai/BACKLOG.md` de `base-api`
+    (prefijo e idioma; registro y sesión; recuperación; límites). Sin `Accept-Language`, la API responde en español.
+    El OpenAPI generado no documenta `INVALID_CREDENTIALS`, `INVALID_RESET_TOKEN` ni el 429: el cliente ramifica por
+    `code`, nunca por `detail`.
+  - (fase 3) Para la fase 4: la decisión D2 de `base-api` sigue pendiente. Detrás del BFF, la API ve la IP del BFF, y
+    los límites por IP dejan de ser por persona: el registro se agota para todo el sitio con cinco altas en un minuto.
+    BW-04 (el BFF) tiene que saber cómo reenvía la IP del navegador, así que conviene decidirlo antes de planificar
+    esa tarea. La D1 (comparar el correo sin distinguir mayúsculas) también está pendiente.
+  - (fase 3) Para la fase 5: `install.sh --new-project` devuelve la memoria a la semilla, y con ella se pierden los
+    hallazgos abiertos de la plantilla y sus decisiones pendientes. En `base-api` son D1, D2 y las filas 2, 5 a 7 y
+    9 a 14 de su `.ai/BACKLOG.md`, algunas de seguridad: el token de recuperación viaja sin cifrar en la cola (fila
+    9), y la IP detrás del BFF (fila 14). O se resuelven en la plantilla antes de usarla, o el kit decide cómo llegan
+    al proyecto nuevo.
+  - (fase 3) Mejoras del protocolo que propusieron las fases BA (`.ai/PROTOCOL.md` de `base-api`, filas 1, 2 y 4 a 8):
+    medir contra el kernel el mensaje real de un error antes de planificar su traducción; mirar las cabeceras que
+    pone el cliente de test (`Accept-Language: en-us`); buscar en `tests/` la URI de una ruta que se retira; `/review`
+    exige el árbol limpio, pero el cierre ya escribe la memoria; el modo auto bloquea subir `MIN_TESTS`;
+    `strict_types` en el esqueleto, que una regla pide y la prueba de arquitectura excluye; citar `CONTRACT.md` en
+    toda fase que lea cabeceras o la IP de quien llama. Llegan al kit como issues (README §Principios).
