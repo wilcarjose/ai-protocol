@@ -5,43 +5,49 @@
 
 ## Cierre de fase
 
-1. **RESULTADO** del archivo de la fase, sin borrar encabezados. Lo más importante es «Lo que la siguiente fase
+1. **Revisión**, si la fase va a quedar `HECHA` o `ESPERA_EVIDENCIA`: `/review` (sin skills,
+   `.claude/skills/review/SKILL.md`), y ningún bloqueante sin marcar. Va antes de escribir nada, justo después del
+   `bash bin/verify.sh` completo del Paso B: revisa el diff, no el RESULTADO. Sus arreglos cuentan entre los
+   intentos de `.claude/skills/phase/SKILL.md §Verificación`. En `BLOQUEADA` o `VERIFICACION_ROJA` no hace falta.
+2. **RESULTADO** del archivo de la fase, sin borrar encabezados. Lo más importante es «Lo que la siguiente fase
    necesita saber»: la próxima sesión empieza sin memoria y sólo leerá eso (`bin/handoff.sh` lo imprime).
-2. **Criterios de éxito**: cada casilla se ejecuta tal como está escrita y se marca con su salida en «Verificación»
+3. **Criterios de éxito**: cada casilla se ejecuta tal como está escrita y se marca con su salida en «Verificación»
    (`.ai/WORKFLOW.md §Un criterio de éxito no se puede cumplir`). Una salida de más de **40 líneas** va entera a
    `.ai/epics/<NN-slug>/evidence/<FF>-<nombre>.txt`, y «Verificación» enlaza esa ruta entre comillas invertidas,
    con el código de salida y las líneas que deciden. `bin/check-docs.sh` comprueba que cada evidencia enlazada
    existe. Una casilla `[humano]` no la marca la IA: la evidencia la aporta la persona (§Evidencia humana).
-3. **Revisión**, si la fase va a quedar `HECHA` o `ESPERA_EVIDENCIA`: `/review` (sin skills,
-   `.claude/skills/review/SKILL.md`), y ningún bloqueante sin marcar. Sus arreglos cuentan entre los intentos de
-   `.claude/skills/phase/SKILL.md §Verificación`. En `BLOQUEADA` o `VERIFICACION_ROJA` no hace falta.
-4. **Estado final** en la fase y en el mapa, con la fecha en `Cerrada`, y el puntero de `.ai/STATE.md`
-   (`.claude/skills/phase/SKILL.md §Estado de una fase`). `ESPERA_EVIDENCIA` si sólo quedan casillas `[humano]`
-   abiertas. Regenera las zonas derivadas (`.claude/skills/phase/SKILL.md §Sincronización post-lectura`) y añade
-   el cierre, en una línea, arriba de `§Últimos movimientos`.
-5. Decisiones de negocio nuevas a `.ai/DOMAIN.md §Decisiones tomadas`, con fecha y fase.
-6. Hallazgos fuera de alcance a `.ai/BACKLOG.md`, sin arreglarlos (`CLAUDE.md §Alcance`).
-7. «Qué mejorarías del protocolo» se queda con lo anotado durante la fase: la retro se completa después de la
+4. Decisiones de negocio nuevas a `.ai/DOMAIN.md §Decisiones tomadas`, con fecha y fase.
+5. Hallazgos fuera de alcance a `.ai/BACKLOG.md`, sin arreglarlos (`CLAUDE.md §Alcance`).
+6. «Qué mejorarías del protocolo» se queda con lo anotado durante la fase: la retro se completa después de la
    entrega (§Retro del protocolo), para que también cuente lo que falle al entregar.
-8. **Memoria archivada** (§Archivo de la memoria).
-9. **Si la fase añade algo que hacer en producción al desplegarla** (una migración, un comando, una variable de
+7. **Memoria archivada** (§Archivo de la memoria).
+8. **Si la fase añade algo que hacer en producción al desplegarla** (una migración, un comando, una variable de
    entorno o de configuración, un cambio de cron o de colas, una restricción de orden), una fila por paso en
    `docs/runbooks/release.md §Pasos por fase`. Es lo que evita olvidarlo en un despliegue meses después.
-10. **Si la fase deja algo para otro repo**, su traspaso (§Traspaso al otro repo).
-11. **Si la fase mejoró la baseline** (más tests, menos deuda), el número en `.ai/project/verify.conf`. Nunca en la
-    dirección mala.
-12. **Si la fase queda `HECHA` y era la última sin `HECHA` de su épica**, §Cierre de épica.
-13. `sh bin/check-docs.sh --strict` en verde: el puntero se escribe después del último `bin/verify.sh`, y es lo que
-    la siguiente sesión ejecutará sin preguntar.
-14. Commit `chore(phase-<NN>-<FF>): close` con el RESULTADO, la evidencia, la revisión, la memoria y, si cambiaron,
-    el manifiesto de despliegue, el epic-plan y la baseline de `.ai/project/verify.conf`. `git status` limpio.
-15. §Entrega.
-16. §Retro del protocolo.
-17. §Reporte final.
+9. **Si la fase deja algo para otro repo**, su traspaso (§Traspaso al otro repo).
+10. **Si la fase mejoró la baseline** (más tests, menos deuda), el número en `.ai/project/verify.conf`. Nunca en la
+    dirección mala. Es un cambio que endurece el gate, no que lo salta: si la herramienta lo deniega (el modo auto
+    de Claude Code puede tomarlo por saltarse la CI), no lo rodees; pide a la persona que escriba la línea exacta
+    (`MIN_TESTS=48`) y sigue.
+11. **Zonas derivadas** de `.ai/STATE.md` (`.claude/skills/phase/SKILL.md §Sincronización post-lectura`),
+    regeneradas en cuanto la memoria está escrita (pasos 4 a 9) y antes de cualquier otro `bash bin/verify.sh`: su
+    `bin/check-docs.sh` falla si no cuadran con `.ai/DOMAIN.md` y `.ai/BACKLOG.md`.
+12. **Estado final** en la fase y en el mapa, con la fecha en `Cerrada`, y el puntero de `.ai/STATE.md`
+    (`.claude/skills/phase/SKILL.md §Estado de una fase`), después del último `bash bin/verify.sh`: es lo que la
+    siguiente sesión ejecutará sin preguntar. `ESPERA_EVIDENCIA` si sólo quedan casillas `[humano]` abiertas. Añade
+    el cierre, en una línea, arriba de `§Últimos movimientos`.
+13. **Si la fase queda `HECHA` y era la última sin `HECHA` de su épica**, §Cierre de épica.
+14. `sh bin/check-docs.sh --strict` en verde.
+15. **El cuerpo del PR** en `.ai/epics/<NN-slug>/evidence/<FF>-pr.md` (§Entrega), y commit
+    `chore(phase-<NN>-<FF>): close` con él, el RESULTADO, la evidencia, la revisión, la memoria y, si cambiaron, el
+    manifiesto de despliegue, el epic-plan y la baseline de `.ai/project/verify.conf`. `git status` limpio.
+16. §Entrega.
+17. §Retro del protocolo.
+18. §Reporte final.
 
 ## Cierre ligero
 
-Una fase con `> **Modo:** ligero` hace los pasos 1 a 4, el 8 y 13 a 17 de §Cierre de fase; los
+Una fase con `> **Modo:** ligero` hace los pasos 1 a 3, el 7, el 11, el 12 y del 14 al 18 de §Cierre de fase; los
 demás, sólo si tienen algo que escribir (una decisión, un hallazgo, un paso de despliegue, un traspaso). Los
 encabezados del RESULTADO se quedan, y los que no aplican dicen «—».
 

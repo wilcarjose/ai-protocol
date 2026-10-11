@@ -43,8 +43,8 @@ Rellena el RESULTADO con lo **verificable**:
 - Lo que no puedas probar, déjalo vacío y márcalo como pendiente. **No escribas memoria** («se hizo X» cuando X no
   tiene commit): la próxima sesión lo lee y se lo cree.
 
-Después, `.claude/skills/phase/cierre.md §Cierre de fase` desde su paso 3. El puntero sólo avanza si la fase queda
-`HECHA`.
+Después, `.claude/skills/phase/cierre.md §Cierre de fase`, sin sus pasos 2 y 3, que son este Paso B. El puntero sólo
+avanza si la fase queda `HECHA`.
 
 ## Paso C — Recomendación
 
