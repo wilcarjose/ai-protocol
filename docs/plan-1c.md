@@ -269,6 +269,20 @@ contraseña, panel, página de inicio pública y dos idiomas.
   - **Las fases BA, cada una en su sesión (fase 3, elegido en el resumen).** Esta sesión crea el proyecto, instala el
     kit y planifica la épica; cada tarea se ejecuta con `/phase` en una sesión abierta en `base-api`, que arranca en
     frío y con sus permisos (la skill no la invoca el agente: `disable-model-invocation`).
+  - **`base-api`, instalado (fase 3).** En `Repositories/base/base-api`, donde `base-web` irá al lado: el paquete y el
+    guardián usan el nombre de la carpeta. Laravel 13 (esqueleto 13.11.0, framework 13.35.0), PHP 8.4, Pest 5.3,
+    Larastan 3.13, Scramble 0.13.47 y Sanctum 4.3 por `install:api`, con PostgreSQL en `.env.example`. El lock dice
+    núcleo 2.2.0-dev y Laravel 2.1.0-dev. `MIN_TESTS=6` desde la instalación (los dos ejemplos de Pest y los cuatro
+    de `ProblemDetailsTest`). Commits `e99b3c4` (instalación) y `63a2917` (planificación), directos a `main`.
+  - **El contrato de la API, aprobado por la persona (fase 3).** Va en `.ai/DOMAIN.md` de `base-api` (2026-10-11 —
+    El contrato de la API de la plantilla), y las fases lo citan: JSON plano; registro e inicio de sesión dan
+    `{token, user}`; unas credenciales que no valen, 422 `INVALID_CREDENTIALS`; `forgot-password`, siempre 204; el
+    correo de recuperación, en cola y en el idioma de la petición; `reset-password` revoca todos los tokens; cinco
+    intentos por minuto. La caducidad de los tokens y la verificación del correo, para cada proyecto.
+  - **La épica `01-api-base` (fase 3).** Una fase por tarea, BA-01 a BA-04. La 04 depende de la 03 y no sólo de la
+    02, porque limita también las rutas de la recuperación. La persona aceptó que las fases 01, 02 y 03 pasen de unos
+    diez archivos: las tareas de un paquete no se parten, y lo que sobra son traducciones, baselines generados y
+    tablas de `.ai/project/`.
 - **Lo que la siguiente fase necesita saber:**
   - (fase 1) `.ai/project/CROSS-CUTTING.md §Idiomas` (semilla) es una lista con cinco marcadores: idioma por
     defecto, los demás, librería, dónde viven las traducciones y cómo va el idioma en la URL (o cómo llega, en una
@@ -296,3 +310,14 @@ contraseña, panel, página de inicio pública y dos idiomas.
     dirá si falta algo más.
   - (fase 2) `tests/run.sh` (`test_new_project`) prueba el modo sobre una copia de la instalación de prueba; los e2e
     no lo corren.
+  - (fase 3) Para la fase 4: el paquete que se copia en `base-web` es el de este plan con `/api/v1`. Si la fase 4
+    empieza antes de que se fusione el PR de la fase 3, lo copia de la rama `plan-1c/fase-3`.
+  - (fase 3) Para la fase 4: cada fase BA deja en `.ai/BACKLOG.md` de `base-api` su traspaso, con Área `base-web` y
+    lo que hay que hacer allí, y el contrato es `docs/contract/openapi.json` de `base-api`, que `base-web` copia. El
+    enlace del correo es `<FRONTEND_URL>/reset-password?token=…&email=…`, con `/en` delante en inglés, y
+    `FRONTEND_URL` vale `http://localhost:3000` por defecto.
+  - (fase 3) **Un fallo del kit:** el chequeo «traspaso» de `bin/check-docs.sh` sólo busca la fila en
+    `.ai/BACKLOG.md`. Cuando la persona cierra un traspaso y la fila pasa a `.ai/archive/BACKLOG.md`, como exige el
+    chequeo «memoria», la fase `HECHA` que la dejó vuelve a fallar («cambia el contrato y nada lo traspasa»);
+    reproducido sobre una copia de `base-api`. Hasta que el kit lo arregle, los traspasos de `base-api` no se
+    cierran. El arreglo es del kit, en su propio PR: fuera de esta fase.
