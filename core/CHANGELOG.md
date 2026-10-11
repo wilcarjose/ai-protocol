@@ -35,6 +35,10 @@ etiqueta `core-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, ar
   `verify` del cierre ya no sale en rojo por un contador sin sincronizar (#31). El paso de la baseline dice que
   endurece el gate y que, si la herramienta lo deniega, se le pide la línea exacta a la persona (#26). El cierre
   ligero y `/close` citan los pasos nuevos.
+- `phase/cierre.md §Entrega` y §Retro del protocolo: el push, `gh pr create` y `gh pr edit` van sueltos, sin `&&`,
+  tuberías ni heredocs, escritos tal como encajan con `.claude/settings.json`, y con el cuerpo del PR en
+  `.ai/epics/<NN-slug>/evidence/<FF>-pr.md` (`--body-file`), que entra en el commit de cierre y en el de la retro. Si
+  una orden se deniega, se reintenta suelta antes de dar la orden a la persona (#30).
 - `/review` acepta cambios sin commitear dentro de `.ai/`: la memoria del cierre y una revisión anterior no hacen
   falta guardarlas con `git stash` para revisar otra vez (#25).
 - La pregunta del cierre a la persona es opcional y va dirigida a su papel, después de enseñarle la retro del

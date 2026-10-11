@@ -564,6 +564,8 @@ breaks() {
             gates)     edit stacks/nextjs/bin/verify.sh "s/^run 'tipos'/run 'types'/" ;;
             stacks)    printf '\nVer `phpstan.neon`.\n' >> stacks/nextjs/.ai/RULES.md ;;
             nucleo)    printf '\nVer `docs/vendor/INDEX.md`.\n' >> core/CLAUDE.md ;;
+            permisos)  edit stacks/nextjs/.claude/settings.json 's/"Bash(gh pr edit \*)", //' ;;
+            suelta)    edit core/.claude/skills/phase/cierre.md 's/^1\. `git push -u origin <rama de la fase>`/1. `git push -u origin <rama de la fase> \&\& gh pr view`/' ;;
         esac
     )
     if ! out=$(sh "$d/tests/structure.sh" 2>&1) && printf '%s\n' "$out" | grep -qF -- "$2"; then ok "$1: $2"
@@ -578,6 +580,8 @@ test_structure() {
     breaks gates   'corre el gate «types», que stack.json no declara'
     breaks stacks  'cita «phpstan.neon», que es de otro stack'
     breaks nucleo  'cita «docs/vendor/INDEX.md», que no traen todos los stacks'
+    breaks permisos 'stacks/nextjs/.claude/settings.json no permite «gh pr edit --body-file'
+    breaks suelta   '«git push -u origin phase/01-demo/01 && gh pr view» no va suelta'
 }
 
 # ── docs/vps/doctor.sh, con un PATH de stubs ────────────────────────────────

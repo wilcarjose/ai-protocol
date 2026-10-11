@@ -121,15 +121,23 @@ La fila se escribe en la fase que causa el cambio. `bin/check-docs.sh` no deja c
 Toda fase termina igual, se ejecute en la nube o en local: su rama en GitHub y un PR que la CI verifica
 (`.github/workflows/verify.yml`, que corre `bin/verify.sh` completo).
 
+**Cada orden, suelta**: sin `&&`, `;`, tuberías ni heredocs, y escrita como aquí. Así encaja con los permisos de
+`.claude/settings.json`; una orden encadenada no encaja con ninguno y, sin preguntar, se deniega.
+
 1. `git push -u origin <rama de la fase>`. Nunca a `main` ni forzado
    (`.claude/skills/phase/SKILL.md §Commits durante la fase`).
-2. El PR, si no existe: `gh pr create` contra `epic/<NN-slug>` si la épica declara rama base o contra `main` si no.
-   **El título, en inglés y en Conventional Commits** (`feat(listings): publish listings with photos`), con los
-   ámbitos de `.ai/RULES.md §Ámbitos de commit`: al fusionar con squash es el mensaje del commit. **La descripción,
-   en español**: el cuerpo de `.github/pull_request_template.md` relleno desde el RESULTADO, que nombra la fase.
-   `HECHA` o `ESPERA_EVIDENCIA`, listo para revisar; `BLOQUEADA` o `VERIFICACION_ROJA`, con `--draft`. Si ya existe,
-   el push lo actualiza.
-3. Sin `gh` o sin acceso al remoto, dilo en el reporte con la orden que falta: la rama queda commiteada en local.
+2. El PR, si no existe, con el cuerpo que commiteó el paso 15 de §Cierre de fase:
+   `gh pr create --base <rama base> --title "<título>" --body-file .ai/epics/<NN-slug>/evidence/<FF>-pr.md`.
+   - **La rama base**, `epic/<NN-slug>` si la épica la declara y `main` si no.
+   - **El título, en inglés y en Conventional Commits** (`feat(listings): publish listings with photos`), con los
+     ámbitos de `.ai/RULES.md §Ámbitos de commit`: al fusionar con squash es el mensaje del commit.
+   - **El cuerpo, en español**: el de `.github/pull_request_template.md` relleno desde el RESULTADO, que nombra la
+     fase.
+   - `HECHA` o `ESPERA_EVIDENCIA`, listo para revisar; `BLOQUEADA` o `VERIFICACION_ROJA`, con `--draft` al final.
+     Si el PR ya existe, el push lo actualiza.
+3. **Si una orden se deniega**, reinténtala suelta, tal como está escrita aquí, antes de nada más. Si sigue
+   denegada, o no hay `gh` o acceso al remoto, dilo en el reporte con la orden exacta que falta: la rama queda
+   commiteada en local.
 4. El merge lo decide el Tech Lead: la fase nunca fusiona su PR.
 
 ## Retro del protocolo
@@ -156,9 +164,12 @@ también en una fase ligera, bloqueada o en rojo.
 5. `sh bin/protocol-feedback.sh`: abre en el kit un issue por fila de `núcleo` o `stack` y la deja en
    `enviada — ai-protocol#N`. Si no puede (sin `gh` o sin acceso), las filas siguen en `propuesta` y lo dices en el
    reporte.
-6. `sh bin/check-docs.sh --strict` en verde, y commit `chore(phase-<NN>-<FF>): retro` con el RESULTADO y
-   `.ai/PROTOCOL.md`. `git push` a la rama de la fase, como en §Entrega.
-7. La sección «Protocolo» de la descripción del PR, con las filas nuevas (y su issue): `gh pr edit --body-file`.
+6. La sección «Protocolo» del cuerpo del PR, `.ai/epics/<NN-slug>/evidence/<FF>-pr.md`, con las filas nuevas
+   (y su issue).
+7. `sh bin/check-docs.sh --strict` en verde, y commit `chore(phase-<NN>-<FF>): retro` con el RESULTADO,
+   `.ai/PROTOCOL.md` y el cuerpo del PR.
+8. Sueltas, como en §Entrega: `git push origin <rama de la fase>` y
+   `gh pr edit --body-file .ai/epics/<NN-slug>/evidence/<FF>-pr.md`.
 
 Un archivo del kit no se parchea en la fase, aunque urja: el arreglo va al kit y vuelve con `install.sh --upgrade`,
 entre fases.
