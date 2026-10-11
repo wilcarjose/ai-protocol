@@ -3,7 +3,7 @@
 El núcleo del protocolo: lo que es igual en todos los stacks. Versiones con [SemVer](https://semver.org/lang/es/) y
 etiqueta `core-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, arriba.
 
-## Sin publicar
+## [2.2.0] — 2026-10-11
 
 ### Añadido
 
@@ -26,6 +26,10 @@ etiqueta `core-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, ar
   protocolo» del RESULTADO, cuyo encabezado no cambia. Termina con `bin/protocol-feedback.sh` y la sección
   «Protocolo» del PR (#34).
 - `.github/pull_request_template.md`: la sección «Protocolo», con las filas nuevas de `.ai/PROTOCOL.md`.
+- `install.sh --upgrade` avisa, al terminar, de las filas `enviada — ai-protocol#N` de `.ai/PROTOCOL.md` que
+  resuelve la versión nueva: las que tienen su `#N` en el `CHANGELOG.md` de un paquete entre la versión del lock y
+  la nueva. Sólo avisa: la fila la marca el proyecto, como `aplicada — kit core X.Y.Z + <stack> X.Y.Z`, y la archiva
+  (#34).
 
 ### Cambiado
 
@@ -53,7 +57,7 @@ etiqueta `core-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, ar
   mejorarías del protocolo» de `phase/cierre.md §Cierre de fase` ya no escribe la retro: la deja para después de
   §Entrega (#34).
 - `.ai/PROTOCOL.md` (semilla) y `.ai/archive/PROTOCOL.md`: la columna `Alcance` (`núcleo` · `stack` · `proyecto`)
-  antes de `Estado`, y los estados `enviada — ai-protocol#N` y `aplicada — kit vX.Y`. El chequeo «memoria» de
+  antes de `Estado`, y los estados `enviada — ai-protocol#N` y `aplicada — kit core X.Y.Z + <stack> X.Y.Z`. El chequeo «memoria» de
   `bin/check-docs.sh` falla con un alcance que no es ninguno de los tres; una tabla sin la columna sigue pasando
   (#34).
 - `.ai/WORKFLOW.md §Archivos del protocolo`: los archivos del kit sólo cambian con `install.sh --upgrade`. Un
@@ -74,7 +78,7 @@ etiqueta `core-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, ar
 - El chequeo «traspaso» de `bin/check-docs.sh` busca la fila del traspaso también en `.ai/archive/BACKLOG.md`.
   Hasta ahora sólo miraba `.ai/BACKLOG.md`, así que al cerrar un traspaso y archivar su fila, como pide el chequeo
   «memoria», la fase que lo dejó volvía a fallar («cambia el contrato y nada lo traspasa»). Visto en `base-api`
-  (plan 1c, fase 3).
+  (plan 1c, fase 3) (#21).
 
 ### Al actualizar un proyecto
 

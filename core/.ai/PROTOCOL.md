@@ -15,9 +15,9 @@
      éste (la aplica la sesión de planificación, en .ai/project/). Un archivo del kit nunca se parchea aquí: el
      upgrade lo dejaría como conflicto.
 
-     Estados: propuesta · enviada — ai-protocol#N · aplicada — kit vX.Y (o aplicada — <fecha>, si es de proyecto) ·
-     descartada — <motivo>. Una fila aplicada o descartada pasa entera a .ai/archive/PROTOCOL.md (bin/check-docs.sh lo
-     exige). -->
+     Estados: propuesta · enviada — ai-protocol#N · aplicada — kit core X.Y.Z + <stack> X.Y.Z (o aplicada — <fecha>,
+     si es de proyecto) · descartada — <motivo>. Una fila aplicada o descartada pasa entera a .ai/archive/PROTOCOL.md
+     (bin/check-docs.sh lo exige). -->
 
 | # | Fecha | De | Qué | Alcance | Estado |
 |---|---|---|---|---|---|
