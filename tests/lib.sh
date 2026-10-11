@@ -209,9 +209,16 @@ estropea() {
         # La memoria: lo cerrado va a .ai/archive/ y «Últimos movimientos» tiene un tope.
         13) printf '| 1 | %s | api | — | — | Prueba. | 01/01 | cerrado — 01/01 |\n' "$DATE" >> .ai/BACKLOG.md ;;
         13a) for i in 1 2 3 4 5 6 7 8 9 10; do printf -- '- Movimiento %s.\n' "$i" >> .ai/STATE.md; done ;;
-        13b) printf '| 2 | %s | fase 01/01 | Prueba. | aplicada — %s |\n' "$DATE" "$DATE" >> .ai/PROTOCOL.md ;;
-        # La retroalimentación de la persona en el cierre (.claude/skills/phase/cierre.md §Cierre de fase).
-        13p) printf '| 2 | %s | persona — fase 01/01 | Prueba. | propuesta |\n' "$DATE" >> .ai/PROTOCOL.md ;;
+        13b) printf '| 2 | %s | fase 01/01 | Prueba. | núcleo | aplicada — kit v2.3 |\n' "$DATE" >> .ai/PROTOCOL.md ;;
+        # La retro del cierre (.claude/skills/phase/cierre.md §Retro del protocolo): una fila de la persona, filas en
+        # cada estado abierto (13s), un alcance que no existe (13k) y la tabla de antes, sin «Alcance» (13v).
+        13p) printf '| 2 | %s | persona — fase 01/01 | Prueba. | proyecto | propuesta |\n' "$DATE" >> .ai/PROTOCOL.md ;;
+        13s) printf '| 2 | %s | fase 01/01 | Prueba. **Propuesta:** otra. | stack | propuesta |\n' "$DATE" >> .ai/PROTOCOL.md
+             printf '| 3 | %s | fase 01/01 | Prueba. | núcleo | enviada — ai-protocol#40 |\n' "$DATE" >> .ai/PROTOCOL.md ;;
+        13k) printf '| 2 | %s | fase 01/01 | Prueba. | todos | propuesta |\n' "$DATE" >> .ai/PROTOCOL.md ;;
+        13v) edit .ai/PROTOCOL.md 's/^| # | Fecha | De | Qué | Alcance | Estado |$/| # | Fecha | De | Qué | Estado |/
+                s/^|---|---|---|---|---|---|$/|---|---|---|---|---|/'
+             printf '| 2 | %s | fase 01/01 | Prueba. | propuesta |\n' "$DATE" >> .ai/PROTOCOL.md ;;
         13c) printf '\n### %s — Prueba (fase 01/01)\n\n**Reemplazada por:** %s — Otra.\n' "$DATE" "$DATE" >> .ai/DOMAIN.md ;;
         13d) printf '| D1 | Prueba. | otro | — | fase 01/01 | respondida | A — %s |\n' "$DATE" >> .ai/DOMAIN.md ;;
         13e) printf '| 1 | %s | api | — | — | Prueba. | 01/01 | cerrado — 01/01 |\n' "$DATE" >> .ai/archive/BACKLOG.md
@@ -309,6 +316,9 @@ guardian_cases() {
     provoke 13a 'memoria: 11 líneas en «Últimos movimientos»'       'tiene 11 líneas; el tope es 10'
     provoke 13b 'memoria: una mejora aplicada sigue en PROTOCOL.md'  'PROTOCOL.md #2 está aplicada o descartada'
     accept  13p 'memoria: una propuesta de la persona en PROTOCOL.md'
+    accept  13s 'memoria: filas propuesta y enviada — ai-protocol#N en PROTOCOL.md'
+    provoke 13k 'memoria: un alcance que no es núcleo, stack ni proyecto' 'PROTOCOL.md #2: el alcance es «todos»'
+    accept  13v 'memoria: PROTOCOL.md sin la columna «Alcance», la de antes'
     provoke 13c 'memoria: una decisión reemplazada sigue en DOMAIN.md' 'una decisión «**Reemplazada por:**» sigue aquí'
     provoke 13d 'memoria: una decisión respondida sigue en DOMAIN.md' 'D1 está respondida'
     provoke 13e 'memoria: un # de BACKLOG.md que ya está archivado'  'el id 1 ya está en .ai/archive/BACKLOG.md'
