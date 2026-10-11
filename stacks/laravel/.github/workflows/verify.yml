@@ -62,6 +62,11 @@ jobs:
           if [ -f .env.example ] && [ ! -f .env ]; then cp .env.example .env; fi
           php artisan key:generate --no-interaction
           if [ -f .env.testing ] && grep -q '^APP_KEY=$' .env.testing; then php artisan key:generate --env=testing --no-interaction; fi
+          # El gate «contrato» (scramble:export) lee el esquema de los modelos con la conexión de .env: en la CI, la base
+          # de .env.example en el servicio, distinta de la de los tests, creada y migrada.
+          docker exec ${{ job.services.postgres.id }} createdb -U postgres "$(sed -n 's/^DB_DATABASE=//p' .env)"
+          sed -i 's/^DB_PASSWORD=.*/DB_PASSWORD=postgres/' .env
+          php artisan migrate --force --no-interaction
 
       - name: verify
         run: sh bin/verify.sh
