@@ -29,6 +29,13 @@
 
 —
 
+## Protocolo
+
+<!-- Las filas nuevas de .ai/PROTOCOL.md, con su alcance y su issue si se envió. Las añade la retro, después de abrir
+     el PR, con «gh pr edit --body-file» (.claude/skills/phase/cierre.md §Retro del protocolo). -->
+
+—
+
 ## Para el Tech Lead
 
 <!-- Preguntas abiertas, decisiones tomadas, traspasos y hallazgos que hay que mirar, o «nada». -->
