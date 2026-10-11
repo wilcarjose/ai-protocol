@@ -13,7 +13,7 @@
 |---|---|---|---|---|
 | 1 | Idiomas y PostgreSQL en las reglas | — | hecha | #17 |
 | 2 | Proyecto nuevo desde una plantilla | 1 | hecha | #18 |
-| 3 | Plantilla de la API (`base-api`) | 1 | en curso | |
+| 3 | Plantilla de la API (`base-api`) | 1 | en revisión | #20 |
 | 4 | Plantilla web (`base-web`) | 3 | pendiente | |
 | 5 | Validación de punta a punta | 2, 4 | pendiente | |
 
