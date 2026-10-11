@@ -16,6 +16,9 @@ Compatible con el núcleo `>=2.0.0 <3.0.0`. Versión mayor: un chequeo que antes
 
 ### Cambiado
 
+- `.ai/templates/phase.template.md`: el comentario de «Qué mejorarías del protocolo» pide anotar cada fricción
+  cuando ocurre, con su evidencia; la retro la completa después de la entrega (núcleo,
+  `phase/cierre.md §Retro del protocolo`). El encabezado no cambia (#29).
 - `.ai/rules/arquitectura.md §Componentes, textos e identificadores`: cero texto visible escrito a mano en el JSX
   aunque el proyecto tenga un solo idioma (antes, sólo con más de uno), también en `alt`, `aria-label`,
   `placeholder`, `title` y los metadatos. El linter ve el texto entre etiquetas; los atributos, los metadatos y las

@@ -62,8 +62,10 @@
 #                    ni filas cerradas o descartadas en BACKLOG.md, ni
 #                    decisiones reemplazadas o respondidas en DOMAIN.md, ni
 #                    mejoras aplicadas o descartadas en PROTOCOL.md, ni más de
-#                    10 líneas en «Últimos movimientos» de STATE.md; y ningún
-#                    id de BACKLOG.md o DOMAIN.md se repite en .ai/archive/.
+#                    10 líneas en «Últimos movimientos» de STATE.md; ningún
+#                    id de BACKLOG.md o DOMAIN.md se repite en .ai/archive/; y,
+#                    si PROTOCOL.md tiene la columna «Alcance», cada fila dice
+#                    núcleo, stack o proyecto.
 #  14. tareas      — toda «Tarea externa» de una fase es una fila de un paquete
 #                    de .ai/stages/, y su criterio de aceptación está, literal,
 #                    en «Criterios de éxito» de la fase
@@ -94,7 +96,8 @@
 #   12. cita `.ai/RULES.md §No existe` en CLAUDE.md, o cita una que existe
 #       por su número: `.ai/WORKFLOW.md §3`.
 #   13. marca como «cerrado — 01/01» una fila de .ai/BACKLOG.md sin pasarla
-#       a .ai/archive/BACKLOG.md.
+#       a .ai/archive/BACKLOG.md, o pon «todos» en el «Alcance» de una fila de
+#       .ai/PROTOCOL.md.
 #   14. pon «> **Tarea externa:** T9-99» en la cabecera de una fase.
 #
 # ◆ PORTABILIDAD
@@ -815,6 +818,12 @@ if [ -f "$AI/PROTOCOL.md" ]; then
     awk -F'|' '/^\| *[0-9]+ *\|/ { id = $2; gsub(/[ \t]/, "", id); st = $(NF - 1); sub(/^[ \t]+/, "", st)
         if (st ~ /^(aplicada|descartada)/) print id }' "$AI/PROTOCOL.md" | while read -r id; do
         bad "PROTOCOL.md #$id está aplicada o descartada: va a .ai/archive/PROTOCOL.md"
+    done
+    # Con la columna «Alcance» (la penúltima), cada fila dice a quién le toca; una tabla sin ella es la de antes.
+    awk -F'|' '/^\| *# *\|/ { a = (index($0, "| Alcance |") > 0); next }
+        a && /^\| *[0-9]+ *\|/ { id = $2; gsub(/[ \t]/, "", id); al = $(NF - 2); gsub(/^[ \t]+|[ \t]+$/, "", al)
+        if (al != "núcleo" && al != "stack" && al != "proyecto") print id " " al }' "$AI/PROTOCOL.md" | while read -r id al; do
+        bad "PROTOCOL.md #$id: el alcance es «$al»; tiene que ser núcleo, stack o proyecto"
     done
 fi
 n=$(strip_comments "$STATE" | awk 'index($0, "## Últimos movimientos") == 1 { f = 1; next } f && /^## / { exit } f' | grep -c '^- ')

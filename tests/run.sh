@@ -18,7 +18,11 @@
 #      LISTA_PARA_EJECUTAR, con el puntero de STATE.md en ella.
 #   3. Comprueba que `sh bin/check-docs.sh --strict` pasa sobre esa instalación,
 #      que bin/measure-context.sh la mide y que bin/handoff.sh imprime lo que
-#      una fase cerrada dejó para la siguiente (y falla con una sin cerrar).
+#      una fase cerrada dejó para la siguiente (y falla con una sin cerrar). Y
+#      bin/protocol-feedback.sh con un gh de mentira en el PATH: un issue por
+#      fila de núcleo o stack en «propuesta», que pasa a «enviada —
+#      ai-protocol#N», sin tocar las de proyecto ni las ya enviadas; sin gh,
+#      imprime el texto y .ai/PROTOCOL.md no cambia.
 #   4. Provoca (guardian_cases, en tests/lib.sh, que usan también los e2e),
 #      cada uno en una copia limpia, los 15 fallos de «CÓMO PROVOCAR
 #      CADA FALLO» de la cabecera de bin/check-docs.sh, más sus variantes (los
@@ -28,13 +32,15 @@
 #      (2t, 2h, 2w, 2x, 2l, 2c), su revisión (2r, 2s), un id D<n> que no existe
 #      en ningún sitio (3n), §Esperando evidencia desfasada (7e), un paquete de
 #      RULES.md sin versión en .ai/project/DECISIONS.md (9n), una cita de
-#      sección por su número (12n), cada tope de la memoria (13a…13e) y un
+#      sección por su número (12n), cada tope de la memoria (13a…13e), un
+#      alcance de .ai/PROTOCOL.md que no existe (13k) y un
 #      criterio de una tarea externa que no está literal en su fase (14c). Cada
 #      caso tiene que fallar con el mensaje de su chequeo, no con cualquier
 #      otro. Y al revés, casos que tienen que pasar: una evidencia que sí existe
 #      (2f), una fase sin «Tipo» (2a, como las de antes de los tipos), un
-#      bloqueante resuelto (2v) y un epic-plan que cita una decisión archivada
-#      en .ai/archive/DOMAIN.md (3a).
+#      bloqueante resuelto (2v), un epic-plan que cita una decisión archivada
+#      en .ai/archive/DOMAIN.md (3a), filas «propuesta» y «enviada» de
+#      .ai/PROTOCOL.md (13p, 13s) y su tabla de antes, sin «Alcance» (13v).
 #   El fallo 5 (migraciones) sólo existe si la plantilla de fase declara
 #   «Migraciones:»; en un kit que no lo hace, se comprueba en su lugar que el
 #   guardián acepta fases sin ese campo.
@@ -487,6 +493,62 @@ test_worktree() {
     in_worktree pasa 'el mismo cambio en un commit chore(protocol) pasa'
 }
 
+# ── bin/protocol-feedback.sh, con un gh de mentira ──────────────────────────
+# El gh del PATH apunta cada «issue create» en $GH_LOG y responde con la URL del issue siguiente, desde el 40. Las
+# filas: dos por enviar (núcleo y stack), una de proyecto, una ya enviada y una de stack con un «\|» en el texto.
+# shellcheck disable=SC2016  # el stub y las filas se escriben tal cual
+test_feedback() {
+    printf '◆ bin/protocol-feedback.sh\n'
+    d=$(fresh feedback) || { fail 'protocol-feedback: no hay una instalación limpia'; return; }
+    stubs="$WORK/$KIT-gh"
+    mkdir -p "$stubs"
+    printf '%s\n' '#!/bin/sh' 'case "$1 $2" in' \
+        '    "repo view") exit 0 ;;' \
+        '    "issue create") n=$(($(wc -l < "$GH_LOG") + 40)); printf "%s\n" "$*" >> "$GH_LOG"' \
+        '        echo "https://github.com/x/ai-protocol/issues/$n" ;;' \
+        '    *) exit 1 ;;' \
+        'esac' > "$stubs/gh"
+    chmod +x "$stubs/gh"
+    {
+        printf '| 1 | %s | fase 01/01 | Una fricción. **Propuesta:** `cierre.md §Entrega`: otra. | núcleo | propuesta |\n' "$DATE"
+        printf '| 2 | %s | persona — fase 01/01 | Del proyecto. | proyecto | propuesta |\n' "$DATE"
+        printf '| 3 | %s | fase 01/01 | Ya enviada. | núcleo | enviada — ai-protocol#7 |\n' "$DATE"
+        printf '| 4 | %s | fase 01/02 | Con a \\| b en el texto. | stack | propuesta |\n' "$DATE"
+    } >> "$d/.ai/PROTOCOL.md"
+    before=$(sha "$d/.ai/PROTOCOL.md")
+
+    # Sin gh: imprime el texto de cada issue y no cambia nada.
+    nogh="$WORK/$KIT-nogh"
+    mkdir -p "$nogh"
+    for u in awk sed cat mktemp rm dirname tail wc; do ln -sf "$(command -v "$u")" "$nogh/$u"; done
+    out=$(PATH="$nogh" "$(command -v sh)" "$d/bin/protocol-feedback.sh" 2>&1)
+    if [ "$(sha "$d/.ai/PROTOCOL.md")" = "$before" ] && printf '%s\n' "$out" | grep -qF '[núcleo] Una fricción' \
+       && printf '%s\n' "$out" | grep -qF "[$KIT] Con a | b en el texto" && printf '%s\n' "$out" | grep -qF 'nada enviado'; then
+        ok 'sin gh, imprime el texto de cada issue y .ai/PROTOCOL.md no cambia'
+    else fail 'sin gh, no imprime los issues o cambia .ai/PROTOCOL.md:'; printf '%s\n' "$out" | sed 's/^/      /'; fi
+
+    : > "$WORK/$KIT-gh.log"
+    if out=$(PATH="$stubs:$PATH" GH_LOG="$WORK/$KIT-gh.log" sh "$d/bin/protocol-feedback.sh" 2>&1) \
+       && [ "$(wc -l < "$WORK/$KIT-gh.log" | tr -d ' ')" -eq 2 ] \
+       && grep -q '^| 1 | .* | núcleo | enviada — ai-protocol#40 |$' "$d/.ai/PROTOCOL.md" \
+       && grep -q '^| 4 | .* | stack | enviada — ai-protocol#41 |$' "$d/.ai/PROTOCOL.md" \
+       && grep -q '^| 2 | .* | proyecto | propuesta |$' "$d/.ai/PROTOCOL.md" \
+       && grep -q '^| 3 | .* | núcleo | enviada — ai-protocol#7 |$' "$d/.ai/PROTOCOL.md" \
+       && grep -qF -- '--title [núcleo] Una fricción --body-file' "$WORK/$KIT-gh.log" \
+       && grep -qF -- "--title [$KIT] Con a | b en el texto --body-file" "$WORK/$KIT-gh.log"; then
+        ok 'un issue por fila de núcleo o stack sin enviar, que queda «enviada — ai-protocol#N»; las de proyecto y las enviadas, igual'
+    else
+        fail 'protocol-feedback no envía justo las filas de núcleo o stack en «propuesta»:'
+        { printf '%s\n' "$out"; cat "$WORK/$KIT-gh.log"; grep '^| [0-9]' "$d/.ai/PROTOCOL.md"; } | sed 's/^/      /'
+    fi
+    if sh "$d/bin/check-docs.sh" --strict > /dev/null 2>&1; then ok 'después, el guardián pasa'
+    else fail 'después de enviar, el guardián no pasa'; fi
+    : > "$WORK/$KIT-gh.log"
+    if PATH="$stubs:$PATH" GH_LOG="$WORK/$KIT-gh.log" sh "$d/bin/protocol-feedback.sh" 2>&1 | grep -qF 'nada que enviar' \
+       && [ ! -s "$WORK/$KIT-gh.log" ]; then ok 'otra vez, no hay nada que enviar'
+    else fail 'una segunda vuelta vuelve a enviar filas'; fi
+}
+
 # ── tests/structure.sh, frente a un fallo de cada chequeo ───────────────────
 # breaks <caso> <texto que structure.sh tiene que imprimir>: en una copia limpia del repo, mete el defecto.
 # shellcheck disable=SC2016  # las comillas invertidas son literales
@@ -662,6 +724,7 @@ for KIT in $KITS; do
 
     guardian_cases "$BASE"
 
+    test_feedback
     test_installer
     test_new_project
     test_protocol

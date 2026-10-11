@@ -228,7 +228,7 @@ baseline (conteo de tests, deuda congelada) nunca empeora: si un cierre la empeo
 | `.ai/STATE.md` | El puntero: fase activa, mapa de fases, bloqueos, últimos movimientos | La IA, en cada cierre y en cada sincronización |
 | `.ai/DOMAIN.md` | Glosario, reglas de negocio, decisiones tomadas y pendientes | La IA añade; nadie reescribe lo anterior |
 | `.ai/BACKLOG.md` | Hallazgos fuera de alcance y pendientes en otros repos | La IA añade, sin arreglarlos |
-| `.ai/PROTOCOL.md` | Mejoras del protocolo que propone cada fase | La IA añade al cerrar; el Tech Lead las aplica |
+| `.ai/PROTOCOL.md` | Mejoras del protocolo que propone cada fase | La IA, en la retro; se aplican en el kit o en `.ai/project/` |
 | `.ai/archive/` | Lo cerrado de la memoria: backlog, decisiones reemplazadas, mejoras aplicadas | La IA, al cerrar (`.claude/skills/phase/cierre.md §Archivo de la memoria`) |
 | `.ai/project/` | Lo que decide este proyecto y las reglas citan: contexto, versiones, alcance, contrato, zonas sensibles | El Tech Lead, o la fase que lo lista en su §4 |
 | `.ai/stages/` | Paquetes de tareas de un plan externo | La persona |
@@ -255,8 +255,8 @@ baseline (conteo de tests, deuda congelada) nunca empeora: si un cierre la empeo
 
 Los que `.ai/protocol.lock` marca `kit` (`CLAUDE.md`, las reglas, `.ai/templates/`, `.claude/`, `bin/`, `.github/`) y
 el lock; los `project` son del proyecto. **Una fase no los modifica**: si crees que algo está mal, STOP & ASK y la
-propuesta a `.ai/PROTOCOL.md`. Los cambia el Tech Lead en un commit `chore(protocol): …`; en una rama de fase lo
-vigila `bin/check-protocol.sh` (gate «protocolo»).
+propuesta a `.ai/PROTOCOL.md`. Sólo cambian con `install.sh --upgrade`, en un commit `chore(protocol): …`; en una
+rama de fase lo vigila `bin/check-protocol.sh` (gate «protocolo»).
 
 ---
 

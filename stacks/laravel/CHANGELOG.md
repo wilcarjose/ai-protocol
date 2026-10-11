@@ -9,6 +9,9 @@ Compatible con el núcleo `>=2.0.0 <3.0.0`.
 
 ### Cambiado
 
+- `.ai/templates/phase.template.md`: el comentario de «Qué mejorarías del protocolo» pide anotar cada fricción
+  cuando ocurre, con su evidencia; la retro la completa después de la entrega (núcleo,
+  `phase/cierre.md §Retro del protocolo`). El encabezado no cambia (#29).
 - `.ai/RULES.md §Lista negra` y `.ai/rules/arquitectura.md` (§1.1): los textos para el usuario van siempre en las
   traducciones y, con los slugs públicos y los datos semilla, en el idioma de `.ai/project/CROSS-CUTTING.md §Idiomas`,
   no en español. El ejemplo de Value Object de `.ai/rules/arquitectura.md` lanza su excepción con una clave de

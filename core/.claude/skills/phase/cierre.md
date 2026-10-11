@@ -21,9 +21,8 @@
    el cierre, en una línea, arriba de `§Últimos movimientos`.
 5. Decisiones de negocio nuevas a `.ai/DOMAIN.md §Decisiones tomadas`, con fecha y fase.
 6. Hallazgos fuera de alcance a `.ai/BACKLOG.md`, sin arreglarlos (`CLAUDE.md §Alcance`).
-7. «Qué mejorarías del protocolo» a `.ai/PROTOCOL.md`, y una sola pregunta a la persona, con opciones (en Claude
-   Code, `AskUserQuestion`): «¿Algo del protocolo te estorbó, te faltó o te sobró en esta fase?», «Nada» o «Sí»,
-   con su texto. Con texto, una fila más con `De` = `persona — fase NN/FF`; sin respuesta, el cierre sigue.
+7. «Qué mejorarías del protocolo» se queda con lo anotado durante la fase: la retro se completa después de la
+   entrega (§Retro del protocolo), para que también cuente lo que falle al entregar.
 8. **Memoria archivada** (§Archivo de la memoria).
 9. **Si la fase añade algo que hacer en producción al desplegarla** (una migración, un comando, una variable de
    entorno o de configuración, un cambio de cron o de colas, una restricción de orden), una fila por paso en
@@ -37,11 +36,12 @@
 14. Commit `chore(phase-<NN>-<FF>): close` con el RESULTADO, la evidencia, la revisión, la memoria y, si cambiaron,
     el manifiesto de despliegue, el epic-plan y la baseline de `.ai/project/verify.conf`. `git status` limpio.
 15. §Entrega.
-16. §Reporte final.
+16. §Retro del protocolo.
+17. §Reporte final.
 
 ## Cierre ligero
 
-Una fase con `> **Modo:** ligero` hace los pasos 1 a 4, la pregunta del 7, el 8 y 13 a 16 de §Cierre de fase; los
+Una fase con `> **Modo:** ligero` hace los pasos 1 a 4, el 8 y 13 a 17 de §Cierre de fase; los
 demás, sólo si tienen algo que escribir (una decisión, un hallazgo, un paso de despliegue, un traspaso). Los
 encabezados del RESULTADO se quedan, y los que no aplican dicen «—».
 
@@ -126,6 +126,37 @@ Toda fase termina igual, se ejecute en la nube o en local: su rama en GitHub y u
 3. Sin `gh` o sin acceso al remoto, dilo en el reporte con la orden que falta: la rama queda commiteada en local.
 4. El merge lo decide el Tech Lead: la fase nunca fusiona su PR.
 
+## Retro del protocolo
+
+Mejorar el protocolo es tarea de quien lo recorre: el ejecutor. Va al final, después de la entrega, y es obligatoria,
+también en una fase ligera, bloqueada o en rojo.
+
+1. **Anotada en el momento.** Cada fricción se escribe en «Qué mejorarías del protocolo» del RESULTADO cuando
+   ocurre, no de memoria al final. Aquí sólo se completa, con lo que haya pasado al entregar.
+2. **Por categorías**, una línea cada una, con su evidencia (el comando, el error, el reintento) y el archivo y la
+   sección que propones cambiar, o «nada — <por qué>»:
+   - **Fricción:** reintentos y tiempo perdido.
+   - **Ambigüedad:** lo que tuviste que interpretar.
+   - **Contradicción:** dos reglas, o una regla y el código, que chocan.
+   - **Herramientas y permisos:** lo que se denegó, faltó o hubo que pedir.
+   - **Sin cubrir:** lo que el protocolo no cubría, y el rodeo que usaste.
+3. **Cada mejora, una fila de `.ai/PROTOCOL.md`**: `De` = `fase NN/FF`; «Qué», la evidencia y, tras
+   `**Propuesta:**`, `` `<archivo> §<sección>` `` y el cambio; `Alcance`: `núcleo` o `stack` si sirve a todo
+   proyecto con el kit, `proyecto` si es sólo de éste (va a `.ai/project/`); `Estado`: `propuesta`.
+4. **La persona, desde su papel.** Enséñale la lista y pregúntale, con opciones (en Claude Code,
+   `AskUserQuestion`): «Como Tech Lead, ¿falta algo, sobra algo, o algo de esta fase te costó a ti (preguntas mal
+   planteadas, el visto bueno, la revisión del PR)?». Lo que añade, una fila con `De` = `persona — fase NN/FF`; lo
+   que corrige, en su fila. Es opcional: sin respuesta, la retro sigue.
+5. `sh bin/protocol-feedback.sh`: abre en el kit un issue por fila de `núcleo` o `stack` y la deja en
+   `enviada — ai-protocol#N`. Si no puede (sin `gh` o sin acceso), las filas siguen en `propuesta` y lo dices en el
+   reporte.
+6. `sh bin/check-docs.sh --strict` en verde, y commit `chore(phase-<NN>-<FF>): retro` con el RESULTADO y
+   `.ai/PROTOCOL.md`. `git push` a la rama de la fase, como en §Entrega.
+7. La sección «Protocolo» de la descripción del PR, con las filas nuevas (y su issue): `gh pr edit --body-file`.
+
+Un archivo del kit no se parchea en la fase, aunque urja: el arreglo va al kit y vuelve con `install.sh --upgrade`,
+entre fases.
+
 ## Reporte final
 
 El RESULTADO es el reporte: el chat no lo repite. Cinco líneas:
@@ -133,5 +164,6 @@ El RESULTADO es el reporte: el chat no lo repite. Cinco líneas:
 1. La fase (`NN/FF`) y su estado final; en `ESPERA_EVIDENCIA`, qué evidencia falta y quién la aporta.
 2. `bash bin/verify.sh`: verde, o el gate que falla.
 3. Los commits: cuántos y el rango (`<arranque>^..HEAD`).
-4. Lo que el Tech Lead tiene que decidir o mirar (preguntas abiertas, decisiones tomadas, traspasos), o «nada».
+4. Lo que el Tech Lead tiene que decidir o mirar (preguntas abiertas, decisiones tomadas, traspasos, filas de la
+   retro sin enviar), o «nada».
 5. El PR (o la orden que falta para abrirlo) y dónde está el RESULTADO.

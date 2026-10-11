@@ -15,9 +15,29 @@ etiqueta `core-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, ar
   (el resto de `.ai/project/`, las semillas del stack y el código), los archivos del kit ni el lock. Pide el kit en la
   versión del lock, y al terminar lista los marcadores que quedan: el guardián no deja pasar `bin/verify.sh` hasta
   rellenarlos.
+- `bin/protocol-feedback.sh`: abre un issue en el kit (`AI_PROTOCOL_REPO`, por defecto `wilcarjose/ai-protocol`) por
+  cada fila de `.ai/PROTOCOL.md` con alcance `núcleo` o `stack` en `propuesta`, con su origen, evidencia, propuesta
+  y alcance, y deja la fila en `enviada — ai-protocol#N`. Sin `gh` o sin acceso, imprime el texto y no cambia nada
+  (#34).
+- `phase/cierre.md §Retro del protocolo`: la retro del ejecutor, obligatoria y al final, después de la entrega, en
+  su propio commit `chore(phase-NN-FF): retro` empujado al mismo PR (#29). Por categorías fijas (fricción,
+  ambigüedad, contradicción, herramientas y permisos, lo que el protocolo no cubría), cada una con evidencia y el
+  archivo y la sección que propone cambiar, o «nada» justificado. Se anota cuando ocurre, en «Qué mejorarías del
+  protocolo» del RESULTADO, cuyo encabezado no cambia. Termina con `bin/protocol-feedback.sh` y la sección
+  «Protocolo» del PR (#34).
+- `.github/pull_request_template.md`: la sección «Protocolo», con las filas nuevas de `.ai/PROTOCOL.md`.
 
 ### Cambiado
 
+- La pregunta del cierre a la persona es opcional y va dirigida a su papel, después de enseñarle la retro del
+  ejecutor: «Como Tech Lead, ¿falta algo, sobra algo, o algo de esta fase te costó a ti?». El paso 7 de
+  `phase/cierre.md §Cierre de fase` ya no escribe la retro: la deja para después de §Entrega (#34).
+- `.ai/PROTOCOL.md` (semilla) y `.ai/archive/PROTOCOL.md`: la columna `Alcance` (`núcleo` · `stack` · `proyecto`)
+  antes de `Estado`, y los estados `enviada — ai-protocol#N` y `aplicada — kit vX.Y`. El chequeo «memoria» de
+  `bin/check-docs.sh` falla con un alcance que no es ninguno de los tres; una tabla sin la columna sigue pasando
+  (#34).
+- `.ai/WORKFLOW.md §Archivos del protocolo`: los archivos del kit sólo cambian con `install.sh --upgrade`. Un
+  archivo del kit nunca se parchea en el proyecto: el arreglo va al kit (#34).
 - Los textos para el usuario ya no se dan por hechos en español: el revisor (punto 11 de
   `.claude/agents/reviewer.md`), `/plan-phase` («Nombres», en su coherencia interna) y la semilla
   `.ai/project/GLOSSARY.md` los ponen, con los slugs públicos y los datos semilla, en el idioma de
@@ -38,6 +58,9 @@ etiqueta `core-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, ar
 
 ### Al actualizar un proyecto
 
+- `.ai/PROTOCOL.md` es memoria y el upgrade no la toca: sin la columna `Alcance`, sus filas no se envían. Para usar
+  el canal, añade la columna antes de `Estado`, con el alcance de cada fila, y pasa a `.ai/archive/PROTOCOL.md` las
+  que estén aplicadas o descartadas.
 - `.ai/project/` es del proyecto y el upgrade no la toca. Si `CROSS-CUTTING.md §Idiomas` dice «Un solo idioma: los
   textos van en el código», escribe lo que pide la semilla nueva y pasa esos textos a las traducciones: el revisor ya
   no los acepta en el código. El comentario de `GLOSSARY.md` que pone los textos en español queda desfasado.
