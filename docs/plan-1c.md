@@ -13,12 +13,17 @@
 |---|---|---|---|---|
 | 1 | Idiomas y PostgreSQL en las reglas | — | hecha | #17 |
 | 2 | Proyecto nuevo desde una plantilla | 1 | hecha | #18 |
-| 3 | Plantilla de la API (`base-api`) | 1 | en revisión | #20 |
-| 4 | Plantilla web (`base-web`) | 3 | pendiente | |
+| 3 | Plantilla de la API (`base-api`) | 1 | hecha | #20 |
+| 4 | Plantilla web (`base-web`) | 3, plan 1d | pendiente | |
 | 5 | Validación de punta a punta | 2, 4 | pendiente | |
 
 Las fases 1 y 2 cambian el kit. Las 3 y 4 crean cada plantilla y la construyen con el propio protocolo; la 4 empieza
 cuando la API publica su contrato de autenticación (BA-02 del paquete).
+
+**El plan 1d va antes de la fase 4** (`docs/plan-1d.md`, el ciclo de mejora del protocolo): `base-web` nace con el kit
+mejorado y sus fases estrenan la retro nueva. Dentro de la fase 4, **BW-04 espera además a la fase de `base-api` que
+construye su D2**: la API confía sólo en los proxies de una lista del entorno, vacía por defecto, y el BFF sustituye
+`X-Forwarded-For` por la IP del navegador.
 
 ## Cómo se ejecuta una fase
 
