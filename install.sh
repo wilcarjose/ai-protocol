@@ -42,6 +42,10 @@
 #   fases y la configuración que el proyecto ajusta, como phpstan.neon) sólo se
 #   copian si faltan: el upgrade nunca las toca. Si nada cambia,
 #   dice «sin cambios» y no escribe nada, tampoco el lock.
+#   Al terminar, avisa de las filas «enviada — ai-protocol#N» de
+#   .ai/PROTOCOL.md cuyo #N cita el CHANGELOG.md de un paquete entre la
+#   versión del lock y la nueva: las que resuelve. Sólo avisa; la fila la
+#   marca el proyecto.
 #
 # ◆ PROYECTO NUEVO
 #   Un repo creado desde una plantilla (un proyecto con el protocolo instalado
@@ -325,6 +329,37 @@ if [ -n "$OLD_LOCK" ]; then
 fi
 
 # ── Lock y resumen ──────────────────────────────────────────────────────────
+# changelog_since <paquete> <carpeta> <versión nueva>: las secciones de su CHANGELOG.md posteriores a la versión del
+# lock anterior, hasta la nueva; «Sin publicar», sólo si la nueva es -dev.
+changelog_since() {
+    was=$(awk -v p="$1" '$1 == "package" && $2 == p { print $3; exit }' "$OLD_LOCK")
+    [ -n "$was" ] && [ "$was" != "$3" ] && [ -f "$KIT/$2/CHANGELOG.md" ] || return 0
+    keep=$(sed -n 's/^## \[\([^]]*\)\].*/\1/p' "$KIT/$2/CHANGELOG.md" | while read -r v; do
+        [ "$(vcmp "$v" "$was")" -gt 0 ] && [ "$(vcmp "$v" "$3")" -le 0 ] && printf '%s ' "$v"
+    done)
+    case $3 in *-*) keep="$keep Sin-publicar" ;; esac
+    awk -v keep=" $keep " '/^## / { v = $2; sub(/^\[/, "", v); sub(/\].*/, "", v); if (v == "Sin") v = "Sin-publicar"
+                                    on = index(keep, " " v " ") > 0; next } on' "$KIT/$2/CHANGELOG.md"
+}
+
+# resolved_rows: las filas «enviada — <repo>#N» de .ai/PROTOCOL.md cuyo #N cita el CHANGELOG.md de la versión
+# nueva de un paquete. Sólo avisa: la fila la marca el proyecto.
+resolved_rows() {
+    [ -n "$OLD_LOCK" ] && [ -f "$TARGET/.ai/PROTOCOL.md" ] || return 0
+    { changelog_since core core "$CORE_V"; changelog_since "$STACK" "stacks/$STACK" "$STACK_V"; } > "$TMPD/news"
+    awk -F '|' 'FNR == NR { news = news $0 "\n"; next }
+        $0 ~ /^\|/ && NF > 3 {
+            st = $(NF - 1); id = $2; gsub(/^ +| +$/, "", st); gsub(/ /, "", id)
+            if (st !~ /^enviada — [^ ]*#[0-9]+/) next
+            n = st; sub(/^[^#]*#/, "", n); sub(/[^0-9].*/, "", n)
+            if (news ~ ("#" n "([^0-9]|$)")) printf "    #%s  %s\n", id, st
+        }' "$TMPD/news" "$TARGET/.ai/PROTOCOL.md" > "$TMPD/rows"
+    [ -s "$TMPD/rows" ] || return 0
+    printf '  Filas de .ai/PROTOCOL.md que resuelve esta versión: márcalas «aplicada — kit core %s + %s %s» y archívalas.\n' \
+        "$CORE_V" "$STACK" "$STACK_V"
+    cat "$TMPD/rows"
+}
+
 lock_changed=1
 [ -n "$OLD_LOCK" ] && cmp -s "$TMPD/lock" "$OLD_LOCK" && lock_changed=0
 
@@ -333,6 +368,8 @@ if [ "$MODE" = upgrade ] && [ "$lock_changed" -eq 0 ] && [ "$(count change)" -eq
     exit 0
 fi
 
+# Antes de escribir el lock, que tiene las versiones de antes.
+[ "$MODE" != upgrade ] || resolved_rows > "$TMPD/resolved"
 if [ "$DRY" -eq 0 ]; then
     mkdir -p "$(dirname "$LOCK")" && cp "$TMPD/lock" "$LOCK"
 fi
@@ -345,6 +382,7 @@ if [ "$MODE" = install ]; then
 else
     printf '✓ actualizado: %s cambio(s), %s conflicto(s)\n' "$(count change)" "$(count conflict)"
     [ "$(count change)" -ne 0 ] || [ "$(count conflict)" -ne 0 ] || printf '  (sólo cambia %s)\n' "$LOCK_REL"
+    cat "$TMPD/resolved"
 fi
 [ "$DRY" -eq 0 ] || echo '  (--dry-run: no se ha escrito nada)'
 exit 0
