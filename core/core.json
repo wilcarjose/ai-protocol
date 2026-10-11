@@ -18,7 +18,8 @@
     "bin/check-docs.sh",
     "bin/check-protocol.sh",
     "bin/handoff.sh",
-    "bin/measure-context.sh"
+    "bin/measure-context.sh",
+    "bin/protocol-feedback.sh"
   ],
   "seed": [
     ".ai/BACKLOG.md",
