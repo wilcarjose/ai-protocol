@@ -102,8 +102,8 @@ vez ([`docs/modos.md` §VPS](modos.md#vps)).
      algo no está decidido, para con un **STOP & ASK**: opciones y su recomendación. Lo que respondes queda en
      `.ai/DOMAIN.md` y no se vuelve a preguntar.
    - **Paso C:** `bash bin/verify.sh` completo, `/review` (otro agente, de sólo lectura, compara el diff con la
-     fase), el RESULTADO de la fase, la memoria al día y una pregunta para ti: qué te estorbó, te faltó o te sobró
-     del protocolo.
+     fase), el RESULTADO de la fase y la memoria al día. Después de la entrega, su retro del protocolo, y una
+     pregunta opcional para ti: si falta o sobra algo, o si algo de la fase te costó a ti.
 3. **PR.** La fase empuja su rama y abre el PR con la plantilla. La CI repite `bin/verify.sh` completo.
 4. **Revisión y fusión.** Lees el RESULTADO y el diff, y fusionas tú.
 5. **Siguiente fase.** Con el PR fusionado, `main` ya apunta a ella: otra sesión nueva y `/phase`. Una fase de
@@ -169,10 +169,10 @@ proyecto de verdad.
 - **Fusiona antes de lanzar la siguiente fase**: así sale de `main` con el puntero ya en ella.
 - **Fases que se revisan en diez minutos.** Si una no cabe, pide a `/plan-phase` que la parta.
 - **Decide en el Paso A, no al final.** Una pregunta respondida antes de escribir código es más barata.
-- **Responde la pregunta del cierre.** Lo que sirve a todos los proyectos va como issue a ai-protocol, con su fila de
-  `.ai/PROTOCOL.md`.
-- **No edites los archivos del kit en una fase.** Si hace falta, en un commit `chore(protocol): …`; mejor, con
-  `install.sh --upgrade`.
+- **Mira la retro de cada fase.** Lo que sirve a todos los proyectos va como issue a ai-protocol
+  (`bin/protocol-feedback.sh`) y vuelve con una versión del kit; añade lo que viste desde tu papel.
+- **No edites los archivos del kit en el proyecto**, ni con urgencia: el arreglo va al kit y llega con
+  `install.sh --upgrade`, entre fases, en un PR `chore(protocol): upgrade ai-protocol to vX.Y`.
 - **Ante algo raro**, `sh bin/check-docs.sh --strict`: si el guardián falla, la memoria no es fiable y la fase no
   arranca.
 - **En el VPS, una fase a la vez por proyecto** y staging aislado de los agentes

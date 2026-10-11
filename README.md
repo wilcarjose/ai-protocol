@@ -14,9 +14,20 @@ una fase al cierre de la épica, para qué sirve cada pieza y un ejemplo de inic
 - **Simple:** sólo lo necesario. Antes de añadir una pieza se busca lo mínimo que cumple el objetivo.
 - **Comprobable:** cada regla se comprueba con un comando o con una casilla `[humano]`. Si no se puede comprobar, se
   simplifica o se quita.
-- **Mejorado con retroalimentación:** cada cierre de fase pregunta a la persona qué le estorbó, le faltó o le sobró, y
-  su respuesta queda en `.ai/PROTOCOL.md` junto a las propuestas del agente. Una mejora que sirve a todos los
-  proyectos llega al kit como un issue en ai-protocol con la fila de `PROTOCOL.md`.
+- **Mejorado con retroalimentación:** mejorar el protocolo es tarea del ejecutor, que es quien lo recorre. Anota cada
+  fricción cuando ocurre y, al final del cierre, después de la entrega, escribe su retro por categorías (fricción,
+  ambigüedad, contradicción, herramientas y permisos, lo que no cubría), con evidencia y el archivo que propone
+  cambiar. La persona sólo añade o corrige lo que vio desde su papel. Cada mejora es una fila de `.ai/PROTOCOL.md`
+  con su alcance: las de núcleo o stack van al kit como un issue (`bin/protocol-feedback.sh`), vuelven con una
+  versión y llegan al proyecto con `install.sh --upgrade`; las de proyecto van a su `.ai/project/`. El ciclo tiene
+  cuatro reglas:
+  - **El kit es la única fuente.** Un archivo del kit nunca se parchea en un proyecto, ni con urgencia: el upgrade
+    lo dejaría como conflicto. Lo urgente sigue el mismo camino, más rápido (el arreglo en el kit, una versión de
+    parche y el upgrade).
+  - **Lo propio de un proyecto va a su `.ai/project/`**, no al kit.
+  - **El upgrade se hace entre fases**, en un PR `chore(protocol): upgrade ai-protocol to vX.Y` a `main`, sin
+    ninguna fase `EN_CURSO`: una fase termina con las reglas con las que empezó.
+  - **La retro es del ejecutor**; la pregunta a la persona es opcional y va dirigida a su papel.
 - **Neutral respecto al proveedor:** Claude Code es la herramienta por defecto, pero el protocolo se puede usar con
   agentes de otros proveedores. Los textos usan un lenguaje neutro y lo propio de Claude Code va como nota entre
   paréntesis, sin adaptadores nuevos.
