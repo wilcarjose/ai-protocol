@@ -15,7 +15,7 @@
 |---|---|---|---|---|
 | 1 | El canal | — | hecha | #36 |
 | 2 | El primer lote | 1 | hecha | #38 |
-| 3 | Versión y upgrade | 2 | en revisión | #39 |
+| 3 | Versión y upgrade | 2 | hecha | #39 |
 
 ## Cómo se ejecuta una fase
 
@@ -184,6 +184,8 @@ Criterios de aceptación:
   - (fase 3) El PR de upgrade de `base-api` se fusiona después del de esta fase y de sus etiquetas
     (`core-v2.2.0`, `laravel-v2.1.0`, `nextjs-v3.0.0`): su lock cita esas versiones.
   - (fase 3) Lo siguiente es la fase 4 del plan 1c (`base-web`), que nace con el kit publicado aquí.
+  - (cierre del plan) #39 y wilcarjose/base-api#9 fusionados, y las etiquetas `core-v2.2.0`, `laravel-v2.1.0` y
+    `nextjs-v3.0.0` creadas sobre `9480d63`. El plan 1d está hecho.
   - (fase 2) Los pasos de `cierre.md §Cierre de fase` se renumeraron: el 1 es la revisión, el 10 la baseline, el 11
     las zonas derivadas, el 12 el estado y el puntero, el 15 el cuerpo del PR y el commit de cierre, el 16 la
     entrega, el 17 la retro y el 18 el reporte. Lo de la fase 1 de abajo cita los números de antes.
