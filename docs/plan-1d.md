@@ -13,7 +13,7 @@
 
 | Fase | Objetivo | Depende de | Estado | PR |
 |---|---|---|---|---|
-| 1 | El canal | — | pendiente | |
+| 1 | El canal | — | en revisión | #36 |
 | 2 | El primer lote | 1 | pendiente | |
 | 3 | Versión y upgrade | 2 | pendiente | |
 
@@ -153,7 +153,20 @@ Criterios de aceptación:
   - (al escribir el plan) Los issues de las mejoras ya están abiertos: del #22 al #28, las filas de `PROTOCOL.md` de
     `base-api`; del #29 al #33, las cinco fricciones de su fase 01/03 que no llegaron a `PROTOCOL.md`; y el #34, el
     que los agrupa. El arreglo del chequeo «traspaso» va aparte, en el #21.
+  - (fase 1) `bin/protocol-feedback.sh` lo corre el ejecutor en la retro, después de la pregunta a la persona y antes
+    del commit `retro`, así que las filas entran ya en `enviada`. Su permiso no va en `stacks/*/.claude/settings.json`:
+    abrir issues fuera del proyecto se pregunta cada vez.
+  - (fase 1) «Qué» separa la evidencia y la propuesta con `**Propuesta:**`. Sin la marca, todo va a Evidencia y la
+    propuesta del issue es «—», como pasará con las filas de antes de `base-api`.
+  - (fase 1) Además de los entregables, por coherencia: el comentario de «Qué mejorarías del protocolo» en las dos
+    plantillas de fase (+107 caracteres en el arranque del ejecutor, el 0,2 %), `.ai/WORKFLOW.md §Archivos del
+    protocolo` (los archivos del kit sólo cambian con el upgrade, decisión 1) y dos párrafos de `docs/guia.md`.
 - **Lo que la siguiente fase necesita saber:**
+  - (fase 1) Los pasos de `cierre.md §Cierre de fase` no se renumeraron: el 7 remite a §Retro del protocolo, el 11
+    sigue siendo la baseline, el 16 es la retro y el 17 el reporte final. La retro hace un segundo `git push` y un
+    `gh pr edit --body-file`: los patrones de #30 en `settings.json` tienen que cubrirlos también.
+  - (fase 1) `bin/protocol-feedback.sh` nombra el proyecto por su carpeta (`${ROOT##*/}`) y el stack por el lock.
+    Sin la columna `Alcance`, no envía nada: en `base-api`, la fase 3 añade la columna.
   - (al escribir el plan) Hasta que la fase 3 publique el #21, la persona no cierra los traspasos de `base-api`.
   - (al escribir el plan) `base-api` no cambia hasta la fase 3: sus filas pasan a `enviada` y `aplicada` con el
     upgrade.
