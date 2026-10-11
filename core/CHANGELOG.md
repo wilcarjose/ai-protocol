@@ -41,9 +41,14 @@ etiqueta `core-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, ar
   una orden se deniega, se reintenta suelta antes de dar la orden a la persona (#30).
 - `/review` acepta cambios sin commitear dentro de `.ai/`: la memoria del cierre y una revisión anterior no hacen
   falta guardarlas con `git stash` para revisar otra vez (#25).
+- `/plan-phase`: un criterio sobre el texto de una respuesta (un error, un mensaje traducido) se mide con una
+  petición real contra la aplicación (#22); si la fase retira o renombra algo, sus usos en el código y en los tests
+  entran en sus «Archivos» (#24); y una fase que lee cabeceras, la IP o la identidad de quien llama lista
+  `.ai/project/CONTRACT.md` en su §2 (#28).
 - La pregunta del cierre a la persona es opcional y va dirigida a su papel, después de enseñarle la retro del
-  ejecutor: «Como Tech Lead, ¿falta algo, sobra algo, o algo de esta fase te costó a ti?». El paso 7 de
-  `phase/cierre.md §Cierre de fase` ya no escribe la retro: la deja para después de §Entrega (#34).
+  ejecutor: «Como Tech Lead, ¿falta algo, sobra algo, o algo de esta fase te costó a ti?». El paso de «Qué
+  mejorarías del protocolo» de `phase/cierre.md §Cierre de fase` ya no escribe la retro: la deja para después de
+  §Entrega (#34).
 - `.ai/PROTOCOL.md` (semilla) y `.ai/archive/PROTOCOL.md`: la columna `Alcance` (`núcleo` · `stack` · `proyecto`)
   antes de `Estado`, y los estados `enviada — ai-protocol#N` y `aplicada — kit vX.Y`. El chequeo «memoria» de
   `bin/check-docs.sh` falla con un alcance que no es ninguno de los tres; una tabla sin la columna sigue pasando

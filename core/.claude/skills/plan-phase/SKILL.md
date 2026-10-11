@@ -68,6 +68,8 @@ plantilla lo pide, «Migraciones: ninguna».
 
 - **Archivos.** Todo archivo que toque un entregable está en «Crear», «Modificar» o «Borrar». Si una regla de
   arquitectura prohíbe algo que otros archivos hacen hoy, esos archivos entran en la fase o la regla sale de ella.
+  Si la fase retira o renombra algo (una ruta, una clase, una clave de traducción), busca con `grep` sus usos en el
+  código **y en los tests**: cada archivo que lo usa entra en la fase.
 - **Tests donde puedan ejecutarse.** Cada test va en la suite que puede ejecutarlo (`.ai/rules/tests.md`). Nunca
   expresiones regulares sobre el código fuente (`.ai/WORKFLOW.md §Obediencia arquitectónica`).
 - **Criterios de éxito (§5).** Cada uno es un comando, y todos pueden cumplirse a la vez: no pidas «sin modificar el
@@ -85,7 +87,9 @@ plantilla lo pide, «Migraciones: ninguna».
 - **Contexto que debes leer antes (§2).** Rutas concretas: siempre `sh bin/handoff.sh` de la fase anterior, los
   temas de `.ai/rules/` que toca la fase (el índice está en `.ai/RULES.md`) y las filas de
   `.ai/project/FEATURES.md` de las funcionalidades que toca; si crea una o le añade una carpeta, §4 lista ese
-  archivo. `.ai/RULES.md` y `.ai/WORKFLOW.md` se leen siempre; no los listes. El revisor lee lo mismo
+  archivo. Si la fase lee cabeceras, la IP o la identidad de quien llama, también `.ai/project/CONTRACT.md`: dice
+  quién llama y por dónde (un proxy o un BFF cambian lo que llega). `.ai/RULES.md` y `.ai/WORKFLOW.md` se leen
+  siempre; no los listes. El revisor lee lo mismo
   (`.claude/agents/reviewer.md`): un tema que no está aquí no lo revisa nadie.
 - **Nombres.** Lo que crea la fase (carpetas, clases, tablas, rutas, claves de traducción, códigos de error) se
   nombra en inglés con los términos de `.ai/project/GLOSSARY.md` (`.ai/RULES.md §Lista negra`). Un término nuevo es
@@ -116,6 +120,9 @@ supuestos dependen de la fase anterior. El ejecutor la revalida en el Paso A (`.
    - **Un criterio sobre lo que hace un proceso** (arrancar, instalar, desplegar, fallar) se ejecuta, no se deduce
      leyendo el código del framework. Si no se puede ejecutar sin el cambio, el §2 lo dice para que el Paso A lo
      mida lo primero.
+   - **Un criterio sobre el texto de una respuesta** (un error, un mensaje traducido) se mide con una petición real
+     contra la aplicación, igual: muchos textos los pone el framework, a veces con datos de la petición (un 404 del
+     router lleva la ruta), y no salen del código propio.
    - **Si la fase cambia la versión de una herramienta** (lenguaje, gestor de paquetes, runner), mide los artefactos
      del repo (lockfile, build) con esa versión.
    - **Si la fase cambia cómo se llega a un sistema** (despliegue, CI), mira desde dónde conecta cada paso en la
