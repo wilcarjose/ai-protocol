@@ -149,7 +149,8 @@ Sin revisar.
 
 ### Qué mejorarías del protocolo
 
-<!-- Copiado a .ai/PROTOCOL.md al cerrar. Una línea por cosa: qué estorbó y qué propones. -->
+<!-- Anota aquí cada fricción cuando ocurre, con su evidencia; la retro la completa después de la entrega
+     (.claude/skills/phase/cierre.md §Retro del protocolo). -->
 
 ### Lo que la siguiente fase necesita saber
 
