@@ -183,6 +183,11 @@ estropea() {
         5)  edit .ai/epics/01-demo/phase-02.md 's/^> \*\*Migraciones:\*\* ninguna$/> **Migraciones:** autorizadas (users)/' ;;
         6)  edit .ai/epics/01-demo/phase-02.md \
                 's/^> \*\*Contrato HTTP:\*\* SIN CAMBIOS$/> **Contrato HTTP:** CAMBIO AUTORIZADO (prueba)/' ;;
+        # El traspaso ya se cerró y su fila está archivada: sigue contando (.claude/skills/phase/cierre.md §Archivo de
+        # la memoria).
+        6a) estropea 6
+            printf '| 1 | %s | %s | — | — | **Cambio:** prueba. **Origen:** fase 01/02. | 01/02 | cerrado — 01/02 |\n' \
+                "$DATE" "$SIBLING" >> .ai/archive/BACKLOG.md ;;
         7)  edit .ai/STATE.md 's/^- \*\*Decisiones abiertas:\*\* 0 (0/- **Decisiones abiertas:** 1 (0/' ;;
         7e) edit .ai/STATE.md 's/^- 02-paquete\/02 — .*/**Ninguna.**/' ;;
         8)  printf '| 1 | %s | api | interno | 99 | Prueba. | — | abierto |\n' "$DATE" >> .ai/BACKLOG.md ;;
@@ -289,6 +294,7 @@ guardian_cases() {
         fi
     fi
     provoke 6  'traspaso: CAMBIO AUTORIZADO sin traspaso'            'cambia el contrato y nada lo traspasa'
+    accept  6a 'traspaso: la fila del traspaso, cerrada y archivada'
     provoke 7  'contadores: «Decisiones abiertas» sube sin DOMAIN'   'la cabecera dice «Decisiones abiertas: 1'
     provoke 7e 'contadores: §Esperando evidencia no nombra la que espera' 'STATE.md §Esperando evidencia nombra'
     provoke 8  'destinos: «99» en la columna Destino'                '«Destino» es 99'

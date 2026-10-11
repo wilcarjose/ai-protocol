@@ -29,6 +29,13 @@ etiqueta `core-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, ar
   las traducciones y cómo va el idioma en la URL (o cómo llega, en una API). Ya no ofrece «Un solo idioma: los
   textos van en el código».
 
+### Corregido
+
+- El chequeo «traspaso» de `bin/check-docs.sh` busca la fila del traspaso también en `.ai/archive/BACKLOG.md`.
+  Hasta ahora sólo miraba `.ai/BACKLOG.md`, así que al cerrar un traspaso y archivar su fila, como pide el chequeo
+  «memoria», la fase que lo dejó volvía a fallar («cambia el contrato y nada lo traspasa»). Visto en `base-api`
+  (plan 1c, fase 3).
+
 ### Al actualizar un proyecto
 
 - `.ai/project/` es del proyecto y el upgrade no la toca. Si `CROSS-CUTTING.md §Idiomas` dice «Un solo idioma: los

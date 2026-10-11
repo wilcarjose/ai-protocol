@@ -40,8 +40,9 @@
 #   5. despliegue  — toda fase HECHA que declara migraciones tiene su fila en
 #                    docs/runbooks/release.md (sólo si la plantilla las pide).
 #   6. traspaso    — toda fase HECHA con «Contrato HTTP: CAMBIO AUTORIZADO»
-#                    tiene una fila de BACKLOG.md para un repo hermano que la
-#                    cita, o «> **Traspaso:** ninguno — <motivo>».
+#                    tiene una fila para un repo hermano que la cita, en
+#                    BACKLOG.md o, si ya se cerró, en .ai/archive/BACKLOG.md;
+#                    o «> **Traspaso:** ninguno — <motivo>».
 #   7. contadores  — la cabecera de STATE.md, §Bloqueo activo y §Pendientes en
 #                    otros repos cuadran con DOMAIN.md y BACKLOG.md, y
 #                    §Esperando evidencia con el mapa
@@ -550,12 +551,17 @@ else
         grep -q '^> \*\*Traspaso:\*\* *ninguno' "$f" && continue
         e=$(basename "$(dirname "$f")"); p=$(basename "$f" .md); p=${p#phase-}; x="${e%%-*}/$p"
         found=0
+        # La fila abierta está en BACKLOG.md; la cerrada, en el archivo (.claude/skills/phase/cierre.md §Archivo de la
+        # memoria). Las dos cuentan.
         for repo in $REPOS; do
-            awk -F'|' -v a="$repo" -v re="fase $x([^0-9a-z]|$)" '/^\| *[0-9]+ *\|/ {
-                    r = $4; gsub(/[ \t`]/, "", r); if (r == a && match($0, re)) hit = 1 }
-                END { exit hit ? 0 : 1 }' "$BACKLOG" && found=1
+            for b in "$BACKLOG" "$ARCHIVE/BACKLOG.md"; do
+                [ -f "$b" ] || continue
+                awk -F'|' -v a="$repo" -v re="fase $x([^0-9a-z]|$)" '/^\| *[0-9]+ *\|/ {
+                        r = $4; gsub(/[ \t`]/, "", r); if (r == a && match($0, re)) hit = 1 }
+                    END { exit hit ? 0 : 1 }' "$b" && found=1
+            done
         done
-        [ "$found" -eq 1 ] || bad "$(rel "$f"): cambia el contrato y nada lo traspasa: ni una fila de BACKLOG.md con Área $REPOS que diga «fase $x», ni «> **Traspaso:** ninguno — <motivo>» (.claude/skills/phase/cierre.md §Traspaso al otro repo)"
+        [ "$found" -eq 1 ] || bad "$(rel "$f"): cambia el contrato y nada lo traspasa: ni una fila de BACKLOG.md (o de .ai/archive/BACKLOG.md) con Área $REPOS que diga «fase $x», ni «> **Traspaso:** ninguno — <motivo>» (.claude/skills/phase/cierre.md §Traspaso al otro repo)"
     done
     report fail 'toda fase que cambió el contrato tiene su traspaso' 'cambios de contrato sin traspaso:'
 fi
