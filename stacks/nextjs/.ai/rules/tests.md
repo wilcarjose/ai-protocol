@@ -8,14 +8,18 @@
 ## 1. Tests
 
 - **Unitarios con Vitest** en `tests/` o junto al código (`*.test.ts`). Sin red real: el cliente se sustituye por
-  fixtures.
+  fixtures. Vitest se instala o se sube en su **último parche publicado** (`npm view vitest version`): sus peers
+  opcionales traen `@vitest/browser` en su última versión, que exige esa misma de `vitest`, y con una anterior npm 10
+  revienta con `Cannot read properties of null (reading 'edgesOut')`.
 - **Contrato:** cada snapshot de `tests/contract-snapshots/` se importa en un test tipado con su tipo generado
   (`satisfies components["schemas"]["…"]`), así que `tsc` lo comprueba contra la copia del OpenAPI
   (`.ai/rules/contrato.md`). El cliente y sus errores problem+json tienen su test en `tests/shared/api/`.
 - **E2E con Playwright** en `e2e/` (`playwright.config.ts`): sólo `getByTestId()` (la interfaz cambia de idioma, los
   testids no), cero esperas por tiempo (`waitForTimeout`), aserciones con reintento automático. Necesitan el backend
   levantado, así que `bin/verify.sh` sólo comprueba que cargan: se corren con `npx playwright test` si la fase lo
-  pide, y sus «Criterios de éxito» dicen quién provee el backend.
+  pide, y sus «Criterios de éxito» dicen quién provee el backend. Los servicios (el backend, un buzón de correo de
+  pruebas) los levanta la persona: la IA no arranca contenedores. Si Playwright pide otro navegador tras subir
+  `@playwright/test`, se instala con `npx playwright install chromium`.
 - **Rendimiento con Lighthouse CI**: el job `lighthouse` de `.github/workflows/verify.yml` construye la app y la mide
   contra `.ai/project/lighthouse.json`, que es del proyecto: las URL y los presupuestos de
   `.ai/project/CROSS-CUTTING.md §Rendimiento`. Un presupuesto sólo se relaja con una decisión en `.ai/DOMAIN.md`.
