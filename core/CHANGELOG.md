@@ -3,6 +3,13 @@
 El núcleo del protocolo: lo que es igual en todos los stacks. Versiones con [SemVer](https://semver.org/lang/es/) y
 etiqueta `core-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, arriba.
 
+## [2.3.0] — 2026-10-12
+
+### Cambiado
+
+- `.ai/WORKFLOW.md §Dependencia nueva`: una dependencia que la épica o la fase ya autorizan se instala con su
+  versión exacta, sin parar; si el permiso deniega la orden, la persona la lanza con la orden exacta (#42).
+
 ## [2.2.0] — 2026-10-11
 
 ### Añadido

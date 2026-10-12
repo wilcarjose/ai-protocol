@@ -4,8 +4,8 @@
     "allow": [
       "Read", "Edit", "Write", "Glob", "Grep", "Edit(./.ai/project/verify.conf)",
       "Bash(sh bin/check-docs.sh*)", "Bash(sh bin/check-protocol.sh*)", "Bash(sh bin/handoff.sh*)", "Bash(sh bin/measure-context.sh*)", "Bash(bash bin/verify.sh*)", "Bash(sh bin/verify.sh*)",
-      "Bash(npm run *)", "Bash(npm ls*)", "Bash(npm ci)",
-      "Bash(npx tsc *)", "Bash(npx eslint *)", "Bash(npx vitest *)", "Bash(npx playwright test*)",
+      "Bash(npm run *)", "Bash(npm ls*)", "Bash(npm ci)", "Bash(npm i --save-exact *)",
+      "Bash(npx tsc *)", "Bash(npx eslint *)", "Bash(npx vitest *)", "Bash(npx playwright test*)", "Bash(npx shadcn@*)", "Bash(npx playwright install chromium)", "Bash(npx --yes @lhci/cli@*)",
       "Bash(sh bin/contract.sh*)", "Bash(npx next build*)", "Bash(npx next typegen*)",
       "Bash(node -p *)", "Bash(node -e *)",
       "Bash(curl -s http://localhost*)",
@@ -26,7 +26,7 @@
       "Bash(git push -d*)", "Bash(git push * -d*)", "Bash(git push *--delete*)",
       "Bash(git push *--mirror*)", "Bash(git push *--all*)", "Bash(git push *--tags*)",
       "Bash(gh pr merge*)", "Bash(git remote*)", "Bash(git reset --hard*)",
-      "Bash(npm audit fix*)", "Bash(npm install*)", "Bash(npm i *)", "Bash(npm uninstall*)", "Bash(npm update*)",
+      "Bash(npm audit fix*)", "Bash(npm install*)", "Bash(npm uninstall*)", "Bash(npm update*)",
       "Bash(yarn add*)", "Bash(pnpm add*)",
       "Bash(rm -rf *)", "Bash(wget *)", "Bash(ssh *)"
     ]
