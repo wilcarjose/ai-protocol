@@ -50,7 +50,7 @@ ROOT=$(cd "$(dirname "$0")/.." && pwd)
 
 NEXT_VERSION=16.3.8
 DEPS='openapi-fetch@0.17.0 zod@4.6.5 @tanstack/react-query@5.104.1 zustand@5.0.15'
-DEV_DEPS='@types/node@22 openapi-typescript@7.13.0 eslint-plugin-boundaries@7.2.0 eslint-import-resolver-typescript@4.4.5 vitest@5.0.3 @playwright/test@1.63.0'
+DEV_DEPS='@types/node@22 openapi-typescript@7.13.0 eslint-plugin-boundaries@7.2.0 eslint-import-resolver-typescript@4.4.5 vitest@5.0.4 @playwright/test@1.63.0'
 LHCI_VERSION=0.15.1
 
 WORK=$(mktemp -d)
