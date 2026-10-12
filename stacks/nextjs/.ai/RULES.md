@@ -141,7 +141,7 @@ leer antes» los que toca; si vas a tocar algo de un tema que la fase no cita, l
 | Archivo | Qué cubre | Se lee si la fase toca |
 |---|---|---|
 | `.ai/rules/contrato.md` | Cómo se conoce el contrato y se genera el cliente, errores problem+json, claves de caché, formas variables | `src/shared/api/`, el `api/` de una feature o entidad, o los datos del servidor |
-| `.ai/rules/arquitectura.md` | Qué herramienta de estado y dónde vive; componentes, textos, testids y nombres | Cualquier componente, hook, store o Server Action |
+| `.ai/rules/arquitectura.md` | Qué herramienta de estado y dónde vive; componentes, textos, testids y nombres; estilos y tema | Cualquier componente, hook, store, Server Action o estilo |
 | `.ai/rules/tests.md` | Vitest, tests de contrato, E2E con Playwright y Lighthouse | `tests/` o `e2e/` (casi siempre) |
 
 ---

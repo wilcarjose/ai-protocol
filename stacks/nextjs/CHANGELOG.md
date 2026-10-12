@@ -3,6 +3,31 @@
 El stack Next.js: lo que añade al núcleo. Versiones con [SemVer](https://semver.org/lang/es/) y etiqueta
 `nextjs-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, arriba.
 
+## [3.2.0] — 2026-10-12
+
+Compatible con el núcleo `>=2.0.0 <3.0.0`.
+
+### Añadido
+
+- `.ai/rules/arquitectura.md §Estilos y tema`: el aspecto se cambia sólo en el tema (`src/app/globals.css`):
+  `:root` para el modo claro, `.dark` para el oscuro si lo hay, los tokens semánticos de shadcn/ui más las fuentes,
+  el radio, las sombras y el espaciado de letra, y `@theme inline` para las utilidades. Así, sustituir `:root` y
+  `.dark` por los de otro tema con los mismos nombres (p. ej. uno exportado de tweakcn) cambia toda la web. Cero
+  colores escritos a mano fuera del tema (clases de la paleta de Tailwind, `#hex`, `rgb()`, `oklch()`…); lo que
+  genera el CLI de shadcn/ui se queda como lo genera, y el código copiado de otros bloques pasa a tokens. Lo
+  comprueba el revisor: sin gate nuevo.
+
+### Cambiado
+
+- `.ai/RULES.md §Reglas por tema`: `arquitectura.md` se lee también cuando la fase toca estilos.
+
+### Al actualizar un proyecto
+
+- Nada falla: la regla no tiene gate. Si `src/app/globals.css` conserva el `body` de create-next-app
+  (`font-family: Arial, Helvetica, sans-serif` y sus `background` y `color`), pisa la fuente y los colores del tema:
+  la fase que toque estilos lo quita. Los colores escritos a mano que ya haya en el código se pasan a tokens en la
+  fase que toque ese componente, o van a `.ai/BACKLOG.md`.
+
 ## [3.1.0] — 2026-10-12
 
 Compatible con el núcleo `>=2.0.0 <3.0.0`.
