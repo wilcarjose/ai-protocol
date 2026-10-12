@@ -10,7 +10,8 @@ Compatible con el núcleo `>=2.0.0 <3.0.0`.
 ### Cambiado
 
 - `.claude/settings.json`: permite `npm i --save-exact *` (y lo saca de `deny`; `npm install*` sigue denegado),
-  `npx shadcn@*`, `npx playwright install chromium` y `npx --yes @lhci/cli@*` (#42, #43).
+  `npx shadcn@*`, `npx playwright install chromium`, `npx --yes @lhci/cli@*` (#42, #43) y `npm view *`, que sólo
+  lee el registro.
 - `.ai/rules/tests.md`: los servicios del E2E los levanta la persona, y cómo se instala el navegador de
   Playwright tras subir de versión (#43); y que Vitest va en su último parche, porque con uno anterior npm 10
   revienta resolviendo las peers opcionales.

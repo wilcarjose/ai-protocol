@@ -8,9 +8,9 @@
 ## 1. Tests
 
 - **Unitarios con Vitest** en `tests/` o junto al código (`*.test.ts`). Sin red real: el cliente se sustituye por
-  fixtures. Vitest se instala o se sube en su **último parche publicado**: sus peers opcionales traen
-  `@vitest/browser` en su última versión, que exige esa misma de `vitest`, y con una anterior npm 10 revienta con
-  `Cannot read properties of null (reading 'edgesOut')`.
+  fixtures. Vitest se instala o se sube en su **último parche publicado** (`npm view vitest version`): sus peers
+  opcionales traen `@vitest/browser` en su última versión, que exige esa misma de `vitest`, y con una anterior npm 10
+  revienta con `Cannot read properties of null (reading 'edgesOut')`.
 - **Contrato:** cada snapshot de `tests/contract-snapshots/` se importa en un test tipado con su tipo generado
   (`satisfies components["schemas"]["…"]`), así que `tsc` lo comprueba contra la copia del OpenAPI
   (`.ai/rules/contrato.md`). El cliente y sus errores problem+json tienen su test en `tests/shared/api/`.
