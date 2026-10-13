@@ -48,7 +48,7 @@ ligera sin preguntas ni supuestos rotos no espera: da las viñetas y sigue.
    siempre con la entrada cerrada (`< /dev/null`), para que la pregunta falle en vez de esperar, y con el tope de
    tiempo de la herramienta (en Claude Code, el `timeout` de la orden), no con `timeout` delante, que la saca de
    los permisos. Una pregunta que la fase no responde es STOP & ASK.
-4. Si te bloqueas: STOP & ASK y `BLOQUEADA`.
+4. Si te bloqueas: STOP & ASK (§Estado de una fase dice cuándo pasa a `BLOQUEADA`).
 5. Al terminar las filas, `bash bin/verify.sh` completo (§Verificación).
 
 ## Paso C — Cierre (siempre, también bloqueada o en rojo)
@@ -96,7 +96,9 @@ escriben siempre juntas.
 
 - **Al iniciar:** `EN_CURSO` y la fecha en `Última actualización`. Con la primera fase de la épica, su epic-plan
   pasa de `SIN_EMPEZAR` a `EN_CURSO`.
-- **Al bloquear** (desde `EN_CURSO`): `BLOQUEADA`; con la respuesta, vuelve a `EN_CURSO`.
+- **Al bloquear** (desde `EN_CURSO`): `BLOQUEADA` sólo si la pregunta queda sin respuesta al terminar el turno;
+  con la respuesta, vuelve a `EN_CURSO`. La que se responde en el acto (en Claude Code, `AskUserQuestion`) no cambia
+  el estado: la pregunta y la respuesta van a las «Preguntas abiertas» de la fase.
 - **Al cerrar:** `HECHA`, `ESPERA_EVIDENCIA` (sólo quedan casillas `[humano]`), `BLOQUEADA` o `VERIFICACION_ROJA`,
   con la fecha en `Cerrada`.
 - **El puntero** (`Épica activa`, `Fase activa`, `Archivo de la fase`) es la **primera fila sin `HECHA` ni
