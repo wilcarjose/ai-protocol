@@ -11,6 +11,9 @@ etiqueta `core-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, ar
   de cualquier archivo del núcleo, no sólo las de git y gh: con `"defaultMode": "dontAsk"`, la retro no podía
   ejecutar `sh bin/protocol-feedback.sh` (`phase/cierre.md §Retro del protocolo`) y las filas se quedaban en
   `propuesta` (#64).
+- `phase/SKILL.md §Rama de la fase`: si tras traer el remoto la rama base (la de la épica o `main`) ya apunta a la
+  fase, la rama de la fase se crea desde ella sin preguntar y se dice en una línea; sólo se pregunta si no apunta,
+  entre la de la fase anterior y la actual (#63).
 
 ## [2.4.0] — 2026-10-12
 
