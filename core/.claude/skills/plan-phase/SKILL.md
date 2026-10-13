@@ -83,7 +83,10 @@ plantilla lo pide, «Migraciones: ninguna».
   lo que no cae ahí dentro —un traspaso a otro repo, una fila de un runbook, una tabla de un documento— no lo
   comprueba nadie si §5 no lo nombra con un comando. Una instrucción que está en el §3 de seis fases y en ningún §5
   se pierde cuatro veces de seis.
-- **Contrato** de la fase igual al que dicen el epic-plan y `.ai/DOMAIN.md`.
+- **Contrato** de la fase igual al que dicen el epic-plan y `.ai/DOMAIN.md`. Con `CAMBIO AUTORIZADO`, el plan
+  decide en qué orden se despliegan los dos repos y por qué: el orden equivocado puede abrir justo lo que la fase
+  cierra. Es un entregable: su fila en `docs/runbooks/release.md §Pasos por fase`, con el otro repo en «Cuándo», y
+  el `**Despliegue:**` del traspaso (`.claude/skills/phase/cierre.md §Traspaso al otro repo`).
 - **Plan de commits (§9).** Cada entregable que cambia archivos se mapea a una fila; una fila puede cubrir varios
   entregables relacionados; los que no cambian archivos no llevan fila. **Excepción:** un entregable que ningún
   gate ve va en su fila propia; agrupado, no tiene dónde aterrizar y se pierde sin que falle nada. Los commits de

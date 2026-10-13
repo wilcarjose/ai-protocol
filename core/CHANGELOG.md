@@ -21,6 +21,9 @@ etiqueta `core-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, ar
 - `phase/SKILL.md §Estado de una fase` y `§Paso B`: un STOP & ASK que se responde en el acto no cambia el estado,
   y queda con su respuesta en las «Preguntas abiertas» de la fase; `BLOQUEADA` es para la pregunta que queda sin
   respuesta al terminar el turno (#60).
+- `plan-phase/SKILL.md §Coherencia interna`, «Contrato»: con `CAMBIO AUTORIZADO`, el plan decide el orden de
+  despliegue entre los dos repos, como entregable: su fila en `docs/runbooks/release.md §Pasos por fase` y el
+  `**Despliegue:**` del traspaso (#41).
 
 ## [2.4.0] — 2026-10-12
 
