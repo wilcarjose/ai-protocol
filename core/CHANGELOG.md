@@ -25,6 +25,8 @@ etiqueta `core-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, ar
 - `/plan-epic §Antes de dar la épica por lista`: las dependencias que trae un generador se autorizan con la lista
   de su `--dry-run` al planificar, o como «lo que pida `<cli>@<versión>`», nunca escritas de memoria; y
   `.ai/WORKFLOW.md §Dependencia nueva` dice que esa autorización es lo que imprime el `--dry-run` del CLI (#49).
+- `/plan-phase §Coherencia interna`: ningún criterio de éxito depende de la CI del PR, que corre después del cierre;
+  lo que mide un job de la CI se pide con la misma orden, ejecutada en la sesión (#54).
 
 ## [2.3.0] — 2026-10-12
 

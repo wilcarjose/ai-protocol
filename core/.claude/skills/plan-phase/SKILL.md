@@ -74,6 +74,9 @@ plantilla lo pide, «Migraciones: ninguna».
   expresiones regulares sobre el código fuente (`.ai/WORKFLOW.md §Obediencia arquitectónica`).
 - **Criterios de éxito (§5).** Cada uno es un comando, y todos pueden cumplirse a la vez: no pidas «sin modificar el
   archivo» y «añadirle un caso» en la misma fase. Mídelos al escribirlos (§Antes de dar el plan por listo).
+  **Ninguno depende de la CI del PR**: las casillas se marcan en el cierre, antes de que exista el PR
+  (`.claude/skills/phase/cierre.md §Entrega`). Lo que mide un job de la CI (Lighthouse, p. ej.) se pide con la misma
+  orden, ejecutada en la sesión; la CI lo confirma después, en el PR.
 - **Todo entregable que ningún gate ve tiene su propio criterio en §5.** `bin/verify.sh` comprueba lo que comprueba;
   lo que no cae ahí dentro —un traspaso a otro repo, una fila de un runbook, una tabla de un documento— no lo
   comprueba nadie si §5 no lo nombra con un comando. Una instrucción que está en el §3 de seis fases y en ningún §5
