@@ -28,6 +28,10 @@ etiqueta `core-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, ar
 - `plan-phase/SKILL.md §Antes de dar el plan por listo`: quien provee lo que un criterio necesita y la fase no
   levanta es quien diga `.ai/rules/tests.md`; si es la persona, el §2 lo escribe como un bloque «para la persona»,
   listo para pegar, sin «quien ejecuta». La contradicción de #72 nació al planificar (#72).
+- `phase/SKILL.md §Paso A — Orientación`: si un criterio necesita servicios que la fase no levanta, el Paso A
+  comprueba su salud y su configuración efectiva (sólo leyendo, con la orden de `.ai/rules/tests.md` o del §2) y, si
+  no están como pide la fase, las viñetas traen ya el bloque para la persona o para la sesión del repo hermano. El
+  ejecutor vio los servicios apagados en el Paso A y no lo dijo hasta la fila del E2E (#71).
 - `tests/structure.sh` (permisos): cada orden `sh bin/…` o `bash bin/…` que cita un archivo de un stack tiene que
   estar permitida en el `.claude/settings.json` de ese stack, como ya pasaba con las del núcleo (#72).
 
