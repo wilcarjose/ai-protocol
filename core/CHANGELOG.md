@@ -3,7 +3,7 @@
 El núcleo del protocolo: lo que es igual en todos los stacks. Versiones con [SemVer](https://semver.org/lang/es/) y
 etiqueta `core-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, arriba.
 
-## [2.7.0-dev]
+## [2.7.0] — 2026-10-13
 
 ### Añadido
 

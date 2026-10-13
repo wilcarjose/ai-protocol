@@ -3,7 +3,7 @@
 El stack Laravel: lo que añade al núcleo. Versiones con [SemVer](https://semver.org/lang/es/) y etiqueta
 `laravel-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, arriba.
 
-## [2.5.0-dev]
+## [2.5.0] — 2026-10-13
 
 Compatible con el núcleo `>=2.0.0 <3.0.0`.
 
