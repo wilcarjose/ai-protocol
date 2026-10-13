@@ -3,7 +3,7 @@
 El stack Next.js: lo que añade al núcleo. Versiones con [SemVer](https://semver.org/lang/es/) y etiqueta
 `nextjs-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, arriba.
 
-## Sin publicar
+## [3.3.0] — 2026-10-12
 
 Compatible con el núcleo `>=2.0.0 <3.0.0`.
 
@@ -25,6 +25,14 @@ Compatible con el núcleo `>=2.0.0 <3.0.0`.
   existe y ponía en rojo «tipos» y «build»; la CI nunca lo tiene, y `next dev` lo vuelve a escribir (#53).
 - `.claude/settings.json`: permite `git pull --ff-only*`, que pide el núcleo para traer la rama base antes de crear
   la rama de una fase (`phase/SKILL.md §Rama de la fase`, #50).
+
+### Al actualizar un proyecto
+
+- `install.sh --upgrade` añade a `.gitignore` las líneas de `test-results/`, `playwright-report/` y `.lighthouseci/`
+  que falten; si el proyecto ya las ignoraba con otra forma (`/x`, `x/`), no las repite. Lo que ya estuviera
+  commiteado en esas carpetas sigue versionado: se quita con `git rm -r --cached <carpeta>`.
+- Con `next dev` en marcha, el editor pierde los tipos de `.next/dev/types` tras cada `bin/verify.sh` hasta el
+  siguiente cambio de rutas o reinicio de `next dev`.
 
 ## [3.2.0] — 2026-10-12
 
