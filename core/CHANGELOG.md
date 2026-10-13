@@ -3,6 +3,14 @@
 El núcleo del protocolo: lo que es igual en todos los stacks. Versiones con [SemVer](https://semver.org/lang/es/) y
 etiqueta `core-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, arriba.
 
+## Sin publicar
+
+### Cambiado
+
+- `phase/cierre.md §Cierre de fase`: el paso 2 dice que el estado de la fase y del mapa no cambia hasta el paso 12.
+  Con `HECHA` puesta antes de rellenar el RESULTADO y marcar las casillas, el `verify` de cierre sale rojo y cuesta
+  otra pasada (#70).
+
 ## [2.7.0] — 2026-10-13
 
 ### Añadido

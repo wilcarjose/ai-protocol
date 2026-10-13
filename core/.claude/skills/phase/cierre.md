@@ -10,7 +10,9 @@
    `bash bin/verify.sh` completo del Paso B: revisa el diff, no el RESULTADO. Sus arreglos cuentan entre los
    intentos de `.claude/skills/phase/SKILL.md §Verificación`. En `BLOQUEADA` o `VERIFICACION_ROJA` no hace falta.
 2. **RESULTADO** del archivo de la fase, sin borrar encabezados. Lo más importante es «Lo que la siguiente fase
-   necesita saber»: la próxima sesión empieza sin memoria y sólo leerá eso (`bin/handoff.sh` lo imprime).
+   necesita saber»: la próxima sesión empieza sin memoria y sólo leerá eso (`bin/handoff.sh` lo imprime). El
+   estado de la fase y del mapa no cambia todavía: va en el paso 12, cuando el RESULTADO, las casillas y la memoria
+   ya están escritos, porque el guardián rechaza una `HECHA` sin ellos.
 3. **Criterios de éxito**: cada casilla se ejecuta tal como está escrita y se marca con su salida en «Verificación»
    (`.ai/WORKFLOW.md §Un criterio de éxito no se puede cumplir`). Una salida de más de **40 líneas** va entera a
    `.ai/epics/<NN-slug>/evidence/<FF>-<nombre>.txt`, y «Verificación» enlaza esa ruta entre comillas invertidas,
