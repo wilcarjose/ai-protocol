@@ -21,9 +21,21 @@
   clases y sus estilos calculados (`lang`, `dir`, la clase del modo oscuro, el color de fondo), nunca para pulsar,
   escribir o esperar a algo; cero esperas por tiempo (`waitForTimeout`), aserciones con reintento automático. Necesitan el backend
   levantado, así que `bin/verify.sh` sólo comprueba que cargan: se corren con `npx playwright test` si la fase lo
-  pide, y sus «Criterios de éxito» dicen quién provee el backend. Los servicios (el backend, un buzón de correo de
-  pruebas) los levanta la persona: la IA no arranca contenedores. Si Playwright pide otro navegador tras subir
-  `@playwright/test`, se instala con `npx playwright install chromium`.
+  pide. Si Playwright pide otro navegador tras subir `@playwright/test`, se instala con
+  `npx playwright install chromium`.
+- **Los servicios de un E2E** (el servidor de desarrollo del repo hermano, un buzón de correo de pruebas en un
+  contenedor) los levanta y los para quien ejecuta la fase, sólo con `sh bin/e2e-services.sh up` y
+  `sh bin/e2e-services.sh down`, sueltas; el visto bueno del Paso A las cubre. El script es del proyecto, y lo crea
+  (en su §4) la fase que trae el primer E2E: es el único punto de entrada, con las órdenes exactas (los contenedores
+  y el servidor del hermano en segundo plano, con su pid y su log fuera de ese repo), y su permiso es el único que
+  hace falta. Fuera de él, la IA no arranca contenedores ni procesos del hermano. Lo que cambia el repo hermano
+  (migrar, editar su `.env`) es de la persona (`CLAUDE.md §El otro repositorio`).
+  - **`up` fija por variable de entorno todo lo que el E2E da por hecho** de la configuración de cada servicio (el
+    idioma por defecto, el correo, las URL), sin depender de su `.env`, que no se puede leer y pudo quedarse viejo.
+  - **`sh bin/e2e-services.sh check`, antes de cada `npx playwright test`**, sólo lee: la salud de cada servicio
+    (`curl -s`) y la configuración efectiva que el E2E da por hecha (en un hermano Laravel,
+    `php artisan config:show app.locale`) y, si aplica, que sus migraciones están al día. Falla con lo que no cuadra,
+    para que un entorno mal configurado se vea como tal y no como un test en rojo.
 - **Rendimiento con Lighthouse CI**: el job `lighthouse` de `.github/workflows/verify.yml` construye la app y la mide
   contra `.ai/project/lighthouse.json`, que es del proyecto: las URL y los presupuestos de
   `.ai/project/CROSS-CUTTING.md §Rendimiento`. Un presupuesto sólo se relaja con una decisión en `.ai/DOMAIN.md`.

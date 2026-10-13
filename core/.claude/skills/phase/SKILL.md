@@ -32,6 +32,11 @@ comportamiento) con lo que dejó la anterior (`sh bin/handoff.sh <epica> <FF ant
 mecánico lo corriges en el archivo de la fase (entra en el commit de arranque); lo que requiera decisión va a sus
 «Preguntas abiertas».
 
+**Si un criterio necesita servicios que la fase no levanta**, comprueba ya su salud y su configuración efectiva,
+sólo leyendo, con la orden que den `.ai/rules/tests.md` o el §2 de la fase. Si no están como la fase pide, dilo en
+las viñetas y trae ya en ellas, listo para pegar, lo que toca a la persona o a una sesión del repo hermano: así va
+en paralelo con la ejecución, no al llegar al criterio.
+
 Responde con tres viñetas de lo que vas a construir, los archivos que crearás y modificarás, lo que la fase da por
 hecho y ya no es cierto, y las preguntas abiertas. **Para y espera el visto bueno.** Lo que está en `.ai/DOMAIN.md`
 ya está decidido; lo que no determinan ni el código ni `DOMAIN.md` no se inventa: STOP & ASK

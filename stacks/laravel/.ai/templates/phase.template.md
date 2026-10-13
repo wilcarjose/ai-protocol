@@ -121,6 +121,11 @@ Sin revisar.
 
 <!-- `git diff --stat` desde el commit de arranque: los de verdad, no los previstos. -->
 
+### Entorno local
+
+<!-- Si la fase cambia `.env.example` (un valor o una variable nueva): lo que la persona cambia en su `.env` local,
+     una línea por variable (`APP_LOCALE=es`), o «ninguno — <motivo>». Si no lo cambia, «—». -->
+
 ### Verificación
 
 <!-- La salida de `bash bin/verify.sh` y la de cada criterio del §5, enteras. Una de más de 40 líneas va a

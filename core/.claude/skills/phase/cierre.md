@@ -10,7 +10,9 @@
    `bash bin/verify.sh` completo del Paso B: revisa el diff, no el RESULTADO. Sus arreglos cuentan entre los
    intentos de `.claude/skills/phase/SKILL.md §Verificación`. En `BLOQUEADA` o `VERIFICACION_ROJA` no hace falta.
 2. **RESULTADO** del archivo de la fase, sin borrar encabezados. Lo más importante es «Lo que la siguiente fase
-   necesita saber»: la próxima sesión empieza sin memoria y sólo leerá eso (`bin/handoff.sh` lo imprime).
+   necesita saber»: la próxima sesión empieza sin memoria y sólo leerá eso (`bin/handoff.sh` lo imprime). El
+   estado de la fase y del mapa no cambia todavía: va en el paso 12, cuando el RESULTADO, las casillas y la memoria
+   ya están escritos, porque el guardián rechaza una `HECHA` sin ellos.
 3. **Criterios de éxito**: cada casilla se ejecuta tal como está escrita y se marca con su salida en «Verificación»
    (`.ai/WORKFLOW.md §Un criterio de éxito no se puede cumplir`). Una salida de más de **40 líneas** va entera a
    `.ai/epics/<NN-slug>/evidence/<FF>-<nombre>.txt`, y «Verificación» enlaza esa ruta entre comillas invertidas,
@@ -24,6 +26,10 @@
 8. **Si la fase añade algo que hacer en producción al desplegarla** (una migración, un comando, una variable de
    entorno o de configuración, un cambio de cron o de colas, una restricción de orden), una fila por paso en
    `docs/runbooks/release.md §Pasos por fase`. Es lo que evita olvidarlo en un despliegue meses después.
+   **Si cambia `.env.example`** (un valor o una variable nueva), «Entorno local» del RESULTADO dice, una línea por
+   variable, qué cambia la persona en su `.env`, que se copió antes y no cambia solo (o `ninguno — <motivo>`).
+   `bin/check-docs.sh` no deja cerrar `HECHA` una fase con `.env.example` en «Archivos tocados realmente» sin esa
+   nota.
 9. **Si la fase deja algo para otro repo**, su traspaso (§Traspaso al otro repo).
 10. **Si la fase mejoró la baseline** (más tests, menos deuda), el número en `.ai/project/verify.conf`. Nunca en la
     dirección mala. Es un cambio que endurece el gate, no que lo salta: si la herramienta lo deniega (el modo auto
@@ -182,6 +188,6 @@ El RESULTADO es el reporte: el chat no lo repite. Cinco líneas:
 2. `bash bin/verify.sh`: verde, o el gate que falla.
 3. Los commits: cuántos y el rango (`<arranque>^..HEAD`).
 4. Lo que el Tech Lead tiene que decidir o mirar (preguntas abiertas, decisiones tomadas, traspasos, filas de la
-   retro sin enviar), o «nada».
+   retro sin enviar, lo que cambia en su `.env` local según «Entorno local»), o «nada».
 5. El PR (o la orden que falta para abrirlo) y dónde está el RESULTADO. Cuando se fusione, `/sync-main` deja la rama
    base al día.

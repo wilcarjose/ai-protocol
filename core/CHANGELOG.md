@@ -3,6 +3,38 @@
 El núcleo del protocolo: lo que es igual en todos los stacks. Versiones con [SemVer](https://semver.org/lang/es/) y
 etiqueta `core-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, arriba.
 
+## [2.8.0] — 2026-10-13
+
+### Añadido
+
+- `bin/check-docs.sh`, chequeo «entorno» (el 15): una fase `HECHA` con `.env.example` en «Archivos tocados
+  realmente» tiene que decir en «Entorno local» qué cambia la persona en su `.env` (o `ninguno — <motivo>`). Sólo
+  mira las fases que ya tienen ese encabezado del RESULTADO, que traen las plantillas de los stacks: las cerradas
+  antes son historia. `phase/cierre.md §Cierre de fase` lo pide en el paso 8, junto al manifiesto de despliegue, y
+  §Reporte final lo nombra en la línea 4. Una fase de la API cambió `APP_LOCALE` en `.env.example` sin decirlo, y
+  dos días después el E2E del repo hermano falló contra el `.env` local de antes (#73).
+
+### Cambiado
+
+- `phase/cierre.md §Cierre de fase`: el paso 2 dice que el estado de la fase y del mapa no cambia hasta el paso 12.
+  Con `HECHA` puesta antes de rellenar el RESULTADO y marcar las casillas, el `verify` de cierre sale rojo y cuesta
+  otra pasada (#70).
+- `plan-phase/SKILL.md §Antes de dar el plan por listo`: cada término del negocio del objetivo y de los entregables
+  se busca en `.ai/project/GLOSSARY.md`; el que falta es una fila nueva y §4 lista el archivo. La regla ya estaba en
+  §Coherencia interna («Nombres»), pero nadie la medía y el revisor la marcó bloqueante (#68).
+- `CLAUDE.md §El otro repositorio`: «cambiar» el repo hermano es tocar sus archivos versionados, su `.env` o su
+  esquema; levantar su servidor de desarrollo para un E2E no lo cambia, y cómo se hace lo dice `.ai/rules/tests.md`
+  del stack. Antes, una fase no sabía si podía arrancarlo y cada arranque costaba una sesión aparte (#72).
+- `plan-phase/SKILL.md §Antes de dar el plan por listo`: quien provee lo que un criterio necesita y la fase no
+  levanta es quien diga `.ai/rules/tests.md`; si es la persona, el §2 lo escribe como un bloque «para la persona»,
+  listo para pegar, sin «quien ejecuta». La contradicción de #72 nació al planificar (#72).
+- `phase/SKILL.md §Paso A — Orientación`: si un criterio necesita servicios que la fase no levanta, el Paso A
+  comprueba su salud y su configuración efectiva (sólo leyendo, con la orden de `.ai/rules/tests.md` o del §2) y, si
+  no están como pide la fase, las viñetas traen ya el bloque para la persona o para la sesión del repo hermano. El
+  ejecutor vio los servicios apagados en el Paso A y no lo dijo hasta la fila del E2E (#71).
+- `tests/structure.sh` (permisos): cada orden `sh bin/…` o `bash bin/…` que cita un archivo de un stack tiene que
+  estar permitida en el `.claude/settings.json` de ese stack, como ya pasaba con las del núcleo (#72).
+
 ## [2.7.0] — 2026-10-13
 
 ### Añadido

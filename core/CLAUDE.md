@@ -49,7 +49,8 @@ con su propio protocolo.
 
 - **Su código se lee y se cita** (`../<repo>/app/...`) cuando hay una duda real del contrato. Escribe también el
   hecho observable por HTTP, que es lo que no envejece.
-- **En él no se escribe**: ni archivos, ni documentos, ni comandos que lo cambien.
+- **En él no se escribe**: ni archivos, ni documentos, ni comandos que cambien sus archivos versionados, su `.env`
+  o su esquema. Levantar su servidor para un E2E no lo cambia: cómo, en `.ai/rules/tests.md`.
 - **Sus documentos no se citan** (su `CLAUDE.md`, su `.ai/`, su `docs/`), ni al revés. Lo que entrega llega copiado
   a `.ai/handoffs/`. Lo vigila el chequeo «cross-repo» de `bin/check-docs.sh`.
 - La fase que cambia algo que el otro repo consume deja su traspaso

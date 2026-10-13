@@ -126,6 +126,9 @@ supuestos dependen de la fase anterior. El ejecutor la revalida en el Paso A (`.
    - **Cada documento que cita el §2 existe y cubre lo que la fase le atribuye**: un `grep` de la API, la sección o
      el término por el que lo cita. Si no lo cubre, la fase escribe lo que falta (y lo lista en sus «Archivos») o
      el §2 deja de citarlo.
+   - **Cada término del negocio que nombran el objetivo y los entregables**, buscado en `.ai/project/GLOSSARY.md`
+     (`grep -i`). El que no está es una fila nueva con su nombre en el código, y §4 lista el archivo (§Coherencia
+     interna, «Nombres»): el revisor marca como bloqueante un término nuevo sin su fila.
    - **Un criterio con un presupuesto o un tope** (de rendimiento, de tamaño) se mide también en la rama base. Si ya
      lo roza, el §2 anota la medida y el margen, y la duda es del plan, no de la ejecución.
    - **Un criterio que busca dentro de `.ai/` excluye `.ai/PROTOCOL.md`, `.ai/archive/` y `.ai/epics/`**: narran lo
@@ -143,8 +146,10 @@ supuestos dependen de la fase anterior. El ejecutor la revalida en el Paso A (`.
      entregable lo dice.
    - **Un criterio que necesita algo que la fase no levanta** (un servicio, otro repo, un motor de base de datos
      concreto, unos datos) lo nombra, con el motor si importa, y el §2 dice quién lo provee: quien ejecuta no puede
-     sustituirlo por otra prueba (`.ai/WORKFLOW.md §Un criterio de éxito no se puede cumplir`). Si sólo lo puede
-     comprobar la persona, es una casilla `[humano]` y la fase no es de código (§Tipos de tarea).
+     sustituirlo por otra prueba (`.ai/WORKFLOW.md §Un criterio de éxito no se puede cumplir`). Quién lo provee es
+     quien diga `.ai/rules/tests.md`, no otro: si es la persona, el §2 lo escribe como un bloque «para la persona»,
+     con las órdenes listas para pegar. Si sólo lo puede comprobar la persona, es una casilla `[humano]` y la fase no
+     es de código (§Tipos de tarea).
 2. `sh bin/check-docs.sh --strict` en verde.
 3. La fila de la fase en `.ai/STATE.md §Mapa de fases` pasa a `LISTA_PARA_EJECUTAR`, y el puntero de `STATE.md`
    queda donde dice `.claude/skills/phase/SKILL.md §Estado de una fase`: es la fase que ejecutará `/phase` sin
