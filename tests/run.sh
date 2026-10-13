@@ -598,6 +598,7 @@ breaks() {
             stacks)    printf '\nVer `phpstan.neon`.\n' >> stacks/nextjs/.ai/RULES.md ;;
             nucleo)    printf '\nVer `docs/vendor/INDEX.md`.\n' >> core/CLAUDE.md ;;
             permisos)  edit stacks/nextjs/.claude/settings.json 's/"Bash(gh pr edit \*)", //' ;;
+            pull)      edit stacks/laravel/.claude/settings.json 's/"Bash(git pull --ff-only\*)", //' ;;
             suelta)    edit core/.claude/skills/phase/cierre.md 's/^1\. `git push -u origin <rama de la fase>`/1. `git push -u origin <rama de la fase> \&\& gh pr view`/' ;;
         esac
     )
@@ -614,6 +615,7 @@ test_structure() {
     breaks stacks  'cita «phpstan.neon», que es de otro stack'
     breaks nucleo  'cita «docs/vendor/INDEX.md», que no traen todos los stacks'
     breaks permisos 'stacks/nextjs/.claude/settings.json no permite «gh pr edit --body-file'
+    breaks pull     'stacks/laravel/.claude/settings.json no permite «git pull --ff-only», que pide core/.claude/skills/phase/SKILL.md'
     breaks suelta   '«git push -u origin phase/01-demo/01 && gh pr view» no va suelta'
 }
 

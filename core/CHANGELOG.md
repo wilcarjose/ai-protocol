@@ -17,6 +17,11 @@ etiqueta `core-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, ar
   la entrada cerrada (`< /dev/null`) y con el tope de tiempo de la herramienta, no con `timeout` delante, que la
   saca de los permisos: con `-y` también puede preguntar, y con la salida en una tubería se cuelga sin enseñar la
   pregunta (#48).
+- `phase/SKILL.md §Rama de la fase`: antes de proponer la rama base, `git fetch` siempre, no sólo en la nube; si la
+  rama base local va por detrás de `origin`, `git switch <rama base>` y `git pull --ff-only`, y si no avanza en línea
+  recta, STOP & ASK. Una sesión en frío ya no crea la rama de la fase desde un `main` sin la fase anterior fusionada.
+  Cada stack permite `git pull --ff-only` en su `.claude/settings.json`, y `tests/structure.sh` comprueba también
+  las órdenes de esta sección (#50).
 
 ## [2.3.0] — 2026-10-12
 

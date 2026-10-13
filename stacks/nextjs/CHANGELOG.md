@@ -20,6 +20,8 @@ Compatible con el núcleo `>=2.0.0 <3.0.0`.
 - `.ai/rules/contrato.md §Cómo se conoce el contrato`: toda petición pasa por `request(…)` con el cliente único que
   exporta `src/shared/api/`, sin fijar su nombre ni cómo se construye (un cliente por idioma ya no deja la regla
   desfasada); `request(api.GET(…))` queda como el ejemplo de la semilla (#45).
+- `.claude/settings.json`: permite `git pull --ff-only*`, que pide el núcleo para traer la rama base antes de crear
+  la rama de una fase (`phase/SKILL.md §Rama de la fase`, #50).
 
 ## [3.2.0] — 2026-10-12
 

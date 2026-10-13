@@ -80,9 +80,13 @@ código de esa rama.
   de la épica (`.claude/skills/plan-epic/SKILL.md §Rama base de la épica`), `main`, la de la fase anterior y la
   actual. **Sólo valen las ramas cuyo `git show <rama>:.ai/STATE.md` apunta ya a esta fase.** Si no vale ninguna,
   dilo y para.
+- **Antes de proponerlas, trae el remoto**, siempre: la fase anterior pudo fusionarse en GitHub. `git fetch`; si la
+  rama base local (la de la épica o `main`) va por detrás de la suya en `origin`, `git switch <rama base>` y
+  `git pull --ff-only`, cada orden suelta. Si no avanza en línea recta (la local tiene commits que el remoto no),
+  STOP & ASK.
 
-Para crear la rama o cambiar a ella, el árbol tiene que estar limpio; en la nube, `git fetch` antes. Se empuja al
-cerrar, con su PR (`.claude/skills/phase/cierre.md §Entrega`). Los merges los decide el Tech Lead.
+Para crear la rama o cambiar a ella, el árbol tiene que estar limpio. Se empuja al cerrar, con su PR
+(`.claude/skills/phase/cierre.md §Entrega`). Los merges los decide el Tech Lead.
 
 ## Estado de una fase
 

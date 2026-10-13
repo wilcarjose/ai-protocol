@@ -19,7 +19,8 @@
 #                     la carpeta de otro stack; el núcleo no cita un archivo
 #                     que no traigan todos los stacks.
 #   6. permisos     — cada orden de `git push` y `gh pr` de phase/cierre.md
-#                     (§Entrega y §Retro del protocolo) va suelta, y encaja
+#                     (§Entrega y §Retro del protocolo), y cada orden de git
+#                     de phase/SKILL.md §Rama de la fase, va suelta, y encaja
 #                     con un «allow» y con ningún «deny» del
 #                     .claude/settings.json de cada stack.
 #
@@ -146,16 +147,24 @@ refs core "$TMPD/partial" | while IFS="$(printf '\t')" read -r f p; do
     bad "$f cita «$p», que no traen todos los stacks"
 done
 
-# ── 6. Las órdenes de la entrega, frente a los permisos ─────────────────────
-printf '◆ permisos (las órdenes de la entrega frente a .claude/settings.json)\n'
+# ── 6. Las órdenes de la entrega y de la rama, frente a los permisos ────────
+printf '◆ permisos (las órdenes de la entrega y de la rama frente a .claude/settings.json)\n'
 c=core/.claude/skills/phase/cierre.md
-# Los marcadores se rellenan como en una fase de verdad: la rama de la fase tiene que encajar con «phase/*».
+r=core/.claude/skills/phase/SKILL.md
+# «archivo<TAB>orden». Los marcadores se rellenan como en una fase de verdad: la rama de la fase tiene que encajar
+# con «phase/*».
 # shellcheck disable=SC2016  # las comillas invertidas son las del Markdown
-awk '/^## / { f = ($0 == "## Entrega" || $0 == "## Retro del protocolo") } f' "$c" \
-    | grep -oE '`(git push|gh pr) [^`]*`' | tr -d '`' \
-    | sed 's#<rama de la fase>#phase/01-demo/01#g; s#<rama base>#main#g; s#<[^>]*>#x#g' | sort -u > "$TMPD/orders"
-[ -s "$TMPD/orders" ] || bad "$c: §Entrega no tiene ninguna orden de git push ni de gh pr"
-grep -E '&&|\|\||;|\||<<' "$TMPD/orders" | while read -r o; do bad "$c: «$o» no va suelta"; done
+{
+    awk '/^## / { f = ($0 == "## Entrega" || $0 == "## Retro del protocolo") } f' "$c" \
+        | grep -oE '`(git push|gh pr) [^`]*`' | sed "s#^#$c$(printf '\t')#"
+    awk '/^## / { f = ($0 == "## Rama de la fase") } f' "$r" \
+        | grep -oE '`git [^`]*`' | sed "s#^#$r$(printf '\t')#"
+} | tr -d '`' | sed 's#<rama de la fase>#phase/01-demo/01#g; s#<rama base>#main#g; s#<[^>]*>#x#g' | sort -u > "$TMPD/orders"
+grep -q "^$c" "$TMPD/orders" || bad "$c: §Entrega no tiene ninguna orden de git push ni de gh pr"
+grep -q "^$r" "$TMPD/orders" || bad "$r: §Rama de la fase no tiene ninguna orden de git"
+while IFS="$(printf '\t')" read -r src o; do
+    case "$o" in *'&&'*|*'||'*|*';'*|*'|'*|*'<<'*) bad "$src: «$o» no va suelta" ;; esac
+done < "$TMPD/orders"
 
 # perms <settings.json> <allow|deny>: los patrones Bash(…) de esa lista, sin el envoltorio.
 perms() {
@@ -175,9 +184,9 @@ for s in $STACKS; do
     [ -f "$f" ] || { bad "stacks/$s no trae .claude/settings.json"; continue; }
     perms "$f" allow > "$TMPD/$s.allow"
     perms "$f" deny > "$TMPD/$s.deny"
-    while read -r o; do
-        matches "$o" "$TMPD/$s.allow" || bad "$f no permite «$o», que pide $c"
-        if matches "$o" "$TMPD/$s.deny"; then bad "$f deniega «$o», que pide $c"; fi
+    while IFS="$(printf '\t')" read -r src o; do
+        matches "$o" "$TMPD/$s.allow" || bad "$f no permite «$o», que pide $src"
+        if matches "$o" "$TMPD/$s.deny"; then bad "$f deniega «$o», que pide $src"; fi
     done < "$TMPD/orders"
 done
 
