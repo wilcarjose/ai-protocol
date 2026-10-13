@@ -1,6 +1,6 @@
 {
   "name": "laravel",
-  "version": "2.6.0-dev",
+  "version": "2.6.0",
   "core": ">=2.0.0 <3.0.0",
   "files": [
     ".ai/RULES.md",
