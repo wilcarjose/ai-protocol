@@ -818,6 +818,7 @@ breaks() {
             permisos)  edit stacks/nextjs/.claude/settings.json 's/"Bash(gh pr edit \*)", //' ;;
             pull)      edit stacks/laravel/.claude/settings.json 's/"Bash(git pull --ff-only\*)", //' ;;
             feedback)  edit stacks/laravel/.claude/settings.json 's/"Bash(sh bin\/protocol-feedback.sh\*)", //' ;;
+            e2e)       edit stacks/nextjs/.claude/settings.json 's/"Bash(sh bin\/e2e-services.sh\*)", //' ;;
             suelta)    edit core/.claude/skills/phase/cierre.md 's/^1\. `git push -u origin <rama de la fase>`/1. `git push -u origin <rama de la fase> \&\& gh pr view`/' ;;
         esac
     )
@@ -836,6 +837,7 @@ test_structure() {
     breaks permisos 'stacks/nextjs/.claude/settings.json no permite «gh pr edit --body-file'
     breaks pull     'stacks/laravel/.claude/settings.json no permite «git pull --ff-only», que pide core/.claude/skills/phase/SKILL.md'
     breaks feedback 'stacks/laravel/.claude/settings.json no permite «sh bin/protocol-feedback.sh», que pide core/.claude/skills/phase/cierre.md'
+    breaks e2e      'stacks/nextjs/.claude/settings.json no permite «sh bin/e2e-services.sh up», que pide stacks/nextjs/.ai/rules/tests.md'
     breaks suelta   '«git push -u origin phase/01-demo/01 && gh pr view» no va suelta'
 }
 

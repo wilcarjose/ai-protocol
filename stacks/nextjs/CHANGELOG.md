@@ -12,6 +12,12 @@ Compatible con el núcleo `>=2.0.0 <3.0.0`.
 - `.ai/templates/phase.template.md`: el RESULTADO tiene un encabezado nuevo, «Entorno local», entre «Archivos tocados
   realmente» y «Verificación»: lo que la persona cambia en su `.env` local si la fase cambia `.env.example`. Lo pide
   el chequeo «entorno» del núcleo (`phase/cierre.md §Cierre de fase`, #73).
+- `.ai/rules/tests.md §Tests`: los servicios de un E2E (el servidor del repo hermano, un buzón de correo de pruebas)
+  los levanta y los para quien ejecuta la fase, sólo con `sh bin/e2e-services.sh up` y `… down`, cubiertas por el
+  visto bueno del Paso A. El script es del proyecto y lo crea la fase que trae el primer E2E; migrar el hermano o
+  editar su `.env` sigue siendo de la persona. Antes, «la IA no arranca contenedores» y cada arranque o rearranque
+  costaba una sesión aparte y una espera del Tech Lead (#72).
+- `.claude/settings.json`: permite `sh bin/e2e-services.sh*`, el único permiso que necesitan esos servicios (#72).
 
 ### Al actualizar un proyecto
 
@@ -19,6 +25,9 @@ Compatible con el núcleo `>=2.0.0 <3.0.0`.
   el encabezado `### Entorno local` en su RESULTADO, entre «Archivos tocados realmente» y «Verificación», con el
   comentario de la plantilla: el guardián lo pide a toda fase viva, y sin él `bin/protocol-upgrade.sh` para con «el
   guardián falla tras el upgrade». Se añade en la rama del upgrade. Las `HECHA` no cambian.
+- Sin `bin/e2e-services.sh`, la IA no levanta los servicios de un E2E y lo hace la persona, como hasta ahora. Para
+  que los levante el ejecutor, una fase del proyecto crea el script con `up`, `down` y `check` (#69) y sus órdenes
+  exactas.
 
 ## [3.6.0] — 2026-10-13
 

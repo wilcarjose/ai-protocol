@@ -146,8 +146,10 @@ supuestos dependen de la fase anterior. El ejecutor la revalida en el Paso A (`.
      entregable lo dice.
    - **Un criterio que necesita algo que la fase no levanta** (un servicio, otro repo, un motor de base de datos
      concreto, unos datos) lo nombra, con el motor si importa, y el §2 dice quién lo provee: quien ejecuta no puede
-     sustituirlo por otra prueba (`.ai/WORKFLOW.md §Un criterio de éxito no se puede cumplir`). Si sólo lo puede
-     comprobar la persona, es una casilla `[humano]` y la fase no es de código (§Tipos de tarea).
+     sustituirlo por otra prueba (`.ai/WORKFLOW.md §Un criterio de éxito no se puede cumplir`). Quién lo provee es
+     quien diga `.ai/rules/tests.md`, no otro: si es la persona, el §2 lo escribe como un bloque «para la persona»,
+     con las órdenes listas para pegar. Si sólo lo puede comprobar la persona, es una casilla `[humano]` y la fase no
+     es de código (§Tipos de tarea).
 2. `sh bin/check-docs.sh --strict` en verde.
 3. La fila de la fase en `.ai/STATE.md §Mapa de fases` pasa a `LISTA_PARA_EJECUTAR`, y el puntero de `STATE.md`
    queda donde dice `.claude/skills/phase/SKILL.md §Estado de una fase`: es la fase que ejecutará `/phase` sin

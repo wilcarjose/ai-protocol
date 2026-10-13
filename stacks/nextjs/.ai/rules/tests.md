@@ -21,9 +21,15 @@
   clases y sus estilos calculados (`lang`, `dir`, la clase del modo oscuro, el color de fondo), nunca para pulsar,
   escribir o esperar a algo; cero esperas por tiempo (`waitForTimeout`), aserciones con reintento automático. Necesitan el backend
   levantado, así que `bin/verify.sh` sólo comprueba que cargan: se corren con `npx playwright test` si la fase lo
-  pide, y sus «Criterios de éxito» dicen quién provee el backend. Los servicios (el backend, un buzón de correo de
-  pruebas) los levanta la persona: la IA no arranca contenedores. Si Playwright pide otro navegador tras subir
-  `@playwright/test`, se instala con `npx playwright install chromium`.
+  pide. Si Playwright pide otro navegador tras subir `@playwright/test`, se instala con
+  `npx playwright install chromium`.
+- **Los servicios de un E2E** (el servidor de desarrollo del repo hermano, un buzón de correo de pruebas en un
+  contenedor) los levanta y los para quien ejecuta la fase, sólo con `sh bin/e2e-services.sh up` y
+  `sh bin/e2e-services.sh down`, sueltas; el visto bueno del Paso A las cubre. El script es del proyecto, y lo crea
+  (en su §4) la fase que trae el primer E2E: es el único punto de entrada, con las órdenes exactas (los contenedores
+  y el servidor del hermano en segundo plano, con su pid y su log fuera de ese repo), y su permiso es el único que
+  hace falta. Fuera de él, la IA no arranca contenedores ni procesos del hermano. Lo que cambia el repo hermano
+  (migrar, editar su `.env`) es de la persona (`CLAUDE.md §El otro repositorio`).
 - **Rendimiento con Lighthouse CI**: el job `lighthouse` de `.github/workflows/verify.yml` construye la app y la mide
   contra `.ai/project/lighthouse.json`, que es del proyecto: las URL y los presupuestos de
   `.ai/project/CROSS-CUTTING.md §Rendimiento`. Un presupuesto sólo se relaja con una decisión en `.ai/DOMAIN.md`.

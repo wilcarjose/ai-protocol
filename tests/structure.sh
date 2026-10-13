@@ -22,7 +22,10 @@
 #                     (§Entrega y §Retro del protocolo), y cada orden de git
 #                     de phase/SKILL.md §Rama de la fase, va suelta, y encaja
 #                     con un «allow» y con ningún «deny» del
-#                     .claude/settings.json de cada stack.
+#                     .claude/settings.json de cada stack. Lo mismo cada
+#                     `sh bin/…` o `bash bin/…` de un archivo del núcleo,
+#                     frente a cada stack, y de un archivo de un stack, frente
+#                     al suyo.
 #
 # ◆ FORMATO DE LOS MANIFIESTOS
 #   JSON con un valor por línea, como lo escribe cualquier formateador: los
@@ -189,10 +192,20 @@ for s in $STACKS; do
     [ -f "$f" ] || { bad "stacks/$s no trae .claude/settings.json"; continue; }
     perms "$f" allow > "$TMPD/$s.allow"
     perms "$f" deny > "$TMPD/$s.deny"
+    # Las órdenes de bin/ que citan los archivos del propio stack, sólo frente a sus permisos.
+    # shellcheck disable=SC2016  # las comillas invertidas son las del Markdown
+    while read -r g; do
+        grep -oE '`(sh|bash) bin/[^`]*`' "stacks/$s/$g" | tr -d '`' | sed "s#<[^>]*>#x#g; s#^#stacks/$s/$g$(printf '\t')#"
+    done < "$TMPD/$s.listed" | sort -u > "$TMPD/$s.orders"
     while IFS="$(printf '\t')" read -r src o; do
         matches "$o" "$TMPD/$s.allow" || bad "$f no permite «$o», que pide $src"
         if matches "$o" "$TMPD/$s.deny"; then bad "$f deniega «$o», que pide $src"; fi
     done < "$TMPD/orders"
+    while IFS="$(printf '\t')" read -r src o; do
+        case "$o" in *'&&'*|*'||'*|*';'*|*'|'*|*'<<'*) bad "$src: «$o» no va suelta" ;; esac
+        matches "$o" "$TMPD/$s.allow" || bad "$f no permite «$o», que pide $src"
+        if matches "$o" "$TMPD/$s.deny"; then bad "$f deniega «$o», que pide $src"; fi
+    done < "$TMPD/$s.orders"
 done
 
 printf '\n'

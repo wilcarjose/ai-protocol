@@ -22,6 +22,14 @@ etiqueta `core-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, ar
 - `plan-phase/SKILL.md §Antes de dar el plan por listo`: cada término del negocio del objetivo y de los entregables
   se busca en `.ai/project/GLOSSARY.md`; el que falta es una fila nueva y §4 lista el archivo. La regla ya estaba en
   §Coherencia interna («Nombres»), pero nadie la medía y el revisor la marcó bloqueante (#68).
+- `CLAUDE.md §El otro repositorio`: «cambiar» el repo hermano es tocar sus archivos versionados, su `.env` o su
+  esquema; levantar su servidor de desarrollo para un E2E no lo cambia, y cómo se hace lo dice `.ai/rules/tests.md`
+  del stack. Antes, una fase no sabía si podía arrancarlo y cada arranque costaba una sesión aparte (#72).
+- `plan-phase/SKILL.md §Antes de dar el plan por listo`: quien provee lo que un criterio necesita y la fase no
+  levanta es quien diga `.ai/rules/tests.md`; si es la persona, el §2 lo escribe como un bloque «para la persona»,
+  listo para pegar, sin «quien ejecuta». La contradicción de #72 nació al planificar (#72).
+- `tests/structure.sh` (permisos): cada orden `sh bin/…` o `bash bin/…` que cita un archivo de un stack tiene que
+  estar permitida en el `.claude/settings.json` de ese stack, como ya pasaba con las del núcleo (#72).
 
 ## [2.7.0] — 2026-10-13
 
