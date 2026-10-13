@@ -3,6 +3,15 @@
 El núcleo del protocolo: lo que es igual en todos los stacks. Versiones con [SemVer](https://semver.org/lang/es/) y
 etiqueta `core-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, arriba.
 
+## Sin publicar
+
+### Cambiado
+
+- `tests/structure.sh` comprueba contra los permisos de cada stack también las órdenes `sh bin/…` y `bash bin/…`
+  de cualquier archivo del núcleo, no sólo las de git y gh: con `"defaultMode": "dontAsk"`, la retro no podía
+  ejecutar `sh bin/protocol-feedback.sh` (`phase/cierre.md §Retro del protocolo`) y las filas se quedaban en
+  `propuesta` (#64).
+
 ## [2.4.0] — 2026-10-12
 
 ### Añadido

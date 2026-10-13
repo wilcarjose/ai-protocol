@@ -147,21 +147,26 @@ refs core "$TMPD/partial" | while IFS="$(printf '\t')" read -r f p; do
     bad "$f cita «$p», que no traen todos los stacks"
 done
 
-# ── 6. Las órdenes de la entrega y de la rama, frente a los permisos ────────
-printf '◆ permisos (las órdenes de la entrega y de la rama frente a .claude/settings.json)\n'
+# ── 6. Las órdenes del núcleo, frente a los permisos ────────────────────────
+printf '◆ permisos (las órdenes de la entrega, de la rama y de bin/ frente a .claude/settings.json)\n'
 c=core/.claude/skills/phase/cierre.md
 r=core/.claude/skills/phase/SKILL.md
 # «archivo<TAB>orden». Los marcadores se rellenan como en una fase de verdad: la rama de la fase tiene que encajar
-# con «phase/*».
+# con «phase/*». Las de bin/ salen de cualquier archivo del núcleo: con «dontAsk», una que no se permite se deniega
+# sin preguntar.
 # shellcheck disable=SC2016  # las comillas invertidas son las del Markdown
 {
     awk '/^## / { f = ($0 == "## Entrega" || $0 == "## Retro del protocolo") } f' "$c" \
         | grep -oE '`(git push|gh pr) [^`]*`' | sed "s#^#$c$(printf '\t')#"
     awk '/^## / { f = ($0 == "## Rama de la fase") } f' "$r" \
         | grep -oE '`git [^`]*`' | sed "s#^#$r$(printf '\t')#"
+    while read -r f; do
+        grep -oE '`(sh|bash) bin/[^`]*`' "core/$f" | sed "s#^#core/$f$(printf '\t')#"
+    done < "$TMPD/core.listed"
 } | tr -d '`' | sed 's#<rama de la fase>#phase/01-demo/01#g; s#<rama base>#main#g; s#<[^>]*>#x#g' | sort -u > "$TMPD/orders"
 grep -q "^$c" "$TMPD/orders" || bad "$c: §Entrega no tiene ninguna orden de git push ni de gh pr"
 grep -q "^$r" "$TMPD/orders" || bad "$r: §Rama de la fase no tiene ninguna orden de git"
+grep -qF 'sh bin/protocol-feedback.sh' "$TMPD/orders" || bad "$c: §Retro del protocolo no tiene la orden de bin/protocol-feedback.sh"
 while IFS="$(printf '\t')" read -r src o; do
     case "$o" in *'&&'*|*'||'*|*';'*|*'|'*|*'<<'*) bad "$src: «$o» no va suelta" ;; esac
 done < "$TMPD/orders"

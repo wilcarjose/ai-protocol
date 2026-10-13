@@ -3,6 +3,15 @@
 El stack Next.js: lo que añade al núcleo. Versiones con [SemVer](https://semver.org/lang/es/) y etiqueta
 `nextjs-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, arriba.
 
+## Sin publicar
+
+Compatible con el núcleo `>=2.0.0 <3.0.0`.
+
+### Cambiado
+
+- `.claude/settings.json`: permite `sh bin/protocol-feedback.sh*`, que la retro del núcleo ejecuta para subir sus
+  filas al kit (`phase/cierre.md §Retro del protocolo`, #64).
+
 ## [3.3.0] — 2026-10-12
 
 Compatible con el núcleo `>=2.0.0 <3.0.0`.
