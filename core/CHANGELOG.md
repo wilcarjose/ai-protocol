@@ -14,6 +14,8 @@ etiqueta `core-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, ar
 - `phase/SKILL.md §Rama de la fase`: si tras traer el remoto la rama base (la de la épica o `main`) ya apunta a la
   fase, la rama de la fase se crea desde ella sin preguntar y se dice en una línea; sólo se pregunta si no apunta,
   entre la de la fase anterior y la actual (#63).
+- `review/SKILL.md`, paso 6: si después de la última revisión entra cualquier commit de código, también el arreglo
+  de un no bloqueante, vuelven `bash bin/verify.sh` y otra revisión antes del cierre (#62).
 
 ## [2.4.0] — 2026-10-12
 
