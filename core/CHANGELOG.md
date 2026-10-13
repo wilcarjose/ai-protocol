@@ -27,6 +27,9 @@ etiqueta `core-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, ar
   `.ai/WORKFLOW.md §Dependencia nueva` dice que esa autorización es lo que imprime el `--dry-run` del CLI (#49).
 - `/plan-phase §Coherencia interna`: ningún criterio de éxito depende de la CI del PR, que corre después del cierre;
   lo que mide un job de la CI se pide con la misma orden, ejecutada en la sesión (#54).
+- `/plan-phase §Antes de dar el plan por listo`: cada documento que cita el §2 de la fase (una nota vendorizada,
+  p. ej.) se comprueba con un `grep` de lo que la fase le atribuye, y un criterio con un presupuesto se mide también
+  en la rama base, con el margen anotado en el §2 si ya lo roza (#55).
 
 ## [2.3.0] — 2026-10-12
 

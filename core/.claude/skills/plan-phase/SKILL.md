@@ -118,6 +118,11 @@ supuestos dependen de la fase anterior. El ejecutor la revalida en el Paso A (`.
    - **Cada criterio de §5, ejecutado contra el árbol de hoy.** Lo que imprime ahora es lo que la fase tiene que
      mover: si ya da el resultado pedido, o imprime líneas que la fase no va a tocar, está mal escrito. Un `grep` se
      escribe contra la línea que se espera en **cada** archivo que busca.
+   - **Cada documento que cita el §2 existe y cubre lo que la fase le atribuye**: un `grep` de la API, la sección o
+     el término por el que lo cita. Si no lo cubre, la fase escribe lo que falta (y lo lista en sus «Archivos») o
+     el §2 deja de citarlo.
+   - **Un criterio con un presupuesto o un tope** (de rendimiento, de tamaño) se mide también en la rama base. Si ya
+     lo roza, el §2 anota la medida y el margen, y la duda es del plan, no de la ejecución.
    - **Un criterio que busca dentro de `.ai/` excluye `.ai/PROTOCOL.md`, `.ai/archive/` y `.ai/epics/`**: narran lo
      que se quitó y por qué, así que contienen las cadenas que el criterio persigue.
    - **Un criterio sobre lo que hace un proceso** (arrancar, instalar, desplegar, fallar) se ejecuta, no se deduce
