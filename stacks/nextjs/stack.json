@@ -32,7 +32,8 @@
   ],
   "gitignore": [
     "/test-results/",
-    "/playwright-report/"
+    "/playwright-report/",
+    "/.lighthouseci/"
   ],
   "gates": [
     "docs",

@@ -9,8 +9,8 @@ Compatible con el núcleo `>=2.0.0 <3.0.0`.
 
 ### Añadido
 
-- `stack.json`, «gitignore»: `/test-results/` y `/playwright-report/`, que `install.sh` añade al `.gitignore` del
-  proyecto si faltan (#46).
+- `stack.json`, «gitignore»: `/test-results/` y `/playwright-report/` (#46), y `/.lighthouseci/`, donde Lighthouse
+  CI deja sus informes (#56), que `install.sh` añade al `.gitignore` del proyecto si faltan.
 
 ### Cambiado
 
