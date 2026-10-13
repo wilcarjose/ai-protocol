@@ -3,7 +3,7 @@
     "defaultMode": "dontAsk",
     "allow": [
       "Read", "Edit", "Write", "Glob", "Grep", "Edit(./.ai/project/verify.conf)",
-      "Bash(sh bin/check-docs.sh*)", "Bash(sh bin/check-protocol.sh*)", "Bash(sh bin/handoff.sh*)", "Bash(sh bin/measure-context.sh*)", "Bash(sh bin/protocol-feedback.sh*)", "Bash(sh bin/protocol-upgrade.sh*)", "Bash(bash bin/verify.sh*)", "Bash(sh bin/verify.sh*)",
+      "Bash(sh bin/check-docs.sh*)", "Bash(sh bin/check-protocol.sh*)", "Bash(sh bin/handoff.sh*)", "Bash(sh bin/measure-context.sh*)", "Bash(sh bin/protocol-feedback.sh*)", "Bash(sh bin/protocol-upgrade.sh*)", "Bash(sh bin/sync-main.sh*)", "Bash(bash bin/verify.sh*)", "Bash(sh bin/verify.sh*)",
       "Bash(npm run *)", "Bash(npm ls*)", "Bash(npm view *)", "Bash(npm ci)", "Bash(npm i --save-exact *)",
       "Bash(npx tsc *)", "Bash(npx eslint *)", "Bash(npx vitest *)", "Bash(npx playwright test*)", "Bash(npx shadcn@*)", "Bash(npx playwright install chromium)", "Bash(npx --yes @lhci/cli@*)",
       "Bash(sh bin/contract.sh*)", "Bash(npx next build*)", "Bash(npx next typegen*)",

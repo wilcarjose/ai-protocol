@@ -3,6 +3,15 @@
 El stack Laravel: lo que añade al núcleo. Versiones con [SemVer](https://semver.org/lang/es/) y etiqueta
 `laravel-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, arriba.
 
+## [2.5.0-dev]
+
+Compatible con el núcleo `>=2.0.0 <3.0.0`.
+
+### Cambiado
+
+- `.claude/settings.json`: permite `sh bin/sync-main.sh*`, la vuelta a la rama base tras un merge del núcleo
+  2.7.0. El script no fusiona ni empuja: `gh pr merge` y el push a `main` siguen denegados.
+
 ## [2.4.0] — 2026-10-13
 
 Compatible con el núcleo `>=2.0.0 <3.0.0`.
