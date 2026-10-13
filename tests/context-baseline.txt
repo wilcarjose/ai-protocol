@@ -4,6 +4,6 @@
 # explique por qué hace falta más contexto.
 #
 # <stack> <sesión> <caracteres>
-laravel cualquiera 4112
+laravel cualquiera 4300
 laravel ejecutor 55206
 nextjs ejecutor 56860

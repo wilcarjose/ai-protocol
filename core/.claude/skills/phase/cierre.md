@@ -183,4 +183,5 @@ El RESULTADO es el reporte: el chat no lo repite. Cinco líneas:
 3. Los commits: cuántos y el rango (`<arranque>^..HEAD`).
 4. Lo que el Tech Lead tiene que decidir o mirar (preguntas abiertas, decisiones tomadas, traspasos, filas de la
    retro sin enviar), o «nada».
-5. El PR (o la orden que falta para abrirlo) y dónde está el RESULTADO.
+5. El PR (o la orden que falta para abrirlo) y dónde está el RESULTADO. Cuando se fusione, `/sync-main` deja la rama
+   base al día.
