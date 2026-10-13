@@ -15,7 +15,8 @@
   (`satisfies components["schemas"]["…"]`), así que `tsc` lo comprueba contra la copia del OpenAPI
   (`.ai/rules/contrato.md`). El cliente y sus errores problem+json tienen su test en `tests/shared/api/`.
 - **E2E con Playwright** en `e2e/` (`playwright.config.ts`): sólo `getByTestId()` (la interfaz cambia de idioma, los
-  testids no), cero esperas por tiempo (`waitForTimeout`), aserciones con reintento automático. Necesitan el backend
+  testids no), salvo `page.locator("html")` para leer los atributos del documento (`lang`, `dir`), que no se
+  pulsan ni cambian con el texto; cero esperas por tiempo (`waitForTimeout`), aserciones con reintento automático. Necesitan el backend
   levantado, así que `bin/verify.sh` sólo comprueba que cargan: se corren con `npx playwright test` si la fase lo
   pide, y sus «Criterios de éxito» dicen quién provee el backend. Los servicios (el backend, un buzón de correo de
   pruebas) los levanta la persona: la IA no arranca contenedores. Si Playwright pide otro navegador tras subir
