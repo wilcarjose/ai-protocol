@@ -10,6 +10,9 @@ etiqueta `core-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, ar
 - `phase/cierre.md §Cierre de fase`: el paso 2 dice que el estado de la fase y del mapa no cambia hasta el paso 12.
   Con `HECHA` puesta antes de rellenar el RESULTADO y marcar las casillas, el `verify` de cierre sale rojo y cuesta
   otra pasada (#70).
+- `plan-phase/SKILL.md §Antes de dar el plan por listo`: cada término del negocio del objetivo y de los entregables
+  se busca en `.ai/project/GLOSSARY.md`; el que falta es una fila nueva y §4 lista el archivo. La regla ya estaba en
+  §Coherencia interna («Nombres»), pero nadie la medía y el revisor la marcó bloqueante (#68).
 
 ## [2.7.0] — 2026-10-13
 

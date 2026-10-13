@@ -126,6 +126,9 @@ supuestos dependen de la fase anterior. El ejecutor la revalida en el Paso A (`.
    - **Cada documento que cita el §2 existe y cubre lo que la fase le atribuye**: un `grep` de la API, la sección o
      el término por el que lo cita. Si no lo cubre, la fase escribe lo que falta (y lo lista en sus «Archivos») o
      el §2 deja de citarlo.
+   - **Cada término del negocio que nombran el objetivo y los entregables**, buscado en `.ai/project/GLOSSARY.md`
+     (`grep -i`). El que no está es una fila nueva con su nombre en el código, y §4 lista el archivo (§Coherencia
+     interna, «Nombres»): el revisor marca como bloqueante un término nuevo sin su fila.
    - **Un criterio con un presupuesto o un tope** (de rendimiento, de tamaño) se mide también en la rama base. Si ya
      lo roza, el §2 anota la medida y el margen, y la duda es del plan, no de la ejecución.
    - **Un criterio que busca dentro de `.ai/` excluye `.ai/PROTOCOL.md`, `.ai/archive/` y `.ai/epics/`**: narran lo
