@@ -3,6 +3,34 @@
 El núcleo del protocolo: lo que es igual en todos los stacks. Versiones con [SemVer](https://semver.org/lang/es/) y
 etiqueta `core-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, arriba.
 
+## [2.4.0] — 2026-10-12
+
+### Añadido
+
+- `install.sh` añade al `.gitignore` del proyecto, al instalar y al hacer `--upgrade`, las líneas que le falten del
+  «gitignore» del `stack.json`: lo que generan las herramientas del stack y no se versiona. Nunca quita ni reordena
+  nada, y `/x/`, `/x`, `x/` y `x` cuentan como la misma línea (#46).
+
+### Cambiado
+
+- `phase/SKILL.md §Paso B`: un CLI que genera o instala se lanza primero con `--dry-run` si lo tiene, y siempre con
+  la entrada cerrada (`< /dev/null`) y con el tope de tiempo de la herramienta, no con `timeout` delante, que la
+  saca de los permisos: con `-y` también puede preguntar, y con la salida en una tubería se cuelga sin enseñar la
+  pregunta (#48).
+- `phase/SKILL.md §Rama de la fase`: antes de proponer la rama base, `git fetch` siempre, no sólo en la nube; si la
+  rama base local va por detrás de `origin`, `git switch <rama base>` y `git pull --ff-only`, y si no avanza en línea
+  recta, STOP & ASK. Una sesión en frío ya no crea la rama de la fase desde un `main` sin la fase anterior fusionada.
+  Cada stack permite `git pull --ff-only` en su `.claude/settings.json`, y `tests/structure.sh` comprueba también
+  las órdenes de esta sección (#50).
+- `/plan-epic §Antes de dar la épica por lista`: las dependencias que trae un generador se autorizan con la lista
+  de su `--dry-run` al planificar, o como «lo que pida `<cli>@<versión>`», nunca escritas de memoria; y
+  `.ai/WORKFLOW.md §Dependencia nueva` dice que esa autorización es lo que imprime el `--dry-run` del CLI (#49).
+- `/plan-phase §Coherencia interna`: ningún criterio de éxito depende de la CI del PR, que corre después del cierre;
+  lo que mide un job de la CI se pide con la misma orden, ejecutada en la sesión (#54).
+- `/plan-phase §Antes de dar el plan por listo`: cada documento que cita el §2 de la fase (una nota vendorizada,
+  p. ej.) se comprueba con un `grep` de lo que la fase le atribuye, y un criterio con un presupuesto se mide también
+  en la rama base, con el margen anotado en el §2 si ya lo roza (#55).
+
 ## [2.3.0] — 2026-10-12
 
 ### Cambiado

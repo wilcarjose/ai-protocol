@@ -43,8 +43,13 @@ ligera sin preguntas ni supuestos rotos no espera: da las viñetas y sigue.
 1. `EN_CURSO` (§Estado de una fase) y commit de arranque.
 2. **Una fila de «Plan de commits» a la vez**, con su commit en cuanto pasa `bash bin/verify.sh --fast`
    (§Commits durante la fase). Si un cambio te saca de los «Archivos» de la fase: `CLAUDE.md §Alcance`.
-3. Si te bloqueas: STOP & ASK y `BLOQUEADA`.
-4. Al terminar las filas, `bash bin/verify.sh` completo (§Verificación).
+3. **Un CLI que genera o instala** (el de shadcn/ui, un `init`, un `create-…`) puede preguntar aunque lleve `-y`, y
+   con la salida en una tubería se cuelga sin enseñar la pregunta. Se lanza primero con `--dry-run` si lo tiene, y
+   siempre con la entrada cerrada (`< /dev/null`), para que la pregunta falle en vez de esperar, y con el tope de
+   tiempo de la herramienta (en Claude Code, el `timeout` de la orden), no con `timeout` delante, que la saca de
+   los permisos. Una pregunta que la fase no responde es STOP & ASK.
+4. Si te bloqueas: STOP & ASK y `BLOQUEADA`.
+5. Al terminar las filas, `bash bin/verify.sh` completo (§Verificación).
 
 ## Paso C — Cierre (siempre, también bloqueada o en rojo)
 
@@ -75,9 +80,13 @@ código de esa rama.
   de la épica (`.claude/skills/plan-epic/SKILL.md §Rama base de la épica`), `main`, la de la fase anterior y la
   actual. **Sólo valen las ramas cuyo `git show <rama>:.ai/STATE.md` apunta ya a esta fase.** Si no vale ninguna,
   dilo y para.
+- **Antes de proponerlas, trae el remoto**, siempre: la fase anterior pudo fusionarse en GitHub. `git fetch`; si la
+  rama base local (la de la épica o `main`) va por detrás de la suya en `origin`, `git switch <rama base>` y
+  `git pull --ff-only`, cada orden suelta. Si no avanza en línea recta (la local tiene commits que el remoto no),
+  STOP & ASK.
 
-Para crear la rama o cambiar a ella, el árbol tiene que estar limpio; en la nube, `git fetch` antes. Se empuja al
-cerrar, con su PR (`.claude/skills/phase/cierre.md §Entrega`). Los merges los decide el Tech Lead.
+Para crear la rama o cambiar a ella, el árbol tiene que estar limpio. Se empuja al cerrar, con su PR
+(`.claude/skills/phase/cierre.md §Entrega`). Los merges los decide el Tech Lead.
 
 ## Estado de una fase
 

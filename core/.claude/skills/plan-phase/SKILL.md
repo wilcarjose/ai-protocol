@@ -74,6 +74,9 @@ plantilla lo pide, «Migraciones: ninguna».
   expresiones regulares sobre el código fuente (`.ai/WORKFLOW.md §Obediencia arquitectónica`).
 - **Criterios de éxito (§5).** Cada uno es un comando, y todos pueden cumplirse a la vez: no pidas «sin modificar el
   archivo» y «añadirle un caso» en la misma fase. Mídelos al escribirlos (§Antes de dar el plan por listo).
+  **Ninguno depende de la CI del PR**: las casillas se marcan en el cierre, antes de que exista el PR
+  (`.claude/skills/phase/cierre.md §Entrega`). Lo que mide un job de la CI (Lighthouse, p. ej.) se pide con la misma
+  orden, ejecutada en la sesión; la CI lo confirma después, en el PR.
 - **Todo entregable que ningún gate ve tiene su propio criterio en §5.** `bin/verify.sh` comprueba lo que comprueba;
   lo que no cae ahí dentro —un traspaso a otro repo, una fila de un runbook, una tabla de un documento— no lo
   comprueba nadie si §5 no lo nombra con un comando. Una instrucción que está en el §3 de seis fases y en ningún §5
@@ -115,6 +118,11 @@ supuestos dependen de la fase anterior. El ejecutor la revalida en el Paso A (`.
    - **Cada criterio de §5, ejecutado contra el árbol de hoy.** Lo que imprime ahora es lo que la fase tiene que
      mover: si ya da el resultado pedido, o imprime líneas que la fase no va a tocar, está mal escrito. Un `grep` se
      escribe contra la línea que se espera en **cada** archivo que busca.
+   - **Cada documento que cita el §2 existe y cubre lo que la fase le atribuye**: un `grep` de la API, la sección o
+     el término por el que lo cita. Si no lo cubre, la fase escribe lo que falta (y lo lista en sus «Archivos») o
+     el §2 deja de citarlo.
+   - **Un criterio con un presupuesto o un tope** (de rendimiento, de tamaño) se mide también en la rama base. Si ya
+     lo roza, el §2 anota la medida y el margen, y la duda es del plan, no de la ejecución.
    - **Un criterio que busca dentro de `.ai/` excluye `.ai/PROTOCOL.md`, `.ai/archive/` y `.ai/epics/`**: narran lo
      que se quitó y por qué, así que contienen las cadenas que el criterio persigue.
    - **Un criterio sobre lo que hace un proceso** (arrancar, instalar, desplegar, fallar) se ejecuta, no se deduce

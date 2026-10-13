@@ -98,9 +98,13 @@ secrets_gate() {
 }
 
 # Los tipos de las rutas (LayoutProps, PageProps…) los genera Next en .next/types, que no se versiona: en un clon
-# limpio no existen hasta que algo los genera.
+# limpio no existen hasta que algo los genera. `next dev` escribe los suyos en .next/dev/types, que el tsconfig.json
+# de create-next-app también incluye y `next typegen` no regenera: tras mover una ruta, los de un `next dev`
+# anterior citan la que ya no existe y ponen en rojo «tipos» y «build». Se borran, como en la CI, que nunca los
+# tiene; `next dev` los vuelve a escribir al arrancar o al cambiar una ruta.
 # shellcheck disable=SC2329  # se invoca a través de run()
 types_gate() {
+    rm -rf .next/dev/types
     npx next typegen > "$TMPD/typegen.log" 2>&1 || { cat "$TMPD/typegen.log"; return 1; }
     npx tsc --noEmit
 }

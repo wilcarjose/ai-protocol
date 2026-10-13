@@ -12,7 +12,7 @@
       "Bash(git status*)", "Bash(git diff*)", "Bash(git log*)", "Bash(git show*)", "Bash(git rev-parse*)",
       "Bash(git branch*)", "Bash(git switch *)",
       "Bash(git add *)", "Bash(git commit *)", "Bash(git reset --soft HEAD~1)",
-      "Bash(git fetch*)", "Bash(git push origin phase/*)", "Bash(git push -u origin phase/*)",
+      "Bash(git fetch*)", "Bash(git pull --ff-only*)", "Bash(git push origin phase/*)", "Bash(git push -u origin phase/*)",
       "Bash(gh pr create *)", "Bash(gh pr edit *)", "Bash(gh pr view*)", "Bash(gh pr checks*)", "Bash(gh pr list*)",
       "Bash(npm audit)", "Bash(npm audit --audit-level=*)", "Bash(gitleaks git*)"
     ],

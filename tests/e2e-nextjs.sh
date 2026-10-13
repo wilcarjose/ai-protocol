@@ -16,7 +16,9 @@
 #   4. Provoca los tres fallos que el stack promete detectar: un import que
 #      rompe las capas hace fallar ESLint, un texto escrito en el JSX hace
 #      fallar el gate «estilo», y un cambio en el OpenAPI sin regenerar el
-#      cliente hace fallar el gate «contrato».
+#      cliente hace fallar el gate «contrato». Y uno que no tiene que
+#      fallar: los tipos de un `next dev` anterior con una ruta que ya no
+#      existe no ponen en rojo el gate «tipos».
 #   5. Provoca sobre el proyecto cada fallo de la cabecera de
 #      bin/check-docs.sh, como tests/run.sh (guardian_cases), y uno a través
 #      de `bin/verify.sh --fast`, que tiene que caer en su gate «docs».
@@ -169,6 +171,18 @@ else
     fail 'contrato: el gate «contrato» no detecta el OpenAPI cambiado'
 fi
 g checkout -q -- docs/contract/openapi.json
+
+# Los tipos que dejó un `next dev` anterior, con una ruta que ya no existe: «tipos» los borra, como en la CI.
+mkdir -p "$APP/.next/dev/types"
+printf 'import type * as P from "../../../src/app/[locale]/page.js";\nexport type Page = typeof P;\n' > "$APP/.next/dev/types/validator.ts"
+(cd "$APP" && sh bin/verify.sh --fast > "$WORK/dev-types.log" 2>&1)
+# shellcheck disable=SC2016  # las comillas invertidas del mensaje son literales
+if grep -q "^▸ tipos" "$WORK/dev-types.log" && ! gate_fails "$WORK/dev-types.log" tipos && [ ! -e "$APP/.next/dev/types" ]; then
+    ok 'tipos: los de un `next dev` anterior con una ruta que ya no existe no lo ponen en rojo'
+else
+    sed 's/^/      /' "$WORK/dev-types.log"
+    fail 'tipos: un .next/dev/types antiguo pone en rojo el gate «tipos»'
+fi
 
 step 'fallos del guardián, sobre el proyecto'
 guardian_cases "$APP"

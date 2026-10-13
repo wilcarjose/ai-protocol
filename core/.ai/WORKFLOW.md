@@ -97,7 +97,8 @@ La tarea requiere instalar un paquete que el proyecto no tiene, aunque la fase l
 Una dependencia que la épica o la fase **ya autorizan** no es parada: se instala con su versión exacta (la orden de
 `.ai/RULES.md`, p. ej. `npm i --save-exact <paquete>`) y entra con su fila en `.ai/project/DECISIONS.md`. Si los
 permisos de la herramienta deniegan la orden, no se busca otra que la rodee: se le da a la persona la orden exacta
-para que la lance ella, y se anota en la retro.
+para que la lance ella, y se anota en la retro. Una autorizada como «lo que pida `<cli>@<versión>`» es la lista
+que imprime ese CLI con `--dry-run`; lo que pida de más sobre esa lista sí es parada.
 
 ### 2.9 Zona sensible
 

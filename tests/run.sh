@@ -272,6 +272,25 @@ test_installer() {
         printf '%s\n' "$out" | sed 's/^/      /'
     fi
 
+    # El «gitignore» del stack: la instalación lo deja en .gitignore, y un --upgrade añade la línea que falte (aquí,
+    # una que el proyecto escribió sin barras cuenta como presente) sin tocar las demás.
+    json_list "$ROOT/stacks/$KIT/stack.json" gitignore > "$WORK/$KIT.gitignore"
+    if [ -s "$WORK/$KIT.gitignore" ]; then
+        missing=$(while read -r e; do grep -qxF -- "$e" "$BASE/.gitignore" 2>/dev/null || printf '%s ' "$e"; done < "$WORK/$KIT.gitignore")
+        gi=$(fresh gitignore)
+        first=$(head -n 1 "$WORK/$KIT.gitignore"); last=$(tail -n 1 "$WORK/$KIT.gitignore")
+        bare=${first#/}; bare=${bare%/}
+        printf '/node_modules\n%s\n' "$bare" > "$gi/.gitignore"
+        out=$(sh "$ROOT/install.sh" --upgrade --target "$gi" 2>&1)
+        if [ -z "$missing" ] && printf '%s\n' "$out" | grep -qE "\\+ \\.gitignore +ignora $last" \
+           && ! printf '%s\n' "$out" | grep -qE "ignora $first\$" \
+           && [ "$(head -n 2 "$gi/.gitignore")" = "$(printf '/node_modules\n%s' "$bare")" ] && grep -qxF -- "$last" "$gi/.gitignore"; then
+            ok 'el «gitignore» del stack: lo deja al instalar, y --upgrade añade sólo la línea que falta'
+        else
+            fail "el «gitignore» del stack no cuadra (faltan al instalar: ${missing:-ninguna}):"; printf '%s\n' "$out" | sed 's/^/      /'
+        fi
+    fi
+
     [ -d "$FIXTURES/kit-1x/$KIT" ] && test_upgrade_1x
 
     kit_copy "$WORK/$KIT-kit3"
@@ -579,6 +598,7 @@ breaks() {
             stacks)    printf '\nVer `phpstan.neon`.\n' >> stacks/nextjs/.ai/RULES.md ;;
             nucleo)    printf '\nVer `docs/vendor/INDEX.md`.\n' >> core/CLAUDE.md ;;
             permisos)  edit stacks/nextjs/.claude/settings.json 's/"Bash(gh pr edit \*)", //' ;;
+            pull)      edit stacks/laravel/.claude/settings.json 's/"Bash(git pull --ff-only\*)", //' ;;
             suelta)    edit core/.claude/skills/phase/cierre.md 's/^1\. `git push -u origin <rama de la fase>`/1. `git push -u origin <rama de la fase> \&\& gh pr view`/' ;;
         esac
     )
@@ -595,6 +615,7 @@ test_structure() {
     breaks stacks  'cita «phpstan.neon», que es de otro stack'
     breaks nucleo  'cita «docs/vendor/INDEX.md», que no traen todos los stacks'
     breaks permisos 'stacks/nextjs/.claude/settings.json no permite «gh pr edit --body-file'
+    breaks pull     'stacks/laravel/.claude/settings.json no permite «git pull --ff-only», que pide core/.claude/skills/phase/SKILL.md'
     breaks suelta   '«git push -u origin phase/01-demo/01 && gh pr view» no va suelta'
 }
 

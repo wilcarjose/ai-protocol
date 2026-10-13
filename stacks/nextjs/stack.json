@@ -1,6 +1,6 @@
 {
   "name": "nextjs",
-  "version": "3.2.0",
+  "version": "3.3.0",
   "core": ">=2.0.0 <3.0.0",
   "files": [
     ".ai/RULES.md",
@@ -29,6 +29,11 @@
     "src/shared/api/schema.d.ts",
     "tests/shared/api/request.test.ts",
     "vitest.config.ts"
+  ],
+  "gitignore": [
+    "/test-results/",
+    "/playwright-report/",
+    "/.lighthouseci/"
   ],
   "gates": [
     "docs",

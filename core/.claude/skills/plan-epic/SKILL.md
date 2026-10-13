@@ -122,8 +122,12 @@ varios merges intermedios que no se quieren en `main`.
 
 1. Cada fase con `/plan-phase`, hasta su propio «Antes de dar el plan por listo».
 2. El criterio de cierre, medido como un criterio de fase.
-3. `sh bin/check-docs.sh --strict` en verde.
-4. Di qué dejaste fuera a propósito, y dónde esperas que la ejecución se bloquee y por qué.
+3. **Las dependencias que trae un generador** (un CLI como el de shadcn/ui, un `init`) no se escriben de memoria: lo
+   que pide lo decide a menudo un registro remoto, no la versión del CLI. Se autorizan con la lista que imprime su
+   `--dry-run` al planificar, o como «lo que pida `<cli>@<versión>`», que el ejecutor contrasta con su `--dry-run`
+   antes de lanzarlo (`.ai/WORKFLOW.md §Dependencia nueva`).
+4. `sh bin/check-docs.sh --strict` en verde.
+5. Di qué dejaste fuera a propósito, y dónde esperas que la ejecución se bloquee y por qué.
 
 Planificar no se commitea solo: fuera de una fase, la IA sólo commitea si el Tech Lead lo pide
 (`.claude/skills/phase/SKILL.md §Commits durante la fase`).

@@ -3,6 +3,37 @@
 El stack Next.js: lo que añade al núcleo. Versiones con [SemVer](https://semver.org/lang/es/) y etiqueta
 `nextjs-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, arriba.
 
+## [3.3.0] — 2026-10-12
+
+Compatible con el núcleo `>=2.0.0 <3.0.0`.
+
+### Añadido
+
+- `stack.json`, «gitignore»: `/test-results/` y `/playwright-report/` (#46), y `/.lighthouseci/`, donde Lighthouse
+  CI deja sus informes (#56), que `install.sh` añade al `.gitignore` del proyecto si faltan.
+
+### Cambiado
+
+- `.ai/rules/tests.md §Tests`: el E2E puede usar `page.locator("html")` y `page.locator("body")` sólo para leer
+  el documento: sus atributos, sus clases y sus estilos calculados (`lang`, `dir`, la clase del modo oscuro, el
+  color de fondo), nunca para interactuar. Es la única excepción a «sólo `getByTestId()`» (#44, #52).
+- `.ai/rules/contrato.md §Cómo se conoce el contrato`: toda petición pasa por `request(…)` con el cliente único que
+  exporta `src/shared/api/`, sin fijar su nombre ni cómo se construye (un cliente por idioma ya no deja la regla
+  desfasada); `request(api.GET(…))` queda como el ejemplo de la semilla (#45).
+- `bin/verify.sh`, gate «tipos»: borra `.next/dev/types` antes de compilar. Lo deja `next dev`, el `tsconfig.json`
+  de create-next-app lo incluye y `next typegen` no lo regenera, así que tras mover una ruta citaba la que ya no
+  existe y ponía en rojo «tipos» y «build»; la CI nunca lo tiene, y `next dev` lo vuelve a escribir (#53).
+- `.claude/settings.json`: permite `git pull --ff-only*`, que pide el núcleo para traer la rama base antes de crear
+  la rama de una fase (`phase/SKILL.md §Rama de la fase`, #50).
+
+### Al actualizar un proyecto
+
+- `install.sh --upgrade` añade a `.gitignore` las líneas de `test-results/`, `playwright-report/` y `.lighthouseci/`
+  que falten; si el proyecto ya las ignoraba con otra forma (`/x`, `x/`), no las repite. Lo que ya estuviera
+  commiteado en esas carpetas sigue versionado: se quita con `git rm -r --cached <carpeta>`.
+- Con `next dev` en marcha, el editor pierde los tipos de `.next/dev/types` tras cada `bin/verify.sh` hasta el
+  siguiente cambio de rutas o reinicio de `next dev`.
+
 ## [3.2.0] — 2026-10-12
 
 Compatible con el núcleo `>=2.0.0 <3.0.0`.
