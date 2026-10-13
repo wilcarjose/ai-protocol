@@ -91,7 +91,8 @@ AGENTS.md                 Redirección a CLAUDE.md para Cursor, Codex, aider… 
   project/verify.conf     La baseline de bin/verify.sh y lo que el stack necesita saber del proyecto. [stack · semilla]
   protocol.lock           Lo que instaló install.sh: versiones, suma y «kit» o «project» por archivo. [install.sh]
 .claude/
-  skills/                 /phase, /close, /plan-epic, /plan-phase, /review y /protocol-upgrade.     [núcleo · kit]
+  skills/                 /phase, /close, /plan-epic, /plan-phase, /review, /protocol-upgrade y     [núcleo · kit]
+                          /sync-main.
   agents/reviewer.md      El revisor IA: subagente de solo lectura que compara el diff con la fase.  [núcleo · kit]
   settings.json           Permisos del agente: qué ejecuta sin preguntar y qué nunca (push a main…). [stack · kit]
 .github/
@@ -104,6 +105,7 @@ bin/
   measure-context.sh      Cuántos caracteres lee cada tipo de sesión al arrancar.                    [núcleo · kit]
   protocol-feedback.sh    Las mejoras de núcleo o stack de .ai/PROTOCOL.md, como issues en el kit.  [núcleo · kit]
   protocol-upgrade.sh     El upgrade a la última versión del kit, de main a main (§Actualizar).     [núcleo · kit]
+  sync-main.sh            Tras fusionar un PR, su rama base activa y al día con origin (§Roles).   [núcleo · kit]
   verify.sh               El único árbitro: gates, su orden y la baseline que nunca empeora.         [stack · kit]
   contract.sh             El contrato OpenAPI: lo genera y, con --check, es el gate «contrato».      [stack · kit]
 docs/runbooks/release.md  Manifiesto de despliegue: lo que cada fase deja por hacer en producción.   [núcleo · semilla]
@@ -381,7 +383,7 @@ Cada rol es una sesión distinta, con su skill, y lee sólo lo que necesita (`bi
 | **Ejecutor** | `/phase` | Una sesión por fase (abajo) |
 | **Revisor** | `/review` | Un subagente de solo lectura que no ve la conversación: compara el diff de la rama con los entregables, los criterios y su evidencia, las reglas, `.ai/project/`, las zonas sensibles y el alcance, y escribe sus hallazgos en la sección «Revisión» de la fase. Con un bloqueante abierto, la fase no se cierra |
 | **Rescate** | `/close` | Documenta lo que de verdad hizo una sesión que se cortó, sin completar nada |
-| **Persona** | — | Aprueba el Paso A, responde los STOP & ASK, aporta la evidencia `[humano]`, dice al cierre qué mejoraría del protocolo y revisa y fusiona cada PR |
+| **Persona** | — | Aprueba el Paso A, responde los STOP & ASK, aporta la evidencia `[humano]`, dice al cierre qué mejoraría del protocolo y revisa y fusiona cada PR (después, `/sync-main`) |
 
 **`/phase`**, paso a paso:
 
@@ -396,6 +398,13 @@ Cada rol es una sesión distinta, con su skill, y lee sólo lo que necesita (`bi
 Cuando el agente no puede decidir algo (contrato, producto, arquitectura, un criterio que no se puede cumplir tal
 como está escrito), para con un **STOP & ASK**: opciones, consecuencias y su recomendación. La respuesta queda
 escrita en la fase y, si sobrevive a ella, en `.ai/DOMAIN.md`.
+
+**Después del merge**, `/sync-main` (o `sh bin/sync-main.sh`) deja el repo listo para la siguiente sesión: cambia a la
+rama base del PR (`main` o la de la épica), la avanza a `origin` sólo en línea recta, borra la rama local del PR si
+no tiene nada que el PR no llevara y dice la fase activa. Con `--wait [<min>]` espera a que pase la CI y lo fusiones
+(30 minutos por defecto, y para si la CI falla); con un número, `sh bin/sync-main.sh <PR>`, va a por ese PR desde
+cualquier rama. No fusiona ni empuja nada: sólo pone al día lo local. En el repo del kit es
+`sh core/bin/sync-main.sh`, o `/sync-main` en una sesión.
 
 ## Tipos de tarea y planes externos
 
