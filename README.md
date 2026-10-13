@@ -427,8 +427,9 @@ Cada paquete se versiona por separado con [SemVer](https://semver.org/lang/es/):
 cada stack en su `stack.json`. Ésa es la única fuente de la versión; este README no la repite. Lo que cambió en cada
 una está en el `CHANGELOG.md` del paquete.
 
-- **Etiquetas:** `core-vX.Y.Z`, `laravel-vX.Y.Z`, `nextjs-vX.Y.Z`. Las crea quien fusiona, sobre el commit de `main`
-  que publica la versión.
+- **Etiquetas:** `core-vX.Y.Z`, `laravel-vX.Y.Z`, `nextjs-vX.Y.Z`, sobre el commit de `main` que publica la versión.
+  Las crea `.github/workflows/tag.yml` al fusionar (`.github/tag-versions.sh --push`), y sólo para las versiones sin
+  `-dev`; `sh .github/tag-versions.sh` dice en local qué etiquetas faltan.
 - **Compatibilidad:** cada `stack.json` declara en `core` el rango del núcleo con el que funciona
   (`">=2.0.0 <3.0.0"`), e `install.sh` no instala una combinación fuera de rango.
 - **Qué sube cada número.** Mayor: algo que obliga al proyecto a cambiar (una sección que se renombra y el guardián
