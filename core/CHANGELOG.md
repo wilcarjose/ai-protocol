@@ -22,6 +22,9 @@ etiqueta `core-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, ar
   recta, STOP & ASK. Una sesión en frío ya no crea la rama de la fase desde un `main` sin la fase anterior fusionada.
   Cada stack permite `git pull --ff-only` en su `.claude/settings.json`, y `tests/structure.sh` comprueba también
   las órdenes de esta sección (#50).
+- `/plan-epic §Antes de dar la épica por lista`: las dependencias que trae un generador se autorizan con la lista
+  de su `--dry-run` al planificar, o como «lo que pida `<cli>@<versión>`», nunca escritas de memoria; y
+  `.ai/WORKFLOW.md §Dependencia nueva` dice que esa autorización es lo que imprime el `--dry-run` del CLI (#49).
 
 ## [2.3.0] — 2026-10-12
 
