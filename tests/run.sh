@@ -24,7 +24,7 @@
 #      ai-protocol#N», sin tocar las de proyecto ni las ya enviadas; sin gh,
 #      imprime el texto y .ai/PROTOCOL.md no cambia.
 #   4. Provoca (guardian_cases, en tests/lib.sh, que usan también los e2e),
-#      cada uno en una copia limpia, los 15 fallos de «CÓMO PROVOCAR
+#      cada uno en una copia limpia, los 16 fallos de «CÓMO PROVOCAR
 #      CADA FALLO» de la cabecera de bin/check-docs.sh, más sus variantes (los
 #      casos con letra): el puntero en una fase que espera evidencia (1e), una
 #      fase con las secciones sin número (2n), una evidencia enlazada que no
@@ -40,7 +40,9 @@
 #      (2f), una fase sin «Tipo» (2a, como las de antes de los tipos), un
 #      bloqueante resuelto (2v), un epic-plan que cita una decisión archivada
 #      en .ai/archive/DOMAIN.md (3a), filas «propuesta» y «enviada» de
-#      .ai/PROTOCOL.md (13p, 13s) y su tabla de antes, sin «Alcance» (13v).
+#      .ai/PROTOCOL.md (13p, 13s) y su tabla de antes, sin «Alcance» (13v); y
+#      una fase que cambió .env.example con su nota del .env local (15n, 15v)
+#      o escrita antes de «Entorno local» (15a).
 #   El fallo 5 (migraciones) sólo existe si la plantilla de fase declara
 #   «Migraciones:»; en un kit que no lo hace, se comprueba en su lugar que el
 #   guardián acepta fases sin ese campo.

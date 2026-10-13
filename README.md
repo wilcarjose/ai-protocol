@@ -99,7 +99,7 @@ AGENTS.md                 Redirección a CLAUDE.md para Cursor, Codex, aider… 
   pull_request_template.md  La plantilla del PR de cada fase.                                       [núcleo · kit]
   workflows/verify.yml    La CI del proyecto: bin/verify.sh completo en cada PR.                    [stack · kit]
 bin/
-  check-docs.sh           El guardián: 15 chequeos sobre la coherencia de la memoria.                [núcleo · kit]
+  check-docs.sh           El guardián: 16 chequeos sobre la coherencia de la memoria.                [núcleo · kit]
   check-protocol.sh       En una rama de fase, el protocolo sólo cambia en commits (protocol).       [núcleo · kit]
   handoff.sh              Lo que una fase dejó dicho para la siguiente, y nada más.                  [núcleo · kit]
   measure-context.sh      Cuántos caracteres lee cada tipo de sesión al arrancar.                    [núcleo · kit]

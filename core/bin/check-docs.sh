@@ -71,6 +71,10 @@
 #                    en «Criterios de éxito» de la fase
 #                    (.claude/skills/plan-epic/SKILL.md §Desde un paquete de
 #                    tareas).
+#  15. entorno     — toda fase HECHA con `.env.example` en «Archivos tocados
+#                    realmente» dice en «Entorno local» qué cambia la persona
+#                    en su `.env` (o «ninguno — <motivo>»). Sólo las fases que
+#                    ya tienen ese encabezado: las de antes son historia.
 #
 #   11 y 12 son heurísticos (sacan rutas y secciones de la prosa): avisan, y
 #   sólo bloquean con --strict. El resto son comparaciones exactas y bloquean
@@ -99,6 +103,8 @@
 #       a .ai/archive/BACKLOG.md, o pon «todos» en el «Alcance» de una fila de
 #       .ai/PROTOCOL.md.
 #   14. pon «> **Tarea externa:** T9-99» en la cabecera de una fase.
+#   15. escribe «.env.example | 2 +-» en «Archivos tocados realmente» de una
+#       fase HECHA y deja «Entorno local» vacío.
 #
 # ◆ PORTABILIDAD
 #   POSIX sh y awk/sed/grep sin extensiones GNU: corre igual en el host que en
@@ -867,6 +873,21 @@ for f in "$AI"/epics/*/phase-*.md; do
     fi
 done
 report fail 'toda tarea externa está en un paquete y su criterio, en su fase' 'tareas externas que no cuadran con su paquete (.claude/skills/plan-epic/SKILL.md §Desde un paquete de tareas):'
+
+# ── 15. El entorno local de la persona ─────────────────────────────────────
+printf '◆ entorno (una fase HECHA que cambió .env.example dice qué cambia la persona en su .env)\n'
+
+# Líneas de la subsección «### <título>» de una fase, sin comentarios, hasta el siguiente encabezado.
+subsection() { awk -v t="### $2" '$0 == t { f = 1; next } f && /^##/ { exit } f' "$1" | strip_comments -; }
+for f in "$AI"/epics/*/phase-*.md; do
+    [ -f "$f" ] || continue
+    [ "$(phase_state "$f")" = HECHA ] || continue
+    grep -qx '### Entorno local' "$f" || continue
+    subsection "$f" 'Archivos tocados realmente' | grep -qF '.env.example' || continue
+    subsection "$f" 'Entorno local' | grep -v '^[[:space:]]*$' | grep -qvx '[[:space:]]*—[[:space:]]*' \
+        || bad "$(rel "$f"): cambió .env.example y «Entorno local» no dice qué cambia la persona en su .env, ni «ninguno — <motivo>» (.claude/skills/phase/cierre.md §Cierre de fase)"
+done
+report fail 'toda fase que cambió .env.example dice qué cambia en el .env local' 'cambios de .env.example sin su nota para el .env local:'
 
 # ── Veredicto ───────────────────────────────────────────────────────────────
 printf '\n'

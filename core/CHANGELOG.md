@@ -5,6 +5,15 @@ etiqueta `core-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, ar
 
 ## Sin publicar
 
+### Añadido
+
+- `bin/check-docs.sh`, chequeo «entorno» (el 15): una fase `HECHA` con `.env.example` en «Archivos tocados
+  realmente» tiene que decir en «Entorno local» qué cambia la persona en su `.env` (o `ninguno — <motivo>`). Sólo
+  mira las fases que ya tienen ese encabezado del RESULTADO, que traen las plantillas de los stacks: las cerradas
+  antes son historia. `phase/cierre.md §Cierre de fase` lo pide en el paso 8, junto al manifiesto de despliegue, y
+  §Reporte final lo nombra en la línea 4. Una fase de la API cambió `APP_LOCALE` en `.env.example` sin decirlo, y
+  dos días después el E2E del repo hermano falló contra el `.env` local de antes (#73).
+
 ### Cambiado
 
 - `phase/cierre.md §Cierre de fase`: el paso 2 dice que el estado de la fase y del mapa no cambia hasta el paso 12.

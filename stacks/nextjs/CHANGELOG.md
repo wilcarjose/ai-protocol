@@ -3,6 +3,23 @@
 El stack Next.js: lo que añade al núcleo. Versiones con [SemVer](https://semver.org/lang/es/) y etiqueta
 `nextjs-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, arriba.
 
+## Sin publicar
+
+Compatible con el núcleo `>=2.0.0 <3.0.0`.
+
+### Cambiado
+
+- `.ai/templates/phase.template.md`: el RESULTADO tiene un encabezado nuevo, «Entorno local», entre «Archivos tocados
+  realmente» y «Verificación»: lo que la persona cambia en su `.env` local si la fase cambia `.env.example`. Lo pide
+  el chequeo «entorno» del núcleo (`phase/cierre.md §Cierre de fase`, #73).
+
+### Al actualizar un proyecto
+
+- Cada fase sin cerrar (`LISTA_PARA_EJECUTAR`, redactada por adelantado) escrita con la plantilla anterior necesita
+  el encabezado `### Entorno local` en su RESULTADO, entre «Archivos tocados realmente» y «Verificación», con el
+  comentario de la plantilla: el guardián lo pide a toda fase viva, y sin él `bin/protocol-upgrade.sh` para con «el
+  guardián falla tras el upgrade». Se añade en la rama del upgrade. Las `HECHA` no cambian.
+
 ## [3.6.0] — 2026-10-13
 
 Compatible con el núcleo `>=2.0.0 <3.0.0`.

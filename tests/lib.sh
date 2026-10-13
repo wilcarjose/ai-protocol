@@ -226,6 +226,16 @@ estropea() {
         # Las tareas externas: un ID que no está en ningún paquete (14) y un criterio que no es el literal (14c).
         14) edit .ai/epics/02-paquete/phase-01.md 's/^> \*\*Tarea externa:\*\* .*/> **Tarea externa:** T9-99/' ;;
         14c) edit .ai/epics/02-paquete/phase-01.md 's/responde 200 con la lista de demos/responde 200/' ;;
+        # El .env local (.claude/skills/phase/cierre.md §Cierre de fase): una fase HECHA que cambió .env.example, sin
+        # la nota (15), con «ninguno — <motivo>» (15n), con una variable (15v) y escrita antes de «Entorno local» (15a).
+        15|15n|15v|15a) f=.ai/epics/01-demo/phase-02.md
+            awk_edit $f '{ print } /^### Archivos tocados realmente$/ { print ""; print " .env.example | 2 +-" }'
+            case "$1" in
+                15n) awk_edit $f '{ print } /^### Entorno local$/ { print ""; print "ninguno — sólo cambia un comentario." }' ;;
+                15v) awk_edit $f '{ print } /^### Entorno local$/ { print ""; print "`APP_LOCALE=es`" }' ;;
+                15a) edit $f '/^### Entorno local$/d' ;;
+                15) awk_edit $f '{ print } /^### Entorno local$/ { print ""; print "—" }' ;;
+            esac ;;
         *)  return 1 ;;
     esac
 }
@@ -266,7 +276,7 @@ accept() {
 # fallo 5 no aplica, y se comprueba en su lugar que el guardián acepta fases sin ese campo.
 guardian_cases() {
     DETECTED=0
-    TOTAL=15
+    TOTAL=16
     provoke 0  'instalación: un {{RELLENAR}} sin completar'          'marcador(es) {{RELLENAR}}'
     provoke 1  'puntero: «Fase activa» en una fase HECHA'            'la cabecera apunta a'
     provoke 1e 'puntero: «Fase activa» en una ESPERA_EVIDENCIA'      'la cabecera apunta a'
@@ -291,7 +301,7 @@ guardian_cases() {
     if grep -q '^> \*\*Migraciones:\*\*' "$1/.ai/templates/phase.template.md"; then
         provoke 5 'despliegue: migraciones sin fila en el manifiesto' 'declara migraciones y no tiene fila'
     else
-        TOTAL=14
+        TOTAL=15
         if sh "$1/bin/check-docs.sh" --strict 2>&1 | grep -qF 'no declara migraciones: no aplica' \
            && ! grep -q '^> \*\*Migraciones:\*\*' "$1"/.ai/epics/*/phase-*.md; then
             printf '  ✓ 5   despliegue: no aplica; el guardián acepta fases sin «Migraciones:»\n'
@@ -324,10 +334,14 @@ guardian_cases() {
     provoke 13e 'memoria: un # de BACKLOG.md que ya está archivado'  'el id 1 ya está en .ai/archive/BACKLOG.md'
     provoke 14 'tareas: una «Tarea externa» que no está en ningún paquete' 'es T9-99, que no es una fila'
     provoke 14c 'tareas: el criterio de la tarea no está literal'    'el criterio de E1-01 no está, literal'
+    provoke 15 'entorno: cambia .env.example y «Entorno local» dice «—»' 'cambió .env.example y «Entorno local» no dice'
+    accept  15n 'entorno: «Entorno local» dice «ninguno — <motivo>»'
+    accept  15v 'entorno: «Entorno local» dice qué variable cambia'
+    accept  15a 'entorno: una fase de antes, sin «Entorno local»'
     # Los casos con letra son variantes: no cuentan entre los de la cabecera.
     n=$DETECTED
     note=''
-    [ "$TOTAL" -eq 15 ] || note=' (el 5 no aplica)'
+    [ "$TOTAL" -eq 16 ] || note=' (el 5 no aplica)'
     printf '  → %s/%s fallos de la cabecera provocados y detectados%s\n' "$n" "$TOTAL" "$note"
     [ "$n" -eq "$TOTAL" ] || FAIL=1
 }
