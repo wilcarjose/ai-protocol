@@ -48,7 +48,8 @@ anuncia el de Expo.
 
 ```
 core/                     El núcleo.                  core.json: versión, archivos del kit («files») y semillas («seed»).
-stacks/laravel/           El stack de Laravel.        stack.json: versión, rango del núcleo, archivos y gates.
+stacks/laravel/           El stack de Laravel.        stack.json: versión, rango del núcleo, archivos, gates y
+                                                      las líneas de .gitignore («gitignore»).
 stacks/nextjs/            El stack de Next.js.
 stacks/expo/              Sólo un README que anuncia el stack.
 install.sh                Instala o actualiza núcleo + stack en un proyecto, o deja como nuevo uno que sale de una
@@ -109,7 +110,9 @@ Además, cada stack trae lo suyo, en su `stack.json`:
 - **Next.js:** la regla de capas `app → features → entities → shared` y la de los textos en el JSX
   (`eslint.layers.mjs`, del kit, que importa `eslint.config.mjs`, semilla), el cliente generado del OpenAPI en
   `src/shared/api/` (semilla), las configuraciones de Vitest y Playwright, los presupuestos de Lighthouse
-  (`.ai/project/lighthouse.json`) y `docs/vendor/INDEX.md`.
+  (`.ai/project/lighthouse.json`) y `docs/vendor/INDEX.md`. En `.gitignore`, `install.sh` añade al instalar y al
+  actualizar las líneas que falten de lo que generan Playwright y Lighthouse (el «gitignore» de su `stack.json`), sin
+  quitar ni reordenar nada.
 
 ## Proyecto nuevo desde una plantilla
 

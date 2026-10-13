@@ -30,6 +30,10 @@
     "tests/shared/api/request.test.ts",
     "vitest.config.ts"
   ],
+  "gitignore": [
+    "/test-results/",
+    "/playwright-report/"
+  ],
   "gates": [
     "docs",
     "protocolo",

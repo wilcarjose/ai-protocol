@@ -42,6 +42,9 @@
 #   fases y la configuración que el proyecto ajusta, como phpstan.neon) sólo se
 #   copian si faltan: el upgrade nunca las toca. Si nada cambia,
 #   dice «sin cambios» y no escribe nada, tampoco el lock.
+#   Al instalar y al actualizar, añade al .gitignore del proyecto las líneas
+#   del «gitignore» del stack que le falten (lo que generan sus herramientas
+#   y no se versiona); nunca quita ni reordena nada.
 #   Al terminar, avisa de las filas «enviada — ai-protocol#N» de
 #   .ai/PROTOCOL.md cuyo #N cita el CHANGELOG.md de un paquete entre la
 #   versión del lock y la nueva: las que resuelve. Sólo avisa; la fila la
@@ -327,6 +330,20 @@ if [ -n "$OLD_LOCK" ]; then
         fi
     done
 fi
+
+# ── .gitignore ──────────────────────────────────────────────────────────────
+# Lo que generan las herramientas del stack (informes de tests, de Lighthouse…) y no se versiona: el «gitignore» de
+# su stack.json. Se añade al final del .gitignore del proyecto la línea que falte, al instalar y al actualizar; nunca
+# se quita ni se reordena nada. «/x/», «/x», «x/» y «x» cuentan como la misma línea.
+json_list "$STACK_JSON" gitignore | while read -r entry; do
+    bare=${entry#/}; bare=${bare%/}
+    [ -f "$TARGET/.gitignore" ] && sed 's#^/##; s#/$##' "$TARGET/.gitignore" | grep -qxF -- "$bare" && continue
+    note + .gitignore "ignora $entry" change
+    [ "$DRY" -eq 1 ] && continue
+    # Sin salto de línea al final, la línea nueva se pegaría a la última.
+    [ -s "$TARGET/.gitignore" ] && [ -n "$(tail -c 1 "$TARGET/.gitignore")" ] && printf '\n' >> "$TARGET/.gitignore"
+    printf '%s\n' "$entry" >> "$TARGET/.gitignore"
+done
 
 # ── Lock y resumen ──────────────────────────────────────────────────────────
 # changelog_since <paquete> <carpeta> <versión nueva>: las secciones de su CHANGELOG.md posteriores a la versión del

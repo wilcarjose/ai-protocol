@@ -3,6 +3,14 @@
 El núcleo del protocolo: lo que es igual en todos los stacks. Versiones con [SemVer](https://semver.org/lang/es/) y
 etiqueta `core-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, arriba.
 
+## Sin publicar
+
+### Añadido
+
+- `install.sh` añade al `.gitignore` del proyecto, al instalar y al hacer `--upgrade`, las líneas que le falten del
+  «gitignore» del `stack.json`: lo que generan las herramientas del stack y no se versiona. Nunca quita ni reordena
+  nada, y `/x/`, `/x`, `x/` y `x` cuentan como la misma línea (#46).
+
 ## [2.3.0] — 2026-10-12
 
 ### Cambiado

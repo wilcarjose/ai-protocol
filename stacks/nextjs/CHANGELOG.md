@@ -7,6 +7,11 @@ El stack Next.js: lo que añade al núcleo. Versiones con [SemVer](https://semve
 
 Compatible con el núcleo `>=2.0.0 <3.0.0`.
 
+### Añadido
+
+- `stack.json`, «gitignore»: `/test-results/` y `/playwright-report/`, que `install.sh` añade al `.gitignore` del
+  proyecto si faltan (#46).
+
 ### Cambiado
 
 - `.ai/rules/tests.md §Tests`: el E2E puede usar `page.locator("html")` y `page.locator("body")` sólo para leer
