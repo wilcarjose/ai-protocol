@@ -18,8 +18,10 @@ Por este orden:
 4. **`.ai/handoffs/`**: las entregas del backend, copiadas.
 5. **El código del backend**, cuando haga falta una clase, un método o un enum (`CLAUDE.md §El otro repositorio`).
 
-Toda petición sale de `request(api.GET(…))` (`src/shared/api/`): `api` es el cliente de `openapi-fetch` tipado con
-`paths`, y la ruta, los parámetros y la respuesta se comprueban al compilar. Un tipo de datos del backend se toma de
+Toda petición pasa por `request(…)` con el cliente único que exporta `src/shared/api/`: uno de `openapi-fetch`
+tipado con `paths`, así que la ruta, los parámetros y la respuesta se comprueban al compilar. Su nombre y cómo se
+construye (un cliente de módulo, uno por idioma…) son del proyecto, y se leen en `src/shared/api/index.ts`; en la
+semilla, `request(api.GET(…))`. Un tipo de datos del backend se toma de
 `components["schemas"]`, nunca se reescribe. Zod queda para lo que el contrato no tipa
 (`.ai/RULES.md §Principios rectores`).
 

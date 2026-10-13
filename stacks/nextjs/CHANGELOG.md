@@ -12,6 +12,9 @@ Compatible con el núcleo `>=2.0.0 <3.0.0`.
 - `.ai/rules/tests.md §Tests`: el E2E puede usar `page.locator("html")` y `page.locator("body")` sólo para leer
   el documento: sus atributos, sus clases y sus estilos calculados (`lang`, `dir`, la clase del modo oscuro, el
   color de fondo), nunca para interactuar. Es la única excepción a «sólo `getByTestId()`» (#44, #52).
+- `.ai/rules/contrato.md §Cómo se conoce el contrato`: toda petición pasa por `request(…)` con el cliente único que
+  exporta `src/shared/api/`, sin fijar su nombre ni cómo se construye (un cliente por idioma ya no deja la regla
+  desfasada); `request(api.GET(…))` queda como el ejemplo de la semilla (#45).
 
 ## [3.2.0] — 2026-10-12
 
