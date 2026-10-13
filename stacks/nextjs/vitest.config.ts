@@ -12,5 +12,9 @@ export default defineConfig({
   test: {
     include: ["tests/**/*.test.{ts,tsx}", "src/**/*.test.{ts,tsx}"],
     exclude: ["e2e/**", "node_modules/**"],
+    // next-intl imports "next/server" and "next/navigation" without their extension, which Node cannot resolve when
+    // Vitest leaves the package outside its bundle; inlined, Vite resolves them as Next's build does
+    // (.ai/rules/tests.md §Tests). Without next-intl installed, the entry does nothing.
+    server: { deps: { inline: ["next-intl"] } },
   },
 });
