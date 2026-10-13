@@ -20,14 +20,16 @@ una fase al cierre de la épica, para qué sirve cada pieza y un ejemplo de inic
   cambiar. La persona sólo añade o corrige lo que vio desde su papel. Cada mejora es una fila de `.ai/PROTOCOL.md`
   con su alcance: las de núcleo o stack van al kit como un issue (`bin/protocol-feedback.sh`), vuelven con una
   versión (en el kit las aplica `/kit-feedback`, `.claude/skills/kit-feedback/SKILL.md`) y llegan al proyecto con
-  `install.sh --upgrade`; las de proyecto van a su `.ai/project/`. El ciclo tiene
+  `/protocol-upgrade` (`bin/protocol-upgrade.sh`); las de proyecto van a su `.ai/project/`. El ciclo tiene
   cuatro reglas:
   - **El kit es la única fuente.** Un archivo del kit nunca se parchea en un proyecto, ni con urgencia: el upgrade
     lo dejaría como conflicto. Lo urgente sigue el mismo camino, más rápido (el arreglo en el kit, una versión de
     parche y el upgrade).
   - **Lo propio de un proyecto va a su `.ai/project/`**, no al kit.
-  - **El upgrade se hace entre fases**, en un PR `chore(protocol): upgrade ai-protocol to vX.Y` a `main`, sin
-    ninguna fase `EN_CURSO`: una fase termina con las reglas con las que empezó.
+  - **El upgrade se hace entre fases**, en un PR `chore(protocol): upgrade ai-protocol to core X.Y.Z + <stack> X.Y.Z`
+    a `main`, sin ninguna fase `EN_CURSO` ni `BLOQUEADA`: una fase termina con las reglas con las que empezó. El
+    código del kit ya se revisó en el PR del kit, así que el del proyecto sólo tiene que pasar su CI:
+    `bin/protocol-upgrade.sh` lo fusiona solo si pasa y la versión es menor o parche (§Actualizar un proyecto).
   - **La retro es del ejecutor**; la pregunta a la persona es opcional y va dirigida a su papel.
 - **Neutral respecto al proveedor:** Claude Code es la herramienta por defecto, pero el protocolo se puede usar con
   agentes de otros proveedores. Los textos usan un lenguaje neutro y lo propio de Claude Code va como nota entre
@@ -89,7 +91,7 @@ AGENTS.md                 Redirección a CLAUDE.md para Cursor, Codex, aider… 
   project/verify.conf     La baseline de bin/verify.sh y lo que el stack necesita saber del proyecto. [stack · semilla]
   protocol.lock           Lo que instaló install.sh: versiones, suma y «kit» o «project» por archivo. [install.sh]
 .claude/
-  skills/                 /phase, /close, /plan-epic, /plan-phase y /review (§Roles).               [núcleo · kit]
+  skills/                 /phase, /close, /plan-epic, /plan-phase, /review y /protocol-upgrade.     [núcleo · kit]
   agents/reviewer.md      El revisor IA: subagente de solo lectura que compara el diff con la fase.  [núcleo · kit]
   settings.json           Permisos del agente: qué ejecuta sin preguntar y qué nunca (push a main…). [stack · kit]
 .github/
@@ -100,6 +102,8 @@ bin/
   check-protocol.sh       En una rama de fase, el protocolo sólo cambia en commits (protocol).       [núcleo · kit]
   handoff.sh              Lo que una fase dejó dicho para la siguiente, y nada más.                  [núcleo · kit]
   measure-context.sh      Cuántos caracteres lee cada tipo de sesión al arrancar.                    [núcleo · kit]
+  protocol-feedback.sh    Las mejoras de núcleo o stack de .ai/PROTOCOL.md, como issues en el kit.  [núcleo · kit]
+  protocol-upgrade.sh     El upgrade a la última versión del kit, de main a main (§Actualizar).     [núcleo · kit]
   verify.sh               El único árbitro: gates, su orden y la baseline que nunca empeora.         [stack · kit]
   contract.sh             El contrato OpenAPI: lo genera y, con --check, es el gate «contrato».      [stack · kit]
 docs/runbooks/release.md  Manifiesto de despliegue: lo que cada fase deja por hacer en producción.   [núcleo · semilla]
@@ -288,9 +292,31 @@ un plan externo (§Tipos de tarea y planes externos). Después, `/phase`.
 
 ## Actualizar un proyecto
 
+Entre fases, desde el proyecto: `/protocol-upgrade` en una sesión, o sin ella:
+
 ```bash
-sh ai-protocol/install.sh --upgrade --target mi-proyecto --dry-run   # qué cambiaría, con los diffs
-sh ai-protocol/install.sh --upgrade --target mi-proyecto
+sh bin/protocol-upgrade.sh --dry-run    # qué cambiaría, con los diffs
+sh bin/protocol-upgrade.sh              # de main a main
+```
+
+El script comprueba que se puede (árbol limpio, `main` al día con `origin` y ninguna fase `EN_CURSO` ni
+`BLOQUEADA`) y trae el kit él mismo: lo clona de GitHub con `gh` (`AI_PROTOCOL_REPO`, por defecto
+`wilcarjose/ai-protocol`, en su rama por defecto o en `--ref <etiqueta>`), o usa la copia local de
+`AI_PROTOCOL_DIR`, así que no hace falta saber dónde está el kit en cada máquina. Si el kit trae otra versión del
+script, la usa: el upgrade lo hace siempre la versión nueva. En la rama `protocol/upgrade-core-X.Y.Z-<stack>-X.Y.Z`
+hace el upgrade, archiva las filas de `.ai/PROTOCOL.md` que resuelve, pasa el guardián, commitea, empuja y abre el PR.
+Después espera a su CI: si pasa, lo fusiona y deja `main` activa y al día. Sólo fusiona sin la persona si
+`PROTOCOL_AUTO_MERGE` de `.ai/project/verify.conf` lo permite (`minor`, por defecto: versiones menores y parches;
+`patch`; o `never`), y nunca una versión mayor, un conflicto, una CI en rojo o un PR sin CI: esos quedan abiertos,
+con el motivo. `--no-merge` lo deja abierto siempre. Los permisos del agente no cambian: `gh pr merge` y el push a
+`main` siguen denegados; lo que se permite es este script, que es del kit y sólo fusiona su propio PR.
+
+Por dentro, el script corre el `install.sh --upgrade` del kit, que también se puede usar a mano, con la ruta de una
+copia del kit (es lo que hace falta la primera vez, en un proyecto que aún no tiene `bin/protocol-upgrade.sh`):
+
+```bash
+sh <ruta del kit>/install.sh --upgrade --target mi-proyecto --dry-run   # qué cambiaría, con los diffs
+sh <ruta del kit>/install.sh --upgrade --target mi-proyecto
 ```
 
 Toma el stack del lock y compara cada archivo del kit con la suma que guardó la última vez:

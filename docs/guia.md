@@ -173,7 +173,8 @@ proyecto de verdad.
   (`bin/protocol-feedback.sh`) y vuelve con una versión del kit, que prepara `/kit-feedback` en una sesión en el
   repo del kit; añade lo que viste desde tu papel.
 - **No edites los archivos del kit en el proyecto**, ni con urgencia: el arreglo va al kit y llega con
-  `install.sh --upgrade`, entre fases, en un PR `chore(protocol): upgrade ai-protocol to vX.Y`.
+  `/protocol-upgrade` (`bin/protocol-upgrade.sh`), entre fases. El PR del upgrade se fusiona solo cuando su CI
+  pasa, salvo una versión mayor, que espera a que lo revises.
 - **Ante algo raro**, `sh bin/check-docs.sh --strict`: si el guardián falla, la memoria no es fiable y la fase no
   arranca.
 - **En el VPS, una fase a la vez por proyecto** y staging aislado de los agentes
