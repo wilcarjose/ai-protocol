@@ -620,6 +620,7 @@ on_main() {
 test_upgrade() {
     printf '  ◆ bin/protocol-upgrade.sh\n'
     stack_v=$(sed -n 's/^ *"version": *"\(.*\)",*$/\1/p' "$ROOT/stacks/$KIT/stack.json")
+    stack_v=${stack_v%-dev}
     mkdir -p "$WORK/$KIT-upgh"
     printf '%s\n' '#!/bin/sh' 'printf "%s\n" "$*" >> "$GH_LOG"' 'case "$1 $2" in' \
         '    "pr create") echo "https://github.com/x/demo/pull/7" ;;' \
@@ -640,6 +641,8 @@ test_upgrade() {
     k3="$WORK/$KIT-upkit3"
     kit_copy "$k3"
     edit "$k3/stacks/$KIT/stack.json" 's/"version": ".*"/"version": "9.0.0"/'
+    # Publicados, aunque el kit de verdad vaya con -dev mientras se trabaja en él.
+    for f in "$k2/stacks/$KIT/stack.json" "$k3/core/core.json"; do edit "$f" 's/"version": "\(.*\)-dev"/"version": "\1"/'; done
 
     # Lo normal: versión menor, CI en verde.
     d=$(up_project merge) || { fail 'protocol-upgrade: no pude preparar el proyecto'; return; }
@@ -704,6 +707,94 @@ test_upgrade() {
            && [ ! -s "$WORK/$KIT-upgh.log" ]; then
             ok "$c: «$want», sin tocar nada"
         else fail "$c: protocol-upgrade no paró como se espera (salida $rc):"; printf '%s\n' "$out" | sed 's/^/      /'; fi
+    done
+}
+
+# ── bin/sync-main.sh, con un origin local y un gh de mentira ───────────────
+# sync_project <caso>: up_project con la rama phase/x commiteada y empujada, que es la del PR.
+sync_project() {
+    p=$(up_project "sync-$1") || return 1
+    up_git "$p" switch -q -c phase/x && printf 'x\n' > "$p/x.txt" && up_git "$p" add x.txt \
+        && up_git "$p" commit -q -m x && up_git "$p" push -q -u origin phase/x && printf '%s' "$p"
+}
+
+# sync <dir> [args]: bin/sync-main.sh en ese proyecto, con el gh de mentira. La punta del PR es la de origin/phase/x.
+# GH_PR: merged (por defecto), open, closed o none (la rama no tiene PR). GH_MERGE_AT: la consulta del PR en la que
+# se fusiona (1 por defecto: ya lo estaba). GH_CHECKS: la salida de «gh pr checks» (0 verde, 1 rojo, 8 en marcha).
+sync() {
+    p=$1; shift
+    rm -f "$WORK/$KIT-syncgh.n"
+    (cd "$p" && PATH="$WORK/$KIT-syncgh:$PATH" GH_LOG="$WORK/$KIT-syncgh.log" GH_N="$WORK/$KIT-syncgh.n" \
+        GH_SHA=$(git rev-parse origin/phase/x) \
+        SYNC_MAIN_POLL=0 sh bin/sync-main.sh "$@" 2>&1)
+}
+
+# shellcheck disable=SC2016  # los $ del stub son literales
+test_sync() {
+    printf '  ◆ bin/sync-main.sh\n'
+    mkdir -p "$WORK/$KIT-syncgh"
+    printf '%s\n' '#!/bin/sh' 'printf "%s\n" "$*" >> "$GH_LOG"' 'case "$1 $2" in' \
+        '    "pr view") [ "${GH_PR:-merged}" = none ] && exit 1' \
+        '        n=$(( $(cat "$GH_N" 2> /dev/null || echo 0) + 1 )); echo "$n" > "$GH_N"; s=OPEN' \
+        '        case ${GH_PR:-merged} in closed) s=CLOSED ;;' \
+        '            merged) [ "$n" -ge "${GH_MERGE_AT:-1}" ] && git push -q origin "$GH_SHA:refs/heads/main" && s=MERGED ;; esac' \
+        '        printf "number=7\nstate=%s\nbase=main\nhead=phase/x\nsha=%s\nurl=https://github.com/x/demo/pull/7\n" "$s" "$GH_SHA" ;;' \
+        '    "pr checks") exit "${GH_CHECKS:-0}" ;;' \
+        '    *) exit 1 ;;' 'esac' > "$WORK/$KIT-syncgh/gh"
+    chmod +x "$WORK/$KIT-syncgh/gh"
+
+    # Ya fusionado: a main, al día, sin la rama del PR. Y otra vez, ya en main: sólo la pone al día.
+    d=$(sync_project merged) || { fail 'sync-main: no pude preparar el proyecto'; return; }
+    out=$(sync "$d"); rc=$?
+    if [ "$rc" -eq 0 ] && on_main "$d" && [ -f "$d/x.txt" ] && [ -z "$(git -C "$d" branch --list phase/x)" ] \
+       && printf '%s\n' "$out" | grep -qF '✓ sync-main: main en ' && printf '%s\n' "$out" | grep -qF 'Fase activa: '; then
+        ok 'con el PR fusionado: main al día con origin, sin la rama del PR, y dice la fase activa'
+    else fail "sync-main no dejó main al día tras el merge (salida $rc):"; printf '%s\n' "$out" | sed 's/^/      /'; fi
+    out=$(sync "$d"); rc=$?
+    if [ "$rc" -eq 0 ] && on_main "$d"; then ok 'otra vez, ya en main: al día'
+    else fail "en main, sync-main no terminó al día (salida $rc):"; printf '%s\n' "$out" | sed 's/^/      /'; fi
+
+    # --wait: espera a que la CI pase y la persona lo fusione.
+    d=$(sync_project wait) || return
+    out=$(GH_MERGE_AT=3 sync "$d" --wait 1); rc=$?
+    if [ "$rc" -eq 0 ] && on_main "$d" && printf '%s\n' "$out" | grep -qF 'CI en verde: falta que lo fusiones'; then
+        ok '--wait: espera a la CI y al merge, y deja main al día'
+    else fail "con --wait, sync-main no esperó al merge (salida $rc):"; printf '%s\n' "$out" | sed 's/^/      /'; fi
+
+    # La rama local con un commit que el PR no llevó: main al día, pero la rama se queda.
+    d=$(sync_project extra) || return
+    up_git "$d" commit -q --allow-empty -m extra
+    out=$(sync "$d"); rc=$?
+    if [ "$rc" -eq 0 ] && on_main "$d" && [ -n "$(git -C "$d" branch --list phase/x)" ] \
+       && printf '%s\n' "$out" | grep -qF 'tiene commits que el PR no llevó'; then
+        ok 'una rama con commits que el PR no llevó: main al día y la rama se queda'
+    else fail "sync-main borró una rama con commits sin fusionar (salida $rc):"; printf '%s\n' "$out" | sed 's/^/      /'; fi
+
+    # Lo que no toca nada: sin fusionar (3), la CI en rojo esperando, cerrado sin fusionar, sin PR, cambios sin
+    # commitear y un main local que no avanza en línea recta (1).
+    for c in open red closed none dirty diverged; do
+        d=$(sync_project "$c") || return
+        export GH_PR=merged GH_CHECKS=0 GH_MERGE_AT=1
+        args=''
+        case $c in
+            open)     GH_PR=open ;;
+            red)      GH_PR=open GH_CHECKS=1 args=--wait ;;
+            closed)   GH_PR=closed ;;
+            none)     GH_PR=none ;;
+            dirty)    printf 'y\n' >> "$d/x.txt" ;;
+            diverged) up_git "$d" switch -q main; up_git "$d" commit -q --allow-empty -m local; up_git "$d" switch -q phase/x ;;
+        esac
+        before=$(worktree "$d"); head=$(git -C "$d" rev-parse HEAD)
+        # shellcheck disable=SC2086  # args vacío o una palabra
+        out=$(sync "$d" $args); rc=$?
+        case $c in open) want='sigue sin fusionar'; want_rc=3 ;; red) want='la CI del PR #7 falla'; want_rc=1 ;;
+                   closed) want='se cerró sin fusionar'; want_rc=1 ;; none) want='no tiene PR'; want_rc=1 ;;
+                   dirty) want='cambios sin commitear'; want_rc=1 ;; diverged) want='no avanza en línea recta'; want_rc=1 ;; esac
+        if [ "$rc" -eq "$want_rc" ] && printf '%s\n' "$out" | grep -qF "$want" && [ "$(worktree "$d")" = "$before" ] \
+           && [ "$(git -C "$d" rev-parse HEAD)" = "$head" ] && [ -n "$(git -C "$d" branch --list phase/x)" ]; then
+            ok "$c: «$want», sale $want_rc y no toca la rama"
+        else fail "$c: sync-main no paró como se espera (salida $rc):"; printf '%s\n' "$out" | sed 's/^/      /'; fi
+        unset GH_PR GH_CHECKS GH_MERGE_AT
     done
 }
 
@@ -893,6 +984,7 @@ for KIT in $KITS; do
     test_feedback
     test_installer
     test_upgrade
+    test_sync
     test_new_project
     test_protocol
 done

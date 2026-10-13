@@ -30,6 +30,7 @@
 | Planificar una fase | `/plan-phase` | `.claude/skills/plan-phase/SKILL.md` |
 | Revisar la rama de una fase | `/review` | `.claude/skills/review/SKILL.md` |
 | Subir el protocolo, entre fases | `/protocol-upgrade` | `.claude/skills/protocol-upgrade/SKILL.md` |
+| Volver a main tras un merge | `/sync-main` | `.claude/skills/sync-main/SKILL.md` |
 
 «Ejecuta la siguiente fase» equivale a `/phase` sin argumentos. Una sesión, una fase.
 

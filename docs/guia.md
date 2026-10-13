@@ -106,9 +106,10 @@ vez ([`docs/modos.md` §VPS](modos.md#vps)).
      pregunta opcional para ti: si falta o sobra algo, o si algo de la fase te costó a ti.
 3. **PR.** La fase empuja su rama y abre el PR con la plantilla. La CI repite `bin/verify.sh` completo.
 4. **Revisión y fusión.** Lees el RESULTADO y el diff, y fusionas tú.
-5. **Siguiente fase.** Con el PR fusionado, `main` ya apunta a ella: otra sesión nueva y `/phase`. Una fase de
-   operación que espera algo que sólo tú puedes comprobar cierra en `ESPERA_EVIDENCIA`, y el puntero la salta;
-   cuando tengas la evidencia, `/phase <epica> <FF>` y pégala.
+5. **Siguiente fase.** Con el PR fusionado, `/sync-main` (o `sh bin/sync-main.sh`) te deja en `main`, al día y sin
+   la rama de la fase; con `--wait`, espera a que lo fusiones. `main` ya apunta a la siguiente: otra sesión nueva y
+   `/phase`. Una fase de operación que espera algo que sólo tú puedes comprobar cierra en `ESPERA_EVIDENCIA`, y el
+   puntero la salta; cuando tengas la evidencia, `/phase <epica> <FF>` y pégala.
 6. **Cierre de la épica.** Lo hace la fase que deja `HECHA` la última de la épica, en su mismo cierre: comprueba el
    criterio de cierre de su epic-plan y la marca `CERRADA`. Después, la siguiente épica, desde el paso 1.
 
@@ -166,7 +167,7 @@ proyecto de verdad.
 
 - **Una sesión por fase**, siempre nueva. Lo que la fase siguiente necesita está en el RESULTADO de la anterior, no
   en el chat.
-- **Fusiona antes de lanzar la siguiente fase**: así sale de `main` con el puntero ya en ella.
+- **Fusiona antes de lanzar la siguiente fase**, y `/sync-main`: así sale de `main` con el puntero ya en ella.
 - **Fases que se revisan en diez minutos.** Si una no cabe, pide a `/plan-phase` que la parta.
 - **Decide en el Paso A, no al final.** Una pregunta respondida antes de escribir código es más barata.
 - **Mira la retro de cada fase.** Lo que sirve a todos los proyectos va como issue a ai-protocol

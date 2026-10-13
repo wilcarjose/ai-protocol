@@ -3,6 +3,24 @@
 El núcleo del protocolo: lo que es igual en todos los stacks. Versiones con [SemVer](https://semver.org/lang/es/) y
 etiqueta `core-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, arriba.
 
+## [2.7.0] — 2026-10-13
+
+### Añadido
+
+- `bin/sync-main.sh`: después de fusionar un PR, el repo en su rama base al día. Busca el PR de la rama actual (o el
+  número que se le pasa), cambia a su rama base (`main` o la de la épica), la avanza a `origin` sólo en línea recta,
+  borra la rama local del PR si no tiene commits que el PR no llevara y dice la fase activa de `.ai/STATE.md`. Con
+  `--wait [<min>]` espera a que pase la CI y la persona lo fusione (30 minutos por defecto), y para si la CI falla o
+  el PR se cierra. En `main` sin PR, sólo la pone al día. No fusiona ni empuja nada: el merge sigue siendo del Tech
+  Lead.
+- `/sync-main` (`.claude/skills/sync-main/SKILL.md`): lanza el script y lee cómo terminó. `CLAUDE.md §Qué hace cada
+  sesión` la lista, y `phase/cierre.md §Reporte final` la recuerda junto al PR.
+
+### Cambiado
+
+- `tests/context-baseline.txt`: la sesión «cualquiera» sube de 4112 a 4300 caracteres, por las filas de
+  `/protocol-upgrade` y `/sync-main` en `CLAUDE.md §Qué hace cada sesión`.
+
 ## [2.6.0] — 2026-10-13
 
 ### Añadido
