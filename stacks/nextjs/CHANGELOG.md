@@ -3,6 +3,23 @@
 El stack Next.js: lo que añade al núcleo. Versiones con [SemVer](https://semver.org/lang/es/) y etiqueta
 `nextjs-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, arriba.
 
+## [3.4.0] — 2026-10-13
+
+Compatible con el núcleo `>=2.0.0 <3.0.0`.
+
+### Cambiado
+
+- `.claude/settings.json`: permite `sh bin/protocol-feedback.sh*`, que la retro del núcleo ejecuta para subir sus
+  filas al kit (`phase/cierre.md §Retro del protocolo`, #64).
+- `.ai/rules/tests.md §Tests`: un paquete que importa `next/server` o `next/navigation` sin extensión (next-intl)
+  va en `test.server.deps.inline` de `vitest.config.ts`, o Vitest no lo carga (#59).
+- La semilla `vitest.config.ts` trae `server.deps.inline: ["next-intl"]`, que no hace nada sin next-intl (#59).
+
+### Al actualizar un proyecto
+
+- La semilla `vitest.config.ts` es del proyecto y `--upgrade` no la toca: si usa next-intl y aún no lo tiene, añade
+  `server: { deps: { inline: ["next-intl"] } }` a su `test` (#59).
+
 ## [3.3.0] — 2026-10-12
 
 Compatible con el núcleo `>=2.0.0 <3.0.0`.

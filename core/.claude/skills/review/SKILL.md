@@ -29,6 +29,9 @@ la memoria que el cierre ya escribió (o una revisión anterior) no es parte del
    - Si la segunda revisión sigue con bloqueantes: STOP & ASK.
 5. **Los no bloqueantes** no se arreglan en la fase salvo que estén en su alcance; lo de otra parte va a
    `.ai/BACKLOG.md` (`CLAUDE.md §Alcance`).
+6. **El diff que se cierra es el revisado.** Si después de la última revisión entra cualquier commit de código (el
+   arreglo de un no bloqueante también), `bash bin/verify.sh` y otra revisión antes del cierre: un arreglo puede
+   introducir lo que ninguna revisión vio.
 
 `bin/check-docs.sh` no deja una fase en `HECHA` ni en `ESPERA_EVIDENCIA` sin revisión o con un bloqueante sin
 marcar. La revisión entra en el commit de cierre (`.claude/skills/phase/cierre.md §Cierre de fase`); lanzada a mano

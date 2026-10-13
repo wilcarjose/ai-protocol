@@ -48,7 +48,7 @@ ligera sin preguntas ni supuestos rotos no espera: da las viñetas y sigue.
    siempre con la entrada cerrada (`< /dev/null`), para que la pregunta falle en vez de esperar, y con el tope de
    tiempo de la herramienta (en Claude Code, el `timeout` de la orden), no con `timeout` delante, que la saca de
    los permisos. Una pregunta que la fase no responde es STOP & ASK.
-4. Si te bloqueas: STOP & ASK y `BLOQUEADA`.
+4. Si te bloqueas: STOP & ASK (§Estado de una fase dice cuándo pasa a `BLOQUEADA`).
 5. Al terminar las filas, `bash bin/verify.sh` completo (§Verificación).
 
 ## Paso C — Cierre (siempre, también bloqueada o en rojo)
@@ -76,14 +76,14 @@ Cada fase se ejecuta en **`phase/<NN-slug>/<FF>`**, y se resuelve antes del Paso
 código de esa rama.
 
 - **Ya estás en ella:** sigue. **Existe y estás en otra:** pregunta si cambias.
-- **No existe:** pregunta desde qué rama se crea, con la recomendada primero. Candidatas, en este orden: la rama base
-  de la épica (`.claude/skills/plan-epic/SKILL.md §Rama base de la épica`), `main`, la de la fase anterior y la
-  actual. **Sólo valen las ramas cuyo `git show <rama>:.ai/STATE.md` apunta ya a esta fase.** Si no vale ninguna,
-  dilo y para.
-- **Antes de proponerlas, trae el remoto**, siempre: la fase anterior pudo fusionarse en GitHub. `git fetch`; si la
-  rama base local (la de la épica o `main`) va por detrás de la suya en `origin`, `git switch <rama base>` y
-  `git pull --ff-only`, cada orden suelta. Si no avanza en línea recta (la local tiene commits que el remoto no),
-  STOP & ASK.
+- **No existe:** primero **trae el remoto**, siempre: la fase anterior pudo fusionarse en GitHub. `git fetch`; si la
+  rama base (la de la épica, `.claude/skills/plan-epic/SKILL.md §Rama base de la épica`, o `main`) va por detrás de
+  la suya en `origin`, `git switch <rama base>` y `git pull --ff-only`, cada orden suelta. Si no avanza en línea
+  recta (la local tiene commits que el remoto no), STOP & ASK.
+- **Después, sin preguntar si la rama base vale:** si `git show <rama base>:.ai/STATE.md` apunta ya a esta fase,
+  `git switch -c phase/<NN-slug>/<FF> <rama base>` y dilo en una línea. Si no apunta (la fase anterior sigue sin
+  fusionar), pregunta desde qué rama se crea, con la recomendada primero, entre la de la fase anterior y la actual.
+  **Sólo valen las ramas cuyo `.ai/STATE.md` apunta ya a esta fase.** Si no vale ninguna, dilo y para.
 
 Para crear la rama o cambiar a ella, el árbol tiene que estar limpio. Se empuja al cerrar, con su PR
 (`.claude/skills/phase/cierre.md §Entrega`). Los merges los decide el Tech Lead.
@@ -96,7 +96,9 @@ escriben siempre juntas.
 
 - **Al iniciar:** `EN_CURSO` y la fecha en `Última actualización`. Con la primera fase de la épica, su epic-plan
   pasa de `SIN_EMPEZAR` a `EN_CURSO`.
-- **Al bloquear** (desde `EN_CURSO`): `BLOQUEADA`; con la respuesta, vuelve a `EN_CURSO`.
+- **Al bloquear** (desde `EN_CURSO`): `BLOQUEADA` sólo si la pregunta queda sin respuesta al terminar el turno;
+  con la respuesta, vuelve a `EN_CURSO`. La que se responde en el acto (en Claude Code, `AskUserQuestion`) no cambia
+  el estado: la pregunta y la respuesta van a las «Preguntas abiertas» de la fase.
 - **Al cerrar:** `HECHA`, `ESPERA_EVIDENCIA` (sólo quedan casillas `[humano]`), `BLOQUEADA` o `VERIFICACION_ROJA`,
   con la fecha en `Cerrada`.
 - **El puntero** (`Épica activa`, `Fase activa`, `Archivo de la fase`) es la **primera fila sin `HECHA` ni

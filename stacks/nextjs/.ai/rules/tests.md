@@ -10,7 +10,9 @@
 - **Unitarios con Vitest** en `tests/` o junto al código (`*.test.ts`). Sin red real: el cliente se sustituye por
   fixtures. Vitest se instala o se sube en su **último parche publicado** (`npm view vitest version`): sus peers
   opcionales traen `@vitest/browser` en su última versión, que exige esa misma de `vitest`, y con una anterior npm 10
-  revienta con `Cannot read properties of null (reading 'edgesOut')`.
+  revienta con `Cannot read properties of null (reading 'edgesOut')`. Un paquete que importa `next/server` o
+  `next/navigation` sin extensión (next-intl) va en `test.server.deps.inline` de `vitest.config.ts`: fuera del bundle
+  de Vite, Node no lo resuelve (`Cannot find module '…/next/server'`).
 - **Contrato:** cada snapshot de `tests/contract-snapshots/` se importa en un test tipado con su tipo generado
   (`satisfies components["schemas"]["…"]`), así que `tsc` lo comprueba contra la copia del OpenAPI
   (`.ai/rules/contrato.md`). El cliente y sus errores problem+json tienen su test en `tests/shared/api/`.

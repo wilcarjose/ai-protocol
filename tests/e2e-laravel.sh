@@ -123,12 +123,18 @@ else
 fi
 
 step 'bin/verify.sh completo'
-if (cd "$APP" && sh bin/verify.sh > "$WORK/verify.log" 2>&1); then
+# Como lo lanza un agente: Pint saca JSON en cuanto ve AI_AGENT, aunque PAO_DISABLE esté puesto.
+if (cd "$APP" && AI_AGENT=claude-code sh bin/verify.sh > "$WORK/verify.log" 2>&1); then
     grep -E '^▸|✓$|✗$' "$WORK/verify.log" | paste - - | sed 's/^/  /'
     ok 'verify.sh en verde, con la suite contra PostgreSQL con PostGIS'
 else
     sed 's/^/      /' "$WORK/verify.log"
     fail 'verify.sh no está en verde sobre un proyecto nuevo'
+fi
+if grep -qF '"tool":"pint"' "$WORK/verify.log"; then
+    fail 'el gate «estilo» saca Pint en JSON cuando lo lanza un agente'
+else
+    ok 'el gate «estilo» saca Pint en texto también cuando lo lanza un agente'
 fi
 
 step 'fallos provocados'

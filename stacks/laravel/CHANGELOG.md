@@ -3,6 +3,18 @@
 El stack Laravel: lo que añade al núcleo. Versiones con [SemVer](https://semver.org/lang/es/) y etiqueta
 `laravel-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, arriba.
 
+## [2.3.0] — 2026-10-13
+
+Compatible con el núcleo `>=2.0.0 <3.0.0`.
+
+### Cambiado
+
+- `.claude/settings.json`: permite `sh bin/protocol-feedback.sh*`, que la retro del núcleo ejecuta para subir sus
+  filas al kit (`phase/cierre.md §Retro del protocolo`, #64).
+- `bin/verify.sh`, gate «estilo»: Pint corre con `env -i PATH="$PATH" HOME="$HOME"`. Saca JSON en cuanto su
+  `laravel/agent-detector` ve la variable de un agente (`AI_AGENT`, `CLAUDECODE`…), y ni `PAO_DISABLE` ni
+  `--format=txt` lo evitan; sin entorno sale en texto, como en la CI (#37).
+
 ## [2.2.0] — 2026-10-12
 
 Compatible con el núcleo `>=2.0.0 <3.0.0`.

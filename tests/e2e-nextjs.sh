@@ -7,7 +7,8 @@
 #      .ai/RULES.md §Stack y versiones exactas, en las versiones de abajo.
 #   2. Instala el stack con install.sh, rellena la capa del proyecto como
 #      tests/run.sh (tests/lib.sh), copia el OpenAPI de ejemplo, la feature que
-#      lo usa y una página de inicio con su texto en las traducciones
+#      lo usa, una página de inicio con su texto en las traducciones y un
+#      test que carga next-intl con la semilla de Vitest
 #      (tests/fixtures/nextjs-e2e/), crea la épica de prueba desde el
 #      paquete de tareas tests/fixtures/stages/E1.md (make_test_epics), genera
 #      el cliente y lo versiona todo en un repo git.
@@ -51,7 +52,7 @@ ROOT=$(cd "$(dirname "$0")/.." && pwd)
 . "$ROOT/tests/lib.sh"
 
 NEXT_VERSION=16.3.8
-DEPS='openapi-fetch@0.17.0 zod@4.6.5 @tanstack/react-query@5.104.1 zustand@5.0.15'
+DEPS='openapi-fetch@0.17.0 zod@4.6.5 @tanstack/react-query@5.104.1 zustand@5.0.15 next-intl@4.14.9'
 DEV_DEPS='@types/node@22 openapi-typescript@7.13.0 eslint-plugin-boundaries@7.2.0 eslint-import-resolver-typescript@4.4.5 vitest@5.0.4 @playwright/test@1.63.0'
 LHCI_VERSION=0.15.1
 

@@ -43,8 +43,9 @@ cd "$(dirname "$0")/.." || exit 1
 : "${MIN_TESTS:?falta en .ai/project/verify.conf}"
 : "${MAX_PHPSTAN_IGNORES:?falta en .ai/project/verify.conf}"
 
-# laravel/pao (en el esqueleto de Laravel) cambia la salida de Pest, PHPStan y Pint por JSON cuando detecta un agente;
-# los gates leen la salida de siempre.
+# laravel/pao (en el esqueleto de Laravel) cambia la salida de Pest y PHPStan por JSON cuando detecta un agente;
+# los gates leen la salida de siempre. Pint no hace caso de PAO_DISABLE ni de --format: lo decide su propio
+# laravel/agent-detector con las variables de cada agente (AI_AGENT, CLAUDECODE…), y su gate corre sin entorno.
 export PAO_DISABLE=1
 
 # Memoria de PHPStan. Con el memory_limit por defecto, un worker paralelo puede
@@ -154,7 +155,7 @@ tests_gate() {
 run 'docs'          sh bin/check-docs.sh --strict
 run 'protocolo'     sh bin/check-protocol.sh
 run 'secretos'      secrets_gate
-run 'estilo'        ./vendor/bin/pint --test
+run 'estilo'        env -i PATH="$PATH" HOME="$HOME" ./vendor/bin/pint --test
 run 'análisis'      ./vendor/bin/phpstan analyse --no-progress --memory-limit="$PHPSTAN_MEMORY_LIMIT"
 run 'deuda'         phpstan_debt_gate
 run 'rutas'         routes_gate

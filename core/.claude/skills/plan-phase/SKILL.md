@@ -69,7 +69,9 @@ plantilla lo pide, «Migraciones: ninguna».
 - **Archivos.** Todo archivo que toque un entregable está en «Crear», «Modificar» o «Borrar». Si una regla de
   arquitectura prohíbe algo que otros archivos hacen hoy, esos archivos entran en la fase o la regla sale de ella.
   Si la fase retira o renombra algo (una ruta, una clase, una clave de traducción), busca con `grep` sus usos en el
-  código **y en los tests**: cada archivo que lo usa entra en la fase.
+  código **y en los tests**: cada archivo que lo usa entra en la fase. Antes de cerrar el §4, contrástalo con los
+  supuestos que ya no valen del traspaso de la fase anterior (`sh bin/handoff.sh`) y con todo lo que el §2 o el §3
+  mandan escribir (una nota, un test, una fila): cada archivo que nombran está en el §4.
 - **Tests donde puedan ejecutarse.** Cada test va en la suite que puede ejecutarlo (`.ai/rules/tests.md`). Nunca
   expresiones regulares sobre el código fuente (`.ai/WORKFLOW.md §Obediencia arquitectónica`).
 - **Criterios de éxito (§5).** Cada uno es un comando, y todos pueden cumplirse a la vez: no pidas «sin modificar el
@@ -81,7 +83,10 @@ plantilla lo pide, «Migraciones: ninguna».
   lo que no cae ahí dentro —un traspaso a otro repo, una fila de un runbook, una tabla de un documento— no lo
   comprueba nadie si §5 no lo nombra con un comando. Una instrucción que está en el §3 de seis fases y en ningún §5
   se pierde cuatro veces de seis.
-- **Contrato** de la fase igual al que dicen el epic-plan y `.ai/DOMAIN.md`.
+- **Contrato** de la fase igual al que dicen el epic-plan y `.ai/DOMAIN.md`. Con `CAMBIO AUTORIZADO`, el plan
+  decide en qué orden se despliegan los dos repos y por qué: el orden equivocado puede abrir justo lo que la fase
+  cierra. Es un entregable: su fila en `docs/runbooks/release.md §Pasos por fase`, con el otro repo en «Cuándo», y
+  el `**Despliegue:**` del traspaso (`.claude/skills/phase/cierre.md §Traspaso al otro repo`).
 - **Plan de commits (§9).** Cada entregable que cambia archivos se mapea a una fila; una fila puede cubrir varios
   entregables relacionados; los que no cambian archivos no llevan fila. **Excepción:** un entregable que ningún
   gate ve va en su fila propia; agrupado, no tiene dónde aterrizar y se pierde sin que falle nada. Los commits de

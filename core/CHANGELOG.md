@@ -3,6 +3,28 @@
 El núcleo del protocolo: lo que es igual en todos los stacks. Versiones con [SemVer](https://semver.org/lang/es/) y
 etiqueta `core-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, arriba.
 
+## [2.5.0] — 2026-10-13
+
+### Cambiado
+
+- `tests/structure.sh` comprueba contra los permisos de cada stack también las órdenes `sh bin/…` y `bash bin/…`
+  de cualquier archivo del núcleo, no sólo las de git y gh: con `"defaultMode": "dontAsk"`, la retro no podía
+  ejecutar `sh bin/protocol-feedback.sh` (`phase/cierre.md §Retro del protocolo`) y las filas se quedaban en
+  `propuesta` (#64).
+- `phase/SKILL.md §Rama de la fase`: si tras traer el remoto la rama base (la de la épica o `main`) ya apunta a la
+  fase, la rama de la fase se crea desde ella sin preguntar y se dice en una línea; sólo se pregunta si no apunta,
+  entre la de la fase anterior y la actual (#63).
+- `review/SKILL.md`, paso 6: si después de la última revisión entra cualquier commit de código, también el arreglo
+  de un no bloqueante, vuelven `bash bin/verify.sh` y otra revisión antes del cierre (#62).
+- `plan-phase/SKILL.md §Coherencia interna`, «Archivos»: antes de cerrar el §4 se contrasta con los supuestos que
+  ya no valen del traspaso de la fase anterior y con todo lo que el §2 o el §3 mandan escribir (#61).
+- `phase/SKILL.md §Estado de una fase` y `§Paso B`: un STOP & ASK que se responde en el acto no cambia el estado,
+  y queda con su respuesta en las «Preguntas abiertas» de la fase; `BLOQUEADA` es para la pregunta que queda sin
+  respuesta al terminar el turno (#60).
+- `plan-phase/SKILL.md §Coherencia interna`, «Contrato»: con `CAMBIO AUTORIZADO`, el plan decide el orden de
+  despliegue entre los dos repos, como entregable: su fila en `docs/runbooks/release.md §Pasos por fase` y el
+  `**Despliegue:**` del traspaso (#41).
+
 ## [2.4.0] — 2026-10-12
 
 ### Añadido
