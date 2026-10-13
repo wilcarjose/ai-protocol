@@ -1,6 +1,6 @@
 {
   "name": "core",
-  "version": "2.5.0",
+  "version": "2.6.0",
   "files": [
     ".ai/WORKFLOW.md",
     ".ai/handoffs/README.md",
@@ -11,6 +11,7 @@
     ".claude/skills/phase/cierre.md",
     ".claude/skills/plan-epic/SKILL.md",
     ".claude/skills/plan-phase/SKILL.md",
+    ".claude/skills/protocol-upgrade/SKILL.md",
     ".claude/skills/review/SKILL.md",
     ".github/pull_request_template.md",
     "AGENTS.md",
@@ -19,7 +20,8 @@
     "bin/check-protocol.sh",
     "bin/handoff.sh",
     "bin/measure-context.sh",
-    "bin/protocol-feedback.sh"
+    "bin/protocol-feedback.sh",
+    "bin/protocol-upgrade.sh"
   ],
   "seed": [
     ".ai/BACKLOG.md",

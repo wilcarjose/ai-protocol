@@ -11,7 +11,7 @@ Argumentos: `$ARGUMENTS`. Sin argumentos, todos los issues de mejora abiertos; c
 
 Es el paso del medio del ciclo de mejora (README.md §Principios): un proyecto anota la fricción en su
 `.ai/PROTOCOL.md`, `bin/protocol-feedback.sh` la sube como issue, **esta skill la aplica en el kit** y el proyecto
-la recibe con `install.sh --upgrade`. Corre en este repo, nunca en un proyecto.
+la recibe con `/protocol-upgrade` (`bin/protocol-upgrade.sh`). Corre en este repo, nunca en un proyecto.
 
 ## 1. Los issues
 
@@ -87,6 +87,7 @@ Todo en verde antes de publicar:
 
 - Las versiones nuevas: `core X.Y.Z` y cada stack que cambió.
 - Los issues aplicados y los descartados, con el motivo; los que quedan abiertos fuera del lote.
-- La orden para actualizar un proyecto, entre fases, desde la carpeta que contiene los dos repos:
-  `sh ai-protocol/install.sh --upgrade --target <proyecto> --dry-run` y después sin `--dry-run`, en un PR
-  `chore(protocol): upgrade ai-protocol to vX.Y`.
+- Cómo llega a cada proyecto: entre fases, `/protocol-upgrade` en una sesión del proyecto (o
+  `sh bin/protocol-upgrade.sh`), que deja `main` al día con el upgrade fusionado si su CI pasa. Una versión mayor
+  queda en un PR para revisar. Un proyecto que aún no tiene `bin/protocol-upgrade.sh` lo recibe una vez con
+  `sh <ruta del kit>/install.sh --upgrade --target <proyecto>`.

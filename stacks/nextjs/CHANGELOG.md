@@ -3,6 +3,17 @@
 El stack Next.js: lo que añade al núcleo. Versiones con [SemVer](https://semver.org/lang/es/) y etiqueta
 `nextjs-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, arriba.
 
+## [3.5.0] — 2026-10-13
+
+Compatible con el núcleo `>=2.0.0 <3.0.0`.
+
+### Cambiado
+
+- `.claude/settings.json`: permite `sh bin/protocol-upgrade.sh*`, el upgrade del protocolo del núcleo 2.6.0. Es el
+  único permiso nuevo: `gh pr merge` y el push a `main` siguen denegados.
+- `.ai/project/verify.conf` (semilla): `PROTOCOL_AUTO_MERGE=minor`, la política de fusión de
+  `bin/protocol-upgrade.sh`. Una semilla no llega a un proyecto que ya existe: sin la línea, vale `minor`.
+
 ## [3.4.0] — 2026-10-13
 
 Compatible con el núcleo `>=2.0.0 <3.0.0`.

@@ -582,6 +582,131 @@ test_feedback() {
     else fail 'una segunda vuelta vuelve a enviar filas'; fi
 }
 
+# ── bin/protocol-upgrade.sh, con un origin local y un gh de mentira ─────────
+# up_git <dir> <args de git>: git sin depender de la configuración de quien lo ejecuta.
+up_git() { d=$1; shift; git -C "$d" -c user.name=kit -c user.email=kit@example.invalid -c commit.gpgsign=false -c core.hooksPath=/dev/null "$@"; }
+
+# up_project <caso>: una copia de la instalación de prueba en un repo git, con un origin vacío que ya tiene su main.
+# Lleva dos filas «enviada» en .ai/PROTOCOL.md: la #2 (ai-protocol#901), que resuelve el kit nuevo, y la #3, que no.
+up_project() {
+    p=$(fresh "up-$1") || return 1
+    printf '| 2 | %s | fase 01/01 | Prueba. | núcleo | enviada — ai-protocol#901 |\n' "$DATE" >> "$p/.ai/PROTOCOL.md"
+    printf '| 3 | %s | fase 01/01 | Otra. | stack | enviada — ai-protocol#90 |\n' "$DATE" >> "$p/.ai/PROTOCOL.md"
+    git init -q --bare "$WORK/$KIT-up-$1.git" && git -C "$p" init -q && up_git "$p" checkout -q -b main \
+        && up_git "$p" add -A && up_git "$p" commit -q -m init && up_git "$p" remote add origin "$WORK/$KIT-up-$1.git" \
+        && up_git "$p" push -q -u origin main && printf '%s' "$p"
+}
+
+# upgrade <dir> <kit> [args]: bin/protocol-upgrade.sh en ese proyecto, con esa copia del kit y el gh de mentira.
+# GH_CHECKS: 0 (CI en verde, por defecto), 1 (en rojo) o none (sin CI).
+upgrade() {
+    p=$1; k=$2; shift 2
+    (cd "$p" && PATH="$WORK/$KIT-upgh:$PATH" GH_LOG="$WORK/$KIT-upgh.log" AI_PROTOCOL_DIR="$k" PROTOCOL_UPGRADE_CI_WAIT=1 \
+        GIT_AUTHOR_NAME=kit GIT_AUTHOR_EMAIL=kit@example.invalid GIT_COMMITTER_NAME=kit GIT_COMMITTER_EMAIL=kit@example.invalid \
+        GIT_CONFIG_COUNT=2 GIT_CONFIG_KEY_0=commit.gpgsign GIT_CONFIG_VALUE_0=false \
+        GIT_CONFIG_KEY_1=core.hooksPath GIT_CONFIG_VALUE_1=/dev/null sh bin/protocol-upgrade.sh "$@" 2>&1)
+}
+
+# worktree <dir>: «suma ruta» de cada archivo del proyecto, sin .git, que un git fetch ya cambia.
+worktree() { ( cd "$1" && find . -path ./.git -prune -o -type f -print | sort | while read -r f; do printf '%s %s\n' "$(sha "$f")" "$f"; done ); }
+
+# on_main <dir>: en main, al día con su origin.
+on_main() {
+    [ "$(git -C "$1" rev-parse --abbrev-ref HEAD)" = main ] \
+        && [ "$(git -C "$1" rev-parse HEAD)" = "$(git -C "$1" rev-parse origin/main)" ]
+}
+
+# shellcheck disable=SC2016  # los $ de los stubs y las comillas invertidas son literales
+test_upgrade() {
+    printf '  ◆ bin/protocol-upgrade.sh\n'
+    stack_v=$(sed -n 's/^ *"version": *"\(.*\)",*$/\1/p' "$ROOT/stacks/$KIT/stack.json")
+    mkdir -p "$WORK/$KIT-upgh"
+    printf '%s\n' '#!/bin/sh' 'printf "%s\n" "$*" >> "$GH_LOG"' 'case "$1 $2" in' \
+        '    "pr create") echo "https://github.com/x/demo/pull/7" ;;' \
+        '    "pr checks") [ "${GH_CHECKS:-0}" = none ] && { echo "no checks reported on the branch"; exit 1; }; exit "${GH_CHECKS:-0}" ;;' \
+        '    "pr merge") b=$(git rev-parse --abbrev-ref HEAD); git push -q origin "$b:main" && git push -q origin --delete "$b" ;;' \
+        '    *) exit 1 ;;' 'esac' > "$WORK/$KIT-upgh/gh"
+    chmod +x "$WORK/$KIT-upgh/gh"
+
+    # El kit nuevo: una versión menor del núcleo cuyo CHANGELOG.md cita el #901, otro WORKFLOW.md y otro CLAUDE.md, y
+    # su bin/protocol-upgrade.sh se distingue en lo que imprime. El mayor sube el stack a 9.0.0.
+    k2="$WORK/$KIT-upkit2"
+    kit_copy "$k2"
+    edit "$k2/core/core.json" 's/"version": ".*"/"version": "2.99.0"/'
+    awk_edit "$k2/core/CHANGELOG.md" "!d && /^## \\[/ { print \"## [2.99.0] — $DATE\\n\\n- Arreglo (#901).\\n\"; d = 1 } 1"
+    printf '\nNovedad del kit.\n' >> "$k2/core/.ai/WORKFLOW.md"
+    printf '\nNovedad del kit.\n' >> "$k2/core/CLAUDE.md"
+    edit "$k2/core/bin/protocol-upgrade.sh" 's/^echo "◆ protocol-upgrade: /echo "◆ protocol-upgrade (kit nuevo): /'
+    k3="$WORK/$KIT-upkit3"
+    kit_copy "$k3"
+    edit "$k3/stacks/$KIT/stack.json" 's/"version": ".*"/"version": "9.0.0"/'
+
+    # Lo normal: versión menor, CI en verde.
+    d=$(up_project merge) || { fail 'protocol-upgrade: no pude preparar el proyecto'; return; }
+    : > "$WORK/$KIT-upgh.log"
+    out=$(upgrade "$d" "$k2"); rc=$?
+    first=$(awk '/^\|---/ { getline; print; exit }' "$d/.ai/archive/PROTOCOL.md")
+    if [ "$rc" -eq 0 ] && on_main "$d" && grep -qx 'package core 2.99.0' "$d/.ai/protocol.lock" \
+       && printf '%s\n' "$out" | grep -qF '◆ protocol-upgrade (kit nuevo): ' \
+       && printf '%s\n' "$first" | grep -q "^| 2 | .* | núcleo | aplicada — kit core 2.99.0 + $KIT $stack_v |\$" \
+       && ! grep -q '^| 2 |' "$d/.ai/PROTOCOL.md" && grep -q '^| 3 | .* | enviada — ai-protocol#90 |$' "$d/.ai/PROTOCOL.md" \
+       && grep -q '^pr create ' "$WORK/$KIT-upgh.log" && grep -q '^pr merge ' "$WORK/$KIT-upgh.log" \
+       && [ -z "$(git -C "$d" branch --list 'protocol/*')" ] && [ -z "$(git -C "$d" ls-remote --heads origin 'protocol/*')" ] \
+       && sh "$d/bin/check-docs.sh" --strict > /dev/null 2>&1; then
+        ok 'menor y con la CI en verde: lo hace la versión nueva del script, archiva la fila que resuelve, fusiona y deja main al día con origin'
+    else
+        fail "protocol-upgrade no fusionó el upgrade menor (salida $rc):"; { printf '%s\n' "$out"; cat "$WORK/$KIT-upgh.log"; } | sed 's/^/      /'
+    fi
+    out=$(upgrade "$d" "$k2"); rc=$?
+    if [ "$rc" -eq 0 ] && printf '%s\n' "$out" | grep -qF '✓ al día: core 2.99.0'; then ok 'otra vez: al día, sin hacer nada'
+    else fail "una segunda vuelta no dice «al día» (salida $rc):"; printf '%s\n' "$out" | sed 's/^/      /'; fi
+
+    # Una versión mayor: el PR queda para la persona.
+    d=$(up_project major) || return
+    : > "$WORK/$KIT-upgh.log"
+    out=$(upgrade "$d" "$k3"); rc=$?
+    if [ "$rc" -eq 0 ] && on_main "$d" && printf '%s\n' "$out" | grep -qF 'PR abierto para revisar (versión mayor' \
+       && ! grep -q '^pr merge' "$WORK/$KIT-upgh.log" && ! grep -q "package $KIT 9.0.0" "$d/.ai/protocol.lock" \
+       && [ -n "$(git -C "$d" ls-remote --heads origin "protocol/upgrade-core-*-$KIT-9.0.0")" ]; then
+        ok 'una versión mayor: abre el PR, no lo fusiona y vuelve a main'
+    else fail "protocol-upgrade fusionó o no abrió el PR de una versión mayor (salida $rc):"; printf '%s\n' "$out" | sed 's/^/      /'; fi
+
+    # La CI en rojo, y un PR sin CI: no se fusiona y sale != 0.
+    for c in 1 none; do
+        d=$(up_project "ci-$c") || return
+        : > "$WORK/$KIT-upgh.log"
+        out=$(GH_CHECKS=$c upgrade "$d" "$k2"); rc=$?
+        if [ "$rc" -ne 0 ] && on_main "$d" && ! grep -q '^pr merge' "$WORK/$KIT-upgh.log" \
+           && printf '%s\n' "$out" | grep -qE 'la CI de .* falla|no tiene CI'; then
+            if [ "$c" = 1 ]; then what='en rojo'; else what='que no existe'; fi
+            ok "con la CI $what: no fusiona, lo dice, sale != 0 y vuelve a main"
+        else fail "con GH_CHECKS=$c, protocol-upgrade fusionó o no lo dijo (salida $rc):"; printf '%s\n' "$out" | sed 's/^/      /'; fi
+    done
+
+    # Lo que para antes de tocar nada: --dry-run (sale 0), un conflicto, una fase a medias y el árbol sucio.
+    for c in dry conflict busy dirty; do
+        d=$(up_project "$c") || return
+        case $c in
+            conflict) printf '\nCambio del proyecto.\n' >> "$d/CLAUDE.md"; up_git "$d" commit -qam conflict; up_git "$d" push -q ;;
+            busy)     edit "$d/.ai/STATE.md" 's/^| 02-paquete | 03 | LISTA_PARA_EJECUTAR | — |$/| 02-paquete | 03 | EN_CURSO | — |/'
+                      up_git "$d" commit -qam busy; up_git "$d" push -q ;;
+            dirty)    printf 'x\n' > "$d/suelto.txt" ;;
+        esac
+        before=$(worktree "$d"); head=$(git -C "$d" rev-parse HEAD)
+        : > "$WORK/$KIT-upgh.log"
+        if [ "$c" = dry ]; then out=$(upgrade "$d" "$k2" --dry-run); else out=$(upgrade "$d" "$k2"); fi
+        rc=$?
+        case $c in dry) want='y lo fusionaría con la CI en verde' ;; conflict) want='1 conflicto(s)' ;;
+                   busy) want='hay fases a medias (02-paquete/03)' ;; dirty) want='el árbol no está limpio' ;; esac
+        if [ "$c" = dry ]; then want_rc=0; else want_rc=1; fi
+        if [ "$rc" -eq "$want_rc" ] && printf '%s\n' "$out" | grep -qF "$want" && [ "$(worktree "$d")" = "$before" ] \
+           && [ "$(git -C "$d" rev-parse HEAD)" = "$head" ] && [ -z "$(git -C "$d" branch --list 'protocol/*')" ] \
+           && [ ! -s "$WORK/$KIT-upgh.log" ]; then
+            ok "$c: «$want», sin tocar nada"
+        else fail "$c: protocol-upgrade no paró como se espera (salida $rc):"; printf '%s\n' "$out" | sed 's/^/      /'; fi
+    done
+}
+
 # ── tests/structure.sh, frente a un fallo de cada chequeo ───────────────────
 # breaks <caso> <texto que structure.sh tiene que imprimir>: en una copia limpia del repo, mete el defecto.
 # shellcheck disable=SC2016  # las comillas invertidas son literales
@@ -767,6 +892,7 @@ for KIT in $KITS; do
 
     test_feedback
     test_installer
+    test_upgrade
     test_new_project
     test_protocol
 done
