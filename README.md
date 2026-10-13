@@ -19,7 +19,8 @@ una fase al cierre de la épica, para qué sirve cada pieza y un ejemplo de inic
   ambigüedad, contradicción, herramientas y permisos, lo que no cubría), con evidencia y el archivo que propone
   cambiar. La persona sólo añade o corrige lo que vio desde su papel. Cada mejora es una fila de `.ai/PROTOCOL.md`
   con su alcance: las de núcleo o stack van al kit como un issue (`bin/protocol-feedback.sh`), vuelven con una
-  versión y llegan al proyecto con `install.sh --upgrade`; las de proyecto van a su `.ai/project/`. El ciclo tiene
+  versión (en el kit las aplica `/kit-feedback`, `.claude/skills/kit-feedback/SKILL.md`) y llegan al proyecto con
+  `install.sh --upgrade`; las de proyecto van a su `.ai/project/`. El ciclo tiene
   cuatro reglas:
   - **El kit es la única fuente.** Un archivo del kit nunca se parchea en un proyecto, ni con urgencia: el upgrade
     lo dejaría como conflicto. Lo urgente sigue el mismo camino, más rápido (el arreglo en el kit, una versión de
@@ -57,6 +58,9 @@ install.sh                Instala o actualiza núcleo + stack en un proyecto, o 
 tests/                    Las pruebas del kit: structure.sh, run.sh, los e2e de cada stack y sus fixtures.
 docs/                     Documentación del propio kit: la guía práctica, los modos de ejecución, los planes y, en
                           vps/, el doctor y la unidad de systemd del modo VPS.
+.claude/skills/           Las skills del repo del kit, que no se instalan: /kit-feedback aplica los issues de mejora.
+.github/                  La CI del kit (workflows/kit.yml) y las etiquetas de cada versión publicada (workflows/tag.yml
+                          con tag-versions.sh).
 ```
 
 ### Lo que queda en el proyecto
@@ -427,8 +431,9 @@ Cada paquete se versiona por separado con [SemVer](https://semver.org/lang/es/):
 cada stack en su `stack.json`. Ésa es la única fuente de la versión; este README no la repite. Lo que cambió en cada
 una está en el `CHANGELOG.md` del paquete.
 
-- **Etiquetas:** `core-vX.Y.Z`, `laravel-vX.Y.Z`, `nextjs-vX.Y.Z`. Las crea quien fusiona, sobre el commit de `main`
-  que publica la versión.
+- **Etiquetas:** `core-vX.Y.Z`, `laravel-vX.Y.Z`, `nextjs-vX.Y.Z`, sobre el commit de `main` que publica la versión.
+  Las crea `.github/workflows/tag.yml` al fusionar (`.github/tag-versions.sh --push`), y sólo para las versiones sin
+  `-dev`; `sh .github/tag-versions.sh` dice en local qué etiquetas faltan.
 - **Compatibilidad:** cada `stack.json` declara en `core` el rango del núcleo con el que funciona
   (`">=2.0.0 <3.0.0"`), e `install.sh` no instala una combinación fuera de rango.
 - **Qué sube cada número.** Mayor: algo que obliga al proyecto a cambiar (una sección que se renombra y el guardián

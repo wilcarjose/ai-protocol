@@ -1,0 +1,26 @@
+# Las etiquetas de las versiones: en cada push a main, .github/tag-versions.sh crea la de cada versión publicada de
+# core/core.json y de cada stacks/*/stack.json que aún no la tiene (README.md §Versiones y etiquetas).
+name: tag
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: tag
+  cancel-in-progress: false
+
+jobs:
+  tag:
+    runs-on: ubuntu-latest
+    steps:
+      # Toda la historia y las etiquetas: el script busca el commit que publicó cada versión.
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: etiquetas
+        run: sh .github/tag-versions.sh --push
