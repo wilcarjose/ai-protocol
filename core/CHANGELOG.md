@@ -3,6 +3,39 @@
 El núcleo del protocolo: lo que es igual en todos los stacks. Versiones con [SemVer](https://semver.org/lang/es/) y
 etiqueta `core-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, arriba.
 
+## [2.6.0] — 2026-10-13
+
+### Añadido
+
+- `bin/protocol-upgrade.sh`: el upgrade del protocolo, de `main` a `main`. Comprueba que se puede (árbol limpio, en
+  `main`, al día con `origin` por `git pull --ff-only` y ninguna fase `EN_CURSO` ni `BLOQUEADA`), y trae el kit él
+  mismo: lo clona con `gh` de `AI_PROTOCOL_REPO` (por defecto `wilcarjose/ai-protocol`, su rama por defecto o
+  `--ref <etiqueta>`) o usa la copia local de `AI_PROTOCOL_DIR`, sin depender de dónde está el kit en cada máquina.
+  Si el kit trae otra versión del script, le pasa el control. Rechaza un kit sin publicar (`-dev`) o más viejo que el
+  lock, y un conflicto lo para antes de tocar nada. En la rama `protocol/upgrade-core-X.Y.Z-<stack>-X.Y.Z`: el
+  `install.sh --upgrade`, las filas de `.ai/PROTOCOL.md` que resuelve marcadas «aplicada — kit core X.Y.Z +
+  <stack> X.Y.Z» y archivadas en `.ai/archive/PROTOCOL.md`, el guardián, el commit
+  `chore(protocol): upgrade ai-protocol to core X.Y.Z + <stack> X.Y.Z`, el push y el PR, con los cambios del
+  `CHANGELOG.md` de cada paquete. Espera a la CI y, si pasa, lo fusiona y deja `main` activa y al día con `origin`.
+  Lo deja abierto, con el motivo, si la versión es mayor, si `PROTOCOL_AUTO_MERGE` (`minor`, por defecto; `patch`;
+  `never`) no lo permite, con `--no-merge`, con la CI en rojo o sin CI. `--dry-run` dice qué haría.
+- `/protocol-upgrade` (`.claude/skills/protocol-upgrade/SKILL.md`): lanza el script entre fases, lee cómo terminó y
+  se ocupa de lo que pide criterio (un conflicto, el guardián o la CI en rojo), sin parchear nunca un archivo del
+  kit. `CLAUDE.md §Qué hace cada sesión` la lista.
+
+### Cambiado
+
+- README §Principios: el código del kit ya se revisó en su PR, así que el del upgrade de un proyecto sólo tiene que
+  pasar su CI; las versiones menores y los parches se fusionan sin la persona, y las mayores esperan a que las
+  revise. El título del PR pasa a `chore(protocol): upgrade ai-protocol to core X.Y.Z + <stack> X.Y.Z`.
+
+### Al actualizar un proyecto
+
+- Esta versión llega una última vez a mano, porque el proyecto aún no tiene el script:
+  `sh <ruta del kit>/install.sh --upgrade --target .` en una rama, y su PR. Desde ahí, `/protocol-upgrade`.
+- Sin `PROTOCOL_AUTO_MERGE` en `.ai/project/verify.conf`, vale `minor`; para revisar cada upgrade, añade
+  `PROTOCOL_AUTO_MERGE=never`.
+
 ## [2.5.0] — 2026-10-13
 
 ### Cambiado
