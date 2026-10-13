@@ -16,6 +16,8 @@ etiqueta `core-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, ar
   entre la de la fase anterior y la actual (#63).
 - `review/SKILL.md`, paso 6: si después de la última revisión entra cualquier commit de código, también el arreglo
   de un no bloqueante, vuelven `bash bin/verify.sh` y otra revisión antes del cierre (#62).
+- `plan-phase/SKILL.md §Coherencia interna`, «Archivos»: antes de cerrar el §4 se contrasta con los supuestos que
+  ya no valen del traspaso de la fase anterior y con todo lo que el §2 o el §3 mandan escribir (#61).
 
 ## [2.4.0] — 2026-10-12
 
