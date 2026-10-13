@@ -18,6 +18,10 @@ Compatible con el núcleo `>=2.0.0 <3.0.0`.
   editar su `.env` sigue siendo de la persona. Antes, «la IA no arranca contenedores» y cada arranque o rearranque
   costaba una sesión aparte y una espera del Tech Lead (#72).
 - `.claude/settings.json`: permite `sh bin/e2e-services.sh*`, el único permiso que necesitan esos servicios (#72).
+- `.ai/rules/tests.md §Tests`: `up` fija por variable de entorno todo lo que el E2E da por hecho de cada servicio,
+  sin depender de su `.env`; y `sh bin/e2e-services.sh check`, de sólo lectura, va antes de cada
+  `npx playwright test`: la salud de cada servicio, su configuración efectiva y sus migraciones. Un `.env` del
+  hermano con el idioma de antes hizo fallar el E2E de base-web como si fuera un test en rojo (#69).
 
 ### Al actualizar un proyecto
 
