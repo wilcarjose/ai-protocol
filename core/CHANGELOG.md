@@ -11,6 +11,13 @@ etiqueta `core-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, ar
   «gitignore» del `stack.json`: lo que generan las herramientas del stack y no se versiona. Nunca quita ni reordena
   nada, y `/x/`, `/x`, `x/` y `x` cuentan como la misma línea (#46).
 
+### Cambiado
+
+- `phase/SKILL.md §Paso B`: un CLI que genera o instala se lanza primero con `--dry-run` si lo tiene, y siempre con
+  la entrada cerrada (`< /dev/null`) y con el tope de tiempo de la herramienta, no con `timeout` delante, que la
+  saca de los permisos: con `-y` también puede preguntar, y con la salida en una tubería se cuelga sin enseñar la
+  pregunta (#48).
+
 ## [2.3.0] — 2026-10-12
 
 ### Cambiado
