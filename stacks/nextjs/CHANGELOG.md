@@ -9,8 +9,9 @@ Compatible con el núcleo `>=2.0.0 <3.0.0`.
 
 ### Cambiado
 
-- `.ai/rules/tests.md §Tests`: el E2E puede usar `page.locator("html")` para leer los atributos del documento
-  (`lang`, `dir`), la única excepción a «sólo `getByTestId()`» (#44).
+- `.ai/rules/tests.md §Tests`: el E2E puede usar `page.locator("html")` y `page.locator("body")` sólo para leer
+  el documento: sus atributos, sus clases y sus estilos calculados (`lang`, `dir`, la clase del modo oscuro, el
+  color de fondo), nunca para interactuar. Es la única excepción a «sólo `getByTestId()`» (#44, #52).
 
 ## [3.2.0] — 2026-10-12
 
