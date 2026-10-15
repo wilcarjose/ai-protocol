@@ -68,8 +68,9 @@ plantilla lo pide, «Migraciones: ninguna».
 
 - **Archivos.** Todo archivo que toque un entregable está en «Crear», «Modificar» o «Borrar». Si una regla de
   arquitectura prohíbe algo que otros archivos hacen hoy, esos archivos entran en la fase o la regla sale de ella.
-  Si la fase retira o renombra algo (una ruta, una clase, una clave de traducción), busca con `grep` sus usos en el
-  código **y en los tests**: cada archivo que lo usa entra en la fase. Antes de cerrar el §4, contrástalo con los
+  Si la fase retira o renombra algo (una ruta, una clase, una clave de traducción), o cambia cómo se llega a ello
+  (un elemento que pasa a un desplegable), busca con `grep` sus usos en el código **y en los tests**: cada archivo
+  que lo usa entra en la fase, y ninguno puede quedar en «No tocar». Antes de cerrar el §4, contrástalo con los
   supuestos que ya no valen del traspaso de la fase anterior (`sh bin/handoff.sh`) y con todo lo que el §2 o el §3
   mandan escribir (una nota, un test, una fila): cada archivo que nombran está en el §4.
 - **Tests donde puedan ejecutarse.** Cada test va en la suite que puede ejecutarlo (`.ai/rules/tests.md`). Nunca
@@ -126,6 +127,7 @@ supuestos dependen de la fase anterior. El ejecutor la revalida en el Paso A (`.
    - **Cada documento que cita el §2 existe y cubre lo que la fase le atribuye**: un `grep` de la API, la sección o
      el término por el que lo cita. Si no lo cubre, la fase escribe lo que falta (y lo lista en sus «Archivos») o
      el §2 deja de citarlo.
+   - **Cada archivo de «Crear», con `ls`**: el que ya existe va a «Modificar», con lo que la fase le cambia.
    - **Cada término del negocio que nombran el objetivo y los entregables**, buscado en `.ai/project/GLOSSARY.md`
      (`grep -i`). El que no está es una fila nueva con su nombre en el código, y §4 lista el archivo (§Coherencia
      interna, «Nombres»): el revisor marca como bloqueante un término nuevo sin su fila.

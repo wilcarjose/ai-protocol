@@ -10,6 +10,11 @@ etiqueta `core-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, ar
 - `tests/e2e-nextjs.sh`: Vitest se instala en el último parche de su versión mayor, resuelto al correr
   (`npm view 'vitest@5' version`), como pide `.ai/rules/tests.md §Tests` del stack. Con `vitest@5.0.4` fijo, el e2e
   reventó con `Cannot read properties of null (reading 'edgesOut')` el día que salió la 5.0.5.
+- `plan-phase/SKILL.md §Antes de dar el plan por listo`: un `ls` de cada archivo de «Crear»; el que ya existe va a
+  «Modificar». Y `§Coherencia interna` («Archivos»): lo que cambia cómo se llega a algo (un elemento que pasa a un
+  desplegable) busca sus usos en el código y en los tests como un renombrado, y ningún archivo que lo usa queda en
+  «No tocar». Una fase de base-web listó en «Crear» un E2E que existía y dejó en «No tocar» el que usaba el elemento
+  que movía: tres preguntas en el Paso A, y ya había pasado antes (#80).
 
 ## [2.8.0] — 2026-10-13
 
