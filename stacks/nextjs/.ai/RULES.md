@@ -127,7 +127,10 @@ app  →  features  →  entities  →  shared
 - Las flechas van en **un solo sentido**: `shared` no importa de `entities`, `entities` no importa de `features`,
   `features` no importa de `app`.
 - **Las features no se importan entre sí.** Si dos dominios necesitan lo mismo, baja a `entities` o a `shared`.
-- Cada carpeta expone su API pública por su `index.ts`; nadie importa de sus tripas.
+- Cada carpeta expone su API pública por su `index.ts`; nadie importa de sus tripas. Por eso `package.json` declara
+  `"sideEffects": ["*.css"]` (y cada módulo que se importa sólo por su efecto): sin él, un Server Component que
+  importa un componente `"use client"` del barril manda al navegador todos los que el barril reexporta (medido con
+  `next build`).
 - La aplica el linter con `eslint.layers.mjs`, del kit, que `eslint.config.mjs` importa (el gate «capas» lo
   comprueba): un import que la rompe es un error de lint, no una convención que alguien recuerda.
 

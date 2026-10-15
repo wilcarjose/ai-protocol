@@ -12,11 +12,17 @@ Compatible con el núcleo `>=2.0.0 <3.0.0`.
 - `.ai/rules/tests.md §Tests`: lo que los E2E necesitan del entorno (la URL de la API…) lo fija el proyecto en
   `webServer.env` de `playwright.config.ts`, no delante de la orden, para que `npx playwright test` sea la misma en
   la fase y en el criterio de cierre de la épica y encaje con su permiso (#79).
+- `.ai/RULES.md §Estructura y regla de dependencias`: `package.json` declara `"sideEffects": ["*.css"]`, y cada
+  módulo que se importa sólo por su efecto. Con Next 16.3.8 (Turbopack), un Server Component que importa un
+  componente `"use client"` del barril de `shared/ui` manda al navegador también los que no usa; con la
+  declaración, no, y el CSS global sigue cargando. En base-web, `/` cargaba `select`, `dialog` y `sidebar` (#77).
 
 ### Al actualizar un proyecto
 
 - `playwright.config.ts` es del proyecto y el upgrade no lo toca: si sus E2E necesitan una variable (`API_URL`…) que
   hoy se pasa delante de `npx playwright test`, pásala a `webServer.env` (#79).
+- Añade `"sideEffects": ["*.css"]` a `package.json` (y cada módulo del proyecto que se importe sólo por su efecto),
+  y comprueba con `next build` que el CSS global sigue cargando (#77).
 
 ## [3.7.0] — 2026-10-13
 
