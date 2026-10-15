@@ -16,6 +16,11 @@ Compatible con el núcleo `>=2.0.0 <3.0.0`.
   módulo que se importa sólo por su efecto. Con Next 16.3.8 (Turbopack), un Server Component que importa un
   componente `"use client"` del barril de `shared/ui` manda al navegador también los que no usa; con la
   declaración, no, y el CSS global sigue cargando. En base-web, `/` cargaba `select`, `dialog` y `sidebar` (#77).
+- `.ai/rules/arquitectura.md §Estilos y tema`: de lo que genera shadcn/ui sólo se toca lo que choca con una regla o
+  un gate, y lo justo (los textos, lo que el linter rechaza, lo que rompe §Componentes, textos e identificadores),
+  nunca con una exención; cada retoque se declara en el RESULTADO. El sidebar generado traía
+  `react-hooks/set-state-in-effect`, `react-hooks/purity` y `document.cookie`, y la revisión lo marcó bloqueante sin
+  una regla que dijera qué se podía tocar (#76).
 
 ### Al actualizar un proyecto
 
