@@ -12,7 +12,9 @@
 #      AI_PROTOCOL_DIR. Si la copia de este script que trae el kit es otra, le
 #      pasa el control: el upgrade lo hace siempre la versión nueva.
 #   3. Compara las versiones con .ai/protocol.lock. Si son las mismas, termina.
-#      El kit tiene que estar publicado (sin -dev) y no ser más viejo.
+#      El kit tiene que estar publicado (sin -dev) y no ser más viejo. Imprime
+#      lo que cada versión nueva pide al proyecto («Al actualizar un proyecto»
+#      de su CHANGELOG.md), que el upgrade no hace.
 #   4. `install.sh --upgrade --dry-run` del kit: con un conflicto, para sin
 #      tocar nada y enseña el diff.
 #   5. En la rama protocol/upgrade-core-X.Y.Z-<stack>-X.Y.Z: el upgrade; las
@@ -167,6 +169,21 @@ if [ "$lc $ls" = 'same same' ]; then
 fi
 case "$lc $ls" in *major*) lvl='major' ;; *minor*) lvl='minor' ;; *) lvl='patch' ;; esac
 echo "◆ protocol-upgrade: core $was_core → $now_core + $STACK $was_stack → $now_stack ($lvl), desde $FROM"
+# Lo que cada versión nueva pide al proyecto («### Al actualizar un proyecto» de su CHANGELOG.md): el upgrade no lo
+# hace, y en el PR, que se fusiona solo, nadie lo lee. Se dice aquí para que se planifique.
+for p in "core $was_core" "stacks/$STACK $was_stack"; do
+    # shellcheck disable=SC2086  # «carpeta versión», partido a propósito
+    set -- $p
+    awk -v was="$2" -v pkg="${1#stacks/}" '
+        index($0, "## [" was "]") == 1 { exit }
+        /^## \[/ { v = $2; gsub(/\[|\]/, "", v); f = 0; next }
+        /^### / { f = ($0 == "### Al actualizar un proyecto"); if (f) print "  " pkg " " v ":"; next }
+        f && NF { print "    " $0 }' "$KIT/$1/CHANGELOG.md"
+done > "$TMPD/todo"
+if [ -s "$TMPD/todo" ]; then
+    echo "◆ al actualizar un proyecto (lo que el upgrade no hace; si es trabajo del proyecto, se planifica):"
+    cat "$TMPD/todo"
+fi
 
 policy=$(sed -n 's/^PROTOCOL_AUTO_MERGE=\([a-z]*\).*/\1/p' .ai/project/verify.conf 2> /dev/null | tail -n 1)
 policy=${PROTOCOL_AUTO_MERGE:-${policy:-minor}}

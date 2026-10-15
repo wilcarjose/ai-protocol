@@ -636,7 +636,7 @@ test_upgrade() {
     k2="$WORK/$KIT-upkit2"
     kit_copy "$k2"
     edit "$k2/core/core.json" 's/"version": ".*"/"version": "2.99.0"/'
-    awk_edit "$k2/core/CHANGELOG.md" "!d && /^## \\[/ { print \"## [2.99.0] — $DATE\\n\\n- Arreglo (#901).\\n\"; d = 1 } 1"
+    awk_edit "$k2/core/CHANGELOG.md" "!d && /^## \\[/ { print \"## [2.99.0] — $DATE\\n\\n- Arreglo (#901).\\n\\n### Al actualizar un proyecto\\n\\n- Crea el script del proyecto.\\n\"; d = 1 } 1"
     printf '\nNovedad del kit.\n' >> "$k2/core/.ai/WORKFLOW.md"
     printf '\nNovedad del kit.\n' >> "$k2/core/CLAUDE.md"
     edit "$k2/core/bin/protocol-upgrade.sh" 's/^echo "◆ protocol-upgrade: /echo "◆ protocol-upgrade (kit nuevo): /'
@@ -653,12 +653,14 @@ test_upgrade() {
     first=$(awk '/^\|---/ { getline; print; exit }' "$d/.ai/archive/PROTOCOL.md")
     if [ "$rc" -eq 0 ] && on_main "$d" && grep -qx 'package core 2.99.0' "$d/.ai/protocol.lock" \
        && printf '%s\n' "$out" | grep -qF '◆ protocol-upgrade (kit nuevo): ' \
+       && printf '%s\n' "$out" | grep -qF '◆ al actualizar un proyecto' \
+       && printf '%s\n' "$out" | grep -qxF '  core 2.99.0:' && printf '%s\n' "$out" | grep -qxF '    - Crea el script del proyecto.' \
        && printf '%s\n' "$first" | grep -q "^| 2 | .* | núcleo | aplicada — kit core 2.99.0 + $KIT $stack_v |\$" \
        && ! grep -q '^| 2 |' "$d/.ai/PROTOCOL.md" && grep -q '^| 3 | .* | enviada — ai-protocol#90 |$' "$d/.ai/PROTOCOL.md" \
        && grep -q '^pr create ' "$WORK/$KIT-upgh.log" && grep -q '^pr merge ' "$WORK/$KIT-upgh.log" \
        && [ -z "$(git -C "$d" branch --list 'protocol/*')" ] && [ -z "$(git -C "$d" ls-remote --heads origin 'protocol/*')" ] \
        && sh "$d/bin/check-docs.sh" --strict > /dev/null 2>&1; then
-        ok 'menor y con la CI en verde: lo hace la versión nueva del script, archiva la fila que resuelve, fusiona y deja main al día con origin'
+        ok 'menor y con la CI en verde: lo hace la versión nueva del script, dice lo que pide «Al actualizar un proyecto», archiva la fila que resuelve, fusiona y deja main al día con origin'
     else
         fail "protocol-upgrade no fusionó el upgrade menor (salida $rc):"; { printf '%s\n' "$out"; cat "$WORK/$KIT-upgh.log"; } | sed 's/^/      /'
     fi

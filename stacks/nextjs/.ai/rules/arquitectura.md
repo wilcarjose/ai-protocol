@@ -84,6 +84,9 @@ como tweakcn) cambia toda la web.
 - **`dark:` sólo para lo que un token no expresa** (p. ej. una opacidad distinta en cada modo); el color cambia solo
   con el token.
 - **Lo que genera el CLI de shadcn/ui se queda como lo genera**, aunque traiga un color de la paleta, para que se
-  pueda volver a generar. El código copiado de otros bloques (Tailark, plantillas MIT…) es del proyecto: sus colores
-  pasan a tokens al copiarlo.
+  pueda volver a generar. Sólo se toca lo que choca con una regla o un gate, y lo justo: sus textos pasan a las
+  traducciones, lo que el linter rechaza se arregla (nunca con una exención ni en la deuda de lint) y lo que rompe
+  §Componentes, textos e identificadores sale del componente (`document.cookie` en un componente de presentación).
+  Cada retoque se declara en el RESULTADO, porque volver a generarlo lo deshace. El código copiado de otros bloques
+  (Tailark, plantillas MIT…) es del proyecto: sus colores pasan a tokens al copiarlo.
 - El revisor lo comprueba en el diff: el linter no ve las clases de Tailwind.

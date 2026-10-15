@@ -3,6 +3,36 @@
 El stack Next.js: lo que añade al núcleo. Versiones con [SemVer](https://semver.org/lang/es/) y etiqueta
 `nextjs-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, arriba.
 
+## [3.8.0] — 2026-10-15
+
+Compatible con el núcleo `>=2.0.0 <3.0.0`.
+
+### Cambiado
+
+- `.ai/rules/tests.md §Tests`: lo que los E2E necesitan del entorno (la URL de la API…) lo fija el proyecto en
+  `webServer.env` de `playwright.config.ts`, no delante de la orden, para que `npx playwright test` sea la misma en
+  la fase y en el criterio de cierre de la épica y encaje con su permiso (#79).
+- `.ai/RULES.md §Estructura y regla de dependencias`: `package.json` declara `"sideEffects": ["*.css"]`, y cada
+  módulo que se importa sólo por su efecto. Con Next 16.3.8 (Turbopack), un Server Component que importa un
+  componente `"use client"` del barril de `shared/ui` manda al navegador también los que no usa; con la
+  declaración, no, y el CSS global sigue cargando. En base-web, `/` cargaba `select`, `dialog` y `sidebar` (#77).
+- `.ai/rules/arquitectura.md §Estilos y tema`: de lo que genera shadcn/ui sólo se toca lo que choca con una regla o
+  un gate, y lo justo (los textos, lo que el linter rechaza, lo que rompe §Componentes, textos e identificadores),
+  nunca con una exención; cada retoque se declara en el RESULTADO. El sidebar generado traía
+  `react-hooks/set-state-in-effect`, `react-hooks/purity` y `document.cookie`, y la revisión lo marcó bloqueante sin
+  una regla que dijera qué se podía tocar (#76).
+- `.ai/rules/tests.md §Tests`: un recorrido con el teclado en un E2E parte de un elemento enfocado con `focus()` y
+  se reintenta entero con `expect(…).toPass()`. Tras `page.goto`, el foco está en la interfaz del navegador (de 33 a
+  40 Tab para volver al documento, medido en base-web con `document.hasFocus()`) y, antes de hidratar, `focus()`
+  puede caer en el `body`: el E2E de teclado del panel falló tres veces sin que fallara el código (#75).
+
+### Al actualizar un proyecto
+
+- `playwright.config.ts` es del proyecto y el upgrade no lo toca: si sus E2E necesitan una variable (`API_URL`…) que
+  hoy se pasa delante de `npx playwright test`, pásala a `webServer.env` (#79).
+- Añade `"sideEffects": ["*.css"]` a `package.json` (y cada módulo del proyecto que se importe sólo por su efecto),
+  y comprueba con `next build` que el CSS global sigue cargando (#77).
+
 ## [3.7.0] — 2026-10-13
 
 Compatible con el núcleo `>=2.0.0 <3.0.0`.

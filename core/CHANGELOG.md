@@ -3,6 +3,26 @@
 El núcleo del protocolo: lo que es igual en todos los stacks. Versiones con [SemVer](https://semver.org/lang/es/) y
 etiqueta `core-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, arriba.
 
+## [2.9.0] — 2026-10-15
+
+### Cambiado
+
+- `tests/e2e-nextjs.sh`: Vitest se instala en el último parche de su versión mayor, resuelto al correr
+  (`npm view 'vitest@5' version`), como pide `.ai/rules/tests.md §Tests` del stack. Con `vitest@5.0.4` fijo, el e2e
+  reventó con `Cannot read properties of null (reading 'edgesOut')` el día que salió la 5.0.5.
+- `plan-phase/SKILL.md §Antes de dar el plan por listo`: un `ls` de cada archivo de «Crear»; el que ya existe va a
+  «Modificar». Y `§Coherencia interna` («Archivos»): lo que cambia cómo se llega a algo (un elemento que pasa a un
+  desplegable) busca sus usos en el código y en los tests como un renombrado, y ningún archivo que lo usa queda en
+  «No tocar». Una fase de base-web listó en «Crear» un E2E que existía y dejó en «No tocar» el que usaba el elemento
+  que movía: tres preguntas en el Paso A, y ya había pasado antes (#80).
+- `plan-epic/SKILL.md §Épica` («Criterio de cierre»): un criterio que repite el de una fase usa su
+  misma orden y lo que necesita (los servicios, el entorno). El de una épica de base-web lanzaba
+  `npx playwright test` sin la variable que llevaba el de la fase, y cinco pruebas fallaron al cerrarla (#79).
+- `bin/protocol-upgrade.sh` imprime, tras las versiones, lo que cada versión nueva pide al proyecto: las secciones
+  «Al actualizar un proyecto» de su `CHANGELOG.md`. `/protocol-upgrade` las pone en su reporte, y lo que sea trabajo
+  del proyecto se planifica como una fila de `.ai/BACKLOG.md`. Hasta ahora sólo iban en el cuerpo del PR, que se
+  fusiona solo: base-web no se enteró de que nextjs 3.7.0 le pedía `bin/e2e-services.sh` (#78).
+
 ## [2.8.0] — 2026-10-13
 
 ### Añadido
