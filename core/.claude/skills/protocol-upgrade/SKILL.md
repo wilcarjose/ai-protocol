@@ -38,4 +38,7 @@ y espera a que termine (en Claude Code, `run_in_background`). No lo lances dos v
 - Las versiones de antes y de ahora, y de dónde salió el kit.
 - Si quedó fusionado (con el commit de main) o el enlace del PR y por qué sigue abierto.
 - Las filas de `.ai/PROTOCOL.md` archivadas.
+- Lo que imprime en «al actualizar un proyecto»: lo que cada versión nueva pide al proyecto y el upgrade no hace
+  (un archivo que una regla nueva da por hecho, una semilla que cambiar). Si ya está hecho, dilo; si es trabajo del
+  proyecto, es una fila de `.ai/BACKLOG.md` en la próxima planificación, no se hace aquí.
 - En qué rama quedó el repo: main al día con origin, salvo si el guardián falló.

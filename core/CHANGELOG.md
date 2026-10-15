@@ -18,6 +18,10 @@ etiqueta `core-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, ar
 - `plan-epic/SKILL.md §Épica` («Criterio de cierre»): un criterio que repite el de una fase usa su
   misma orden y lo que necesita (los servicios, el entorno). El de una épica de base-web lanzaba
   `npx playwright test` sin la variable que llevaba el de la fase, y cinco pruebas fallaron al cerrarla (#79).
+- `bin/protocol-upgrade.sh` imprime, tras las versiones, lo que cada versión nueva pide al proyecto: las secciones
+  «Al actualizar un proyecto» de su `CHANGELOG.md`. `/protocol-upgrade` las pone en su reporte, y lo que sea trabajo
+  del proyecto se planifica como una fila de `.ai/BACKLOG.md`. Hasta ahora sólo iban en el cuerpo del PR, que se
+  fusiona solo: base-web no se enteró de que nextjs 3.7.0 le pedía `bin/e2e-services.sh` (#78).
 
 ## [2.8.0] — 2026-10-13
 
