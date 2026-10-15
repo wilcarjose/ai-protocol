@@ -3,6 +3,21 @@
 El stack Next.js: lo que añade al núcleo. Versiones con [SemVer](https://semver.org/lang/es/) y etiqueta
 `nextjs-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, arriba.
 
+## Sin publicar
+
+Compatible con el núcleo `>=2.0.0 <3.0.0`.
+
+### Cambiado
+
+- `.ai/rules/tests.md §Tests`: lo que los E2E necesitan del entorno (la URL de la API…) lo fija el proyecto en
+  `webServer.env` de `playwright.config.ts`, no delante de la orden, para que `npx playwright test` sea la misma en
+  la fase y en el criterio de cierre de la épica y encaje con su permiso (#79).
+
+### Al actualizar un proyecto
+
+- `playwright.config.ts` es del proyecto y el upgrade no lo toca: si sus E2E necesitan una variable (`API_URL`…) que
+  hoy se pasa delante de `npx playwright test`, pásala a `webServer.env` (#79).
+
 ## [3.7.0] — 2026-10-13
 
 Compatible con el núcleo `>=2.0.0 <3.0.0`.

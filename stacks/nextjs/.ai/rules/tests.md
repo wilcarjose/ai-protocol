@@ -21,8 +21,10 @@
   clases y sus estilos calculados (`lang`, `dir`, la clase del modo oscuro, el color de fondo), nunca para pulsar,
   escribir o esperar a algo; cero esperas por tiempo (`waitForTimeout`), aserciones con reintento automático. Necesitan el backend
   levantado, así que `bin/verify.sh` sólo comprueba que cargan: se corren con `npx playwright test` si la fase lo
-  pide. Si Playwright pide otro navegador tras subir `@playwright/test`, se instala con
-  `npx playwright install chromium`.
+  pide. Lo que necesitan del entorno (la URL de la API…) lo fija el proyecto en un solo sitio que la orden lee sola,
+  `webServer.env` de `playwright.config.ts`, y no delante de la orden: así `npx playwright test` es la misma en el
+  §5 de una fase y en el criterio de cierre de su épica, y encaja con su permiso. Si Playwright pide otro navegador
+  tras subir `@playwright/test`, se instala con `npx playwright install chromium`.
 - **Los servicios de un E2E** (el servidor de desarrollo del repo hermano, un buzón de correo de pruebas en un
   contenedor) los levanta y los para quien ejecuta la fase, sólo con `sh bin/e2e-services.sh up` y
   `sh bin/e2e-services.sh down`, sueltas; el visto bueno del Paso A las cubre. El script es del proyecto, y lo crea

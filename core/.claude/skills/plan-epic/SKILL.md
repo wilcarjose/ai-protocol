@@ -52,8 +52,9 @@ y el slug, kebab-case.
 - **Riesgos conocidos**: dónde esperas que la ejecución se bloquee o se equivoque.
 - **Criterio de cierre**: comandos que se pueden cumplir, medidos contra el repo al escribirlos
   (`.claude/skills/plan-phase/SKILL.md §Antes de dar el plan por listo`). Un `grep` que exige que desaparezca un
-  texto que otro entregable obliga a conservar no se cumplirá nunca. Lo comprueba, casilla a casilla, quien cierra la
-  última fase: escríbelo para que se pueda comprobar sin interpretar.
+  texto que otro entregable obliga a conservar no se cumplirá nunca. Un criterio que repite el de una fase (un E2E)
+  usa su misma orden y lo que necesita (los servicios, el entorno), no una versión corta. Lo comprueba, casilla a
+  casilla, quien cierra la última fase: escríbelo para que se pueda comprobar sin interpretar.
 - **Estado**: nace `SIN_EMPEZAR`; después lo mueve el ejecutor (`.claude/skills/phase/SKILL.md §Estado de una fase`).
 - **Triaje del backlog.** Al planificar una épica, revisa las filas abiertas de `.ai/BACKLOG.md` de su área y ponles
   `Destino` (la épica que las cerrará) o déjalas en `—` a sabiendas. Cuando las filas abiertas **sin** `Destino`

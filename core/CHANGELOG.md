@@ -15,6 +15,9 @@ etiqueta `core-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, ar
   desplegable) busca sus usos en el código y en los tests como un renombrado, y ningún archivo que lo usa queda en
   «No tocar». Una fase de base-web listó en «Crear» un E2E que existía y dejó en «No tocar» el que usaba el elemento
   que movía: tres preguntas en el Paso A, y ya había pasado antes (#80).
+- `plan-epic/SKILL.md §Épica` («Criterio de cierre»): un criterio que repite el de una fase usa su
+  misma orden y lo que necesita (los servicios, el entorno). El de una épica de base-web lanzaba
+  `npx playwright test` sin la variable que llevaba el de la fase, y cinco pruebas fallaron al cerrarla (#79).
 
 ## [2.8.0] — 2026-10-13
 
