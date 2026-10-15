@@ -19,7 +19,10 @@
 - **E2E con Playwright** en `e2e/` (`playwright.config.ts`): sólo `getByTestId()` (la interfaz cambia de idioma, los
   testids no), salvo `page.locator("html")` y `page.locator("body")` sólo para leer el documento: sus atributos, sus
   clases y sus estilos calculados (`lang`, `dir`, la clase del modo oscuro, el color de fondo), nunca para pulsar,
-  escribir o esperar a algo; cero esperas por tiempo (`waitForTimeout`), aserciones con reintento automático. Necesitan el backend
+  escribir o esperar a algo; cero esperas por tiempo (`waitForTimeout`), aserciones con reintento automático. Un
+  recorrido con el teclado parte de un elemento enfocado con `focus()` y no de la carga de la página, que deja el foco
+  en la interfaz del navegador (decenas de Tab para volver al documento), y se reintenta entero con
+  `expect(…).toPass()`, porque antes de hidratar el foco puede caer en el `body`. Necesitan el backend
   levantado, así que `bin/verify.sh` sólo comprueba que cargan: se corren con `npx playwright test` si la fase lo
   pide. Lo que necesitan del entorno (la URL de la API…) lo fija el proyecto en un solo sitio que la orden lee sola,
   `webServer.env` de `playwright.config.ts`, y no delante de la orden: así `npx playwright test` es la misma en el

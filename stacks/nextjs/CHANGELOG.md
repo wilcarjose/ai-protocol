@@ -21,6 +21,10 @@ Compatible con el núcleo `>=2.0.0 <3.0.0`.
   nunca con una exención; cada retoque se declara en el RESULTADO. El sidebar generado traía
   `react-hooks/set-state-in-effect`, `react-hooks/purity` y `document.cookie`, y la revisión lo marcó bloqueante sin
   una regla que dijera qué se podía tocar (#76).
+- `.ai/rules/tests.md §Tests`: un recorrido con el teclado en un E2E parte de un elemento enfocado con `focus()` y
+  se reintenta entero con `expect(…).toPass()`. Tras `page.goto`, el foco está en la interfaz del navegador (de 33 a
+  40 Tab para volver al documento, medido en base-web con `document.hasFocus()`) y, antes de hidratar, `focus()`
+  puede caer en el `body`: el E2E de teclado del panel falló tres veces sin que fallara el código (#75).
 
 ### Al actualizar un proyecto
 
