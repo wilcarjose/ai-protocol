@@ -53,7 +53,11 @@ ROOT=$(cd "$(dirname "$0")/.." && pwd)
 
 NEXT_VERSION=16.3.8
 DEPS='openapi-fetch@0.17.0 zod@4.6.5 @tanstack/react-query@5.104.1 zustand@5.0.15 next-intl@4.14.9'
-DEV_DEPS='@types/node@22 openapi-typescript@7.13.0 eslint-plugin-boundaries@7.2.0 eslint-import-resolver-typescript@4.4.5 vitest@5.0.4 @playwright/test@1.63.0'
+# Vitest, en el último parche de su versión mayor, como pide .ai/rules/tests.md §Tests: sus peers opcionales traen
+# @vitest/browser-playwright en su última versión, que exige esa misma de vitest, y con un parche fijo npm 10 revienta
+# («reading 'edgesOut'») el día que sale el siguiente. «npm view» da una línea «vitest@X 'X'» por versión, o sólo «X».
+VITEST=$(npm view 'vitest@5' version 2> /dev/null | tail -n 1 | sed "s/.*'\(.*\)'.*/\1/")
+DEV_DEPS="@types/node@22 openapi-typescript@7.13.0 eslint-plugin-boundaries@7.2.0 eslint-import-resolver-typescript@4.4.5 vitest@${VITEST:-5} @playwright/test@1.63.0"
 LHCI_VERSION=0.15.1
 
 WORK=$(mktemp -d)

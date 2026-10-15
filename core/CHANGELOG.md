@@ -3,6 +3,14 @@
 El núcleo del protocolo: lo que es igual en todos los stacks. Versiones con [SemVer](https://semver.org/lang/es/) y
 etiqueta `core-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, arriba.
 
+## Sin publicar
+
+### Cambiado
+
+- `tests/e2e-nextjs.sh`: Vitest se instala en el último parche de su versión mayor, resuelto al correr
+  (`npm view 'vitest@5' version`), como pide `.ai/rules/tests.md §Tests` del stack. Con `vitest@5.0.4` fijo, el e2e
+  reventó con `Cannot read properties of null (reading 'edgesOut')` el día que salió la 5.0.5.
+
 ## [2.8.0] — 2026-10-13
 
 ### Añadido
