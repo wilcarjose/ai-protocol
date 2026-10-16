@@ -42,9 +42,12 @@
     (`$passthroughVariables`), y las que `up` fija no llegan al servidor o llegan según el `variables_order`. Con
     ella, además, un `.env` editado no reinicia el servidor.
   - **`sh bin/e2e-services.sh check`, antes de cada `npx playwright test`**, sólo lee: la salud de cada servicio
-    (`curl -s`) y la configuración efectiva que el E2E da por hecha (en un hermano Laravel,
-    `php artisan config:show app.locale`) y, si aplica, que sus migraciones están al día. Falla con lo que no cuadra,
-    para que un entorno mal configurado se vea como tal y no como un test en rojo.
+    (`curl -s`) y la configuración efectiva que el E2E da por hecha, y, si aplica, que sus migraciones están al día.
+    Falla con lo que no cuadra, para que un entorno mal configurado se vea como tal y no como un test en rojo. La
+    configuración efectiva se lee **de lo que el servidor responde** (en un hermano Laravel, el idioma de un mensaje
+    de error sin `Accept-Language`) y se comprueba que el proceso es el que arrancó `up`; no con una orden que relee
+    el `.env` en un proceso nuevo, como `php artisan config:show app.locale`, que puede dar otro valor que el del
+    servidor levantado.
 - **Rendimiento con Lighthouse CI**: el job `lighthouse` de `.github/workflows/verify.yml` construye la app y la mide
   contra `.ai/project/lighthouse.json`, que es del proyecto: las URL y los presupuestos de
   `.ai/project/CROSS-CUTTING.md §Rendimiento`. Un presupuesto sólo se relaja con una decisión en `.ai/DOMAIN.md`.

@@ -11,6 +11,9 @@ El stack Next.js: lo que añade al núcleo. Versiones con [SemVer](https://semve
   un `.env` en el hermano, `ServeCommand::startProcess` (Laravel 13.17) pasa como `false` al `php -S` hijo cada clave de
   `$_ENV` que no está en `$passthroughVariables`, así que las variables que `up` fija en la orden no llegan al
   servidor, o llegan según el `variables_order` (#85).
+- `.ai/rules/tests.md §Tests`: `check` lee la configuración efectiva de lo que el servidor responde y comprueba que el
+  proceso es el que arrancó `up`, no con `php artisan config:show app.locale`, que relee el `.env` en un proceso
+  nuevo. En la fase 01/05 de base-web el `.env` local tenía `en` y el servidor corría con `es` (#84).
 
 ## [3.8.0] — 2026-10-15
 
