@@ -18,6 +18,10 @@ etiqueta `core-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, ar
   orden lleva la opción que la imprime y se ejecuta una vez para verlo. Un criterio pedía que «su salida incluye los
   casos nuevos» con `npx vitest run`, cuyo reporter por defecto sólo imprime el total: no lo cumplía tal como estaba
   escrito y costó una pregunta al cierre (#88).
+- `plan-phase/SKILL.md §Antes de dar el plan por listo`: el criterio se ejecuta tal como está escrito y en el shell
+  de la persona, y no usa nombres que un shell reserva (`status`, `path` en zsh). La prueba de un build usaba
+  `status=$?`, que en zsh es de sólo lectura: la orden no se pudo ejecutar, dejó una página temporal sin borrar y
+  costó un turno con la persona (#90).
 
 ### Añadido
 

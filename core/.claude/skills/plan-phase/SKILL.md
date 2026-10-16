@@ -121,7 +121,10 @@ supuestos dependen de la fase anterior. El ejecutor la revalida en el Paso A (`.
 ## Antes de dar el plan por listo
 
 1. **Mide lo que el plan da por hecho**, que es de donde salen las preguntas del Paso A:
-   - **Cada criterio de §5, ejecutado contra el árbol de hoy.** Lo que imprime ahora es lo que la fase tiene que
+   - **Cada criterio de §5, ejecutado contra el árbol de hoy,** tal como está escrito y en el shell de la persona
+     (zsh en muchas máquinas). Una orden no usa nombres que un shell reserva (`status` y `path` en zsh, `pwd`, `0`…):
+     `status=$?` revienta con «read-only variable», la orden copiada literal no se puede ejecutar y deja lo que
+     creó a medias. Usa `rc`, o escríbela para `bash -c`. Lo que imprime ahora es lo que la fase tiene que
      mover: si ya da el resultado pedido, o imprime líneas que la fase no va a tocar, está mal escrito. Un `grep` se
      escribe contra la línea que se espera en **cada** archivo que busca.
    - **Un criterio que afirma algo del contenido de la salida de una orden** (que incluye ciertos casos, que imprime
