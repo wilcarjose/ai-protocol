@@ -7,7 +7,12 @@
 # (una sesión, una fase; ni ScheduleWakeup ni CronCreate; esperar al merge, #93) y el Paso A (las órdenes que
 # settings.json no permite, #91). El resto es lo que ya había subido en main desde la última línea base.
 #
+# 2026-10-16 (core 2.12.0): laravel cualquiera sube a 4485: ya estaba en 4426 en main (la línea de 4300 se había
+# quedado atrás, a 2,9 %) y CLAUDE.md suma 59 por la excepción de «una sesión, una fase» (#98). El ejecutor sube a
+# 58588 (laravel) y 60517 (nextjs): ~950 caracteres de phase/SKILL.md y plan-phase (#97, #98, #100, #101); el
+# revisor (#99) no se mide aquí.
+#
 # <stack> <sesión> <caracteres>
-laravel cualquiera 4300
-laravel ejecutor 57637
-nextjs ejecutor 59566
+laravel cualquiera 4485
+laravel ejecutor 58588
+nextjs ejecutor 60517
