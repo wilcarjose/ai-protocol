@@ -102,7 +102,8 @@ vez ([`docs/modos.md` §VPS](modos.md#vps)).
      algo no está decidido, para con un **STOP & ASK**: opciones y su recomendación. Lo que respondes queda en
      `.ai/DOMAIN.md` y no se vuelve a preguntar.
    - **Paso C:** `bash bin/verify.sh` completo, `/review` (otro agente, de sólo lectura, compara el diff con la
-     fase), el RESULTADO de la fase y la memoria al día. Después de la entrega, su retro del protocolo, y una
+     fase; si hay que arreglar algo, la segunda vuelta sólo lee lo nuevo, y en una fase ligera, de operación o de
+     validación externa abre menos documentos), el RESULTADO de la fase y la memoria al día. Después de la entrega, su retro del protocolo, y una
      pregunta opcional para ti: si falta o sobra algo, o si algo de la fase te costó a ti.
 3. **PR.** La fase empuja su rama y abre el PR con la plantilla. La CI repite `bin/verify.sh` completo.
 4. **Revisión y fusión.** Lees el RESULTADO y el diff, y fusionas tú.

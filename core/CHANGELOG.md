@@ -3,6 +3,29 @@
 El núcleo del protocolo: lo que es igual en todos los stacks. Versiones con [SemVer](https://semver.org/lang/es/) y
 etiqueta `core-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, arriba.
 
+## [2.10.0] — 2026-10-16
+
+### Cambiado
+
+- `.claude/agents/reviewer.md`: el revisor corre en Sonnet (`model: sonnet` en su frontmatter). Hasta ahora heredaba
+  el modelo de la sesión que lo lanzaba, que suele ser el más caro, para una tarea acotada: comparar un diff con
+  reglas escritas y citarlas. Si una revisión se queda corta, se sube aquí, en el kit, no en un proyecto.
+- `.claude/agents/reviewer.md §Qué lees`: el diff se lee de lo barato a lo caro (`--stat` primero) y sin los
+  lockfiles, que son lo más largo de un diff y no dicen nada que su manifiesto no diga; un lockfile que cambia sin
+  su manifiesto sí se abre, porque es una dependencia sin declarar.
+- `.claude/skills/review/SKILL.md` (pasos 2, 6 y 8) y `.claude/agents/reviewer.md §Qué lees`: la segunda
+  revisión de una fase es un **seguimiento** que sólo lee `desde..HEAD` (lo que entró desde la anterior) y comprueba
+  que cada bloqueante «resuelto en `<hash>`» lo está. Antes releía la fase entera en cada vuelta. Y el arreglo de un
+  no bloqueante que está en el alcance, toca sólo archivos ya revisados (ni tests existentes, contrato,
+  dependencias, migraciones ni zonas sensibles) y cambia 30 líneas o menos, pasa con `bin/verify.sh` en verde, sin
+  revisión nueva. Cualquier otro commit de código después de la última revisión sigue pidiendo la suya.
+- **Revisión reducida** (`.claude/skills/review/SKILL.md` paso 3, `.claude/agents/reviewer.md §Qué lees`,
+  `.claude/skills/phase/cierre.md §Cierre de fase`): una fase ligera, de operación o de validación externa se revisa
+  con el mismo criterio, pero el revisor sólo abre de `.ai/project/` lo que el diff toca (siempre
+  `SENSITIVE-ZONES.md`). La revisión lo dice en su primera línea (` · reducida`) y `bin/check-docs.sh` rechaza una
+  «reducida» en una fase de código en modo normal (casos 2q y 2p de `tests/lib.sh`). La que ya tenía una fase
+  cerrada no cambia.
+
 ## [2.9.0] — 2026-10-15
 
 ### Cambiado
