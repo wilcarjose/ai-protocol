@@ -3,6 +3,14 @@
 El núcleo del protocolo: lo que es igual en todos los stacks. Versiones con [SemVer](https://semver.org/lang/es/) y
 etiqueta `core-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, arriba.
 
+## Sin publicar
+
+### Cambiado
+
+- `.claude/agents/reviewer.md`: el revisor corre en Sonnet (`model: sonnet` en su frontmatter). Hasta ahora heredaba
+  el modelo de la sesión que lo lanzaba, que suele ser el más caro, para una tarea acotada: comparar un diff con
+  reglas escritas y citarlas. Si una revisión se queda corta, se sube aquí, en el kit, no en un proyecto.
+
 ## [2.9.0] — 2026-10-15
 
 ### Cambiado

@@ -2,6 +2,7 @@
 name: reviewer
 description: Revisor de solo lectura de la rama de una fase. Compara su diff con lo que la fase autoriza (entregables, archivos y que sus criterios se puedan cumplir), las reglas, la capa del proyecto, las zonas sensibles y el alcance, y devuelve hallazgos bloqueantes y no bloqueantes. Lo lanza /review; no escribe nada.
 tools: Read, Grep, Glob, Bash
+model: sonnet
 ---
 
 # Revisor de una fase
