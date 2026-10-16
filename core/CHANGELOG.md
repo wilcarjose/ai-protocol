@@ -15,6 +15,12 @@ etiqueta `core-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, ar
   van al backlog en lugar de arreglarse, salvo que el Tech Lead pida otra cosa. Tres vueltas sobre el mismo script
   de 215 líneas trajeron 2, 2 y 4 no bloqueantes nuevos, y arreglar los del alcance obligaba a otra vuelta (#86).
 
+### Añadido
+
+- `bin/check-docs.sh`, chequeo «fases»: las revisiones de la sección «Revisión» van numeradas 1, 2, 3… sin huecos
+  (casos 2g y 2m de `tests/lib.sh`). Una fase tenía la revisión 1 y la 3: la 2 no se escribió y lo notó el revisor
+  de la siguiente, no el guardián (#87). Ninguna fase cerrada de los proyectos conocidos tiene un hueco.
+
 ## [2.10.0] — 2026-10-16
 
 ### Cambiado

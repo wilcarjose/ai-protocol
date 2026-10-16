@@ -175,6 +175,10 @@ estropea() {
         2r|2v) b='- [ ] **B1** · `composer.json` — Prueba.'; [ "$1" = 2v ] && b='- [x] **B1** · `composer.json` — Prueba. Resuelto en `ccccccc`.'
             awk_edit .ai/epics/01-demo/phase-02.md "{ print } /^\\*\\*Revisión 1/ { print \"\"; print \"$b\" }" ;;
         2s) edit .ai/epics/01-demo/phase-02.md 's/^\*\*Revisión 1 .*/Sin revisar./' ;;
+        # Las revisiones se numeran sin huecos: la 1 y la 3 (2g) falla; la 1 y la 2 (2m) pasa.
+        2g|2m) n=3; [ "$1" = 2m ] && n=2
+            l=$(printf '**Revisión %s · %s · `bbbbbbb..ccccccc`:** 0 bloqueantes, 0 no bloqueantes.' "$n" "$DATE")
+            awk_edit .ai/epics/01-demo/phase-02.md "{ print } /^\\*\\*Revisión 1/ { print \"\"; print \"$l\" }" ;;
         # La revisión reducida sólo es de una fase ligera, de operación o de validación externa: en una de código en
         # modo normal se rechaza (2q) y en una de operación se acepta (2p).
         2q|2p) [ "$1" = 2p ] && edit .ai/epics/01-demo/phase-02.md 's/^> \*\*Tipo:\*\* .*/> **Tipo:** operación/'
@@ -295,6 +299,8 @@ guardian_cases() {
     provoke 2r 'fases: una HECHA con un bloqueante abierto'          '1 hallazgo(s) bloqueante(s) de «Revisión» sin resolver'
     accept  2v 'fases: una HECHA con su bloqueante resuelto'
     provoke 2s 'fases: una HECHA sin revisar'                        'la fase no pasó por /review'
+    provoke 2g 'fases: revisiones 1 y 3, sin la 2'                   'numera sus revisiones «1 3»'
+    accept  2m 'fases: revisiones 1 y 2'
     provoke 2q 'fases: una revisión reducida en una de código normal' 'es reducida y la fase no es ligera'
     accept  2p 'fases: una revisión reducida en una de operación'
     provoke 2n 'fases: una casilla sin marcar, con secciones sin número' 'casilla(s) de «Criterios de éxito» sin marcar'
