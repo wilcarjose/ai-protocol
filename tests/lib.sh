@@ -175,6 +175,10 @@ estropea() {
         2r|2v) b='- [ ] **B1** · `composer.json` — Prueba.'; [ "$1" = 2v ] && b='- [x] **B1** · `composer.json` — Prueba. Resuelto en `ccccccc`.'
             awk_edit .ai/epics/01-demo/phase-02.md "{ print } /^\\*\\*Revisión 1/ { print \"\"; print \"$b\" }" ;;
         2s) edit .ai/epics/01-demo/phase-02.md 's/^\*\*Revisión 1 .*/Sin revisar./' ;;
+        # La revisión reducida sólo es de una fase ligera, de operación o de validación externa: en una de código en
+        # modo normal se rechaza (2q) y en una de operación se acepta (2p).
+        2q|2p) [ "$1" = 2p ] && edit .ai/epics/01-demo/phase-02.md 's/^> \*\*Tipo:\*\* .*/> **Tipo:** operación/'
+            edit .ai/epics/01-demo/phase-02.md 's/^\(\*\*Revisión 1 .*`\):\*\*/\1 · reducida:**/' ;;
         # Las secciones se buscan por su nombre: sin el número delante, la casilla sin marcar se sigue viendo.
         2n) edit .ai/epics/01-demo/phase-02.md 's/^## [0-9][0-9]*\. /## /'
             awk_edit .ai/epics/01-demo/phase-02.md '!d && /^- \[x\]/ { sub(/\[x\]/, "[ ]"); d = 1 } { print }' ;;
@@ -291,6 +295,8 @@ guardian_cases() {
     provoke 2r 'fases: una HECHA con un bloqueante abierto'          '1 hallazgo(s) bloqueante(s) de «Revisión» sin resolver'
     accept  2v 'fases: una HECHA con su bloqueante resuelto'
     provoke 2s 'fases: una HECHA sin revisar'                        'la fase no pasó por /review'
+    provoke 2q 'fases: una revisión reducida en una de código normal' 'es reducida y la fase no es ligera'
+    accept  2p 'fases: una revisión reducida en una de operación'
     provoke 2n 'fases: una casilla sin marcar, con secciones sin número' 'casilla(s) de «Criterios de éxito» sin marcar'
     provoke 2e 'fases: enlaza una evidencia que no existe'            'enlaza la evidencia .ai/epics/01-demo/evidence/02-verify.txt'
     accept  2f 'fases: enlaza una evidencia que existe'

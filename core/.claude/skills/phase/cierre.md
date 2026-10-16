@@ -6,9 +6,10 @@
 ## Cierre de fase
 
 1. **Revisión**, si la fase va a quedar `HECHA` o `ESPERA_EVIDENCIA`: `/review` (sin skills,
-   `.claude/skills/review/SKILL.md`), y ningún bloqueante sin marcar. Va antes de escribir nada, justo después del
-   `bash bin/verify.sh` completo del Paso B: revisa el diff, no el RESULTADO. Sus arreglos cuentan entre los
-   intentos de `.claude/skills/phase/SKILL.md §Verificación`. En `BLOQUEADA` o `VERIFICACION_ROJA` no hace falta.
+   `.claude/skills/review/SKILL.md`; reducida si la fase es ligera, de operación o de validación externa), y ningún
+   bloqueante sin marcar. Va antes de escribir nada, justo después del `bash bin/verify.sh` completo del Paso B:
+   revisa el diff, no el RESULTADO. Sus arreglos cuentan entre los intentos de
+   `.claude/skills/phase/SKILL.md §Verificación`. En `BLOQUEADA` o `VERIFICACION_ROJA` no hace falta.
 2. **RESULTADO** del archivo de la fase, sin borrar encabezados. Lo más importante es «Lo que la siguiente fase
    necesita saber»: la próxima sesión empieza sin memoria y sólo leerá eso (`bin/handoff.sh` lo imprime). El
    estado de la fase y del mapa no cambia todavía: va en el paso 12, cuando el RESULTADO, las casillas y la memoria

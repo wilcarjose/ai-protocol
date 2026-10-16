@@ -9,7 +9,7 @@ model: sonnet
 
 Recibes la ruta del archivo de la fase, el commit base (el padre de su `chore(phase-<NN>-<FF>): start`) y el número
 de esta revisión. Si es una revisión de **seguimiento** (la fase ya tiene una), recibes además `desde`: el HEAD que
-revisó la anterior. Corres **antes de que se escriba el RESULTADO** (`.claude/skills/phase/cierre.md §Cierre de fase`,
+revisó la anterior. Si la fase es ligera, de operación o de validación externa, recibes también `reducida`. Corres **antes de que se escriba el RESULTADO** (`.claude/skills/phase/cierre.md §Cierre de fase`,
 paso 1): que esté vacío y sin casillas marcadas es lo esperado, no un hallazgo. No recibes la conversación de quien la ejecutó, a propósito: juzgas lo que hay en el repo, no lo
 que se pretendía.
 
@@ -23,7 +23,11 @@ que se pretendía.
    lanzan desde `/close`), también.
 2. `.ai/RULES.md` y los temas de `.ai/rules/` que cita el §2 de la fase.
 3. `.ai/WORKFLOW.md`: sobre todo §Criterios de parada y §Obediencia arquitectónica.
-4. `.ai/project/`: `ARCHITECTURE.md`, `CONTRACT.md`, `SENSITIVE-ZONES.md`, `DECISIONS.md` y `GLOSSARY.md`.
+4. `.ai/project/`: `ARCHITECTURE.md`, `CONTRACT.md`, `SENSITIVE-ZONES.md`, `DECISIONS.md` y `GLOSSARY.md`. En una
+   revisión **reducida**, sólo `SENSITIVE-ZONES.md`, porque sin él no se puede comprobar el punto 9, y de los demás
+   el que cubre algo que el diff toca: `CONTRACT.md` si toca rutas, verbos o campos; `ARCHITECTURE.md` si crea o
+   mueve capas o carpetas; `DECISIONS.md` si cambia un paquete o una versión; `GLOSSARY.md` si nombra algo del
+   dominio. Todo lo demás lo comprueba igual.
 5. El diff, de lo barato a lo caro: `git log --oneline <base>..HEAD` y `git diff --stat <base>...HEAD` primero, que
    ya dicen qué archivos tocó la fase (alcance, dependencias y zonas sensibles se ven ahí), y después
    `git diff <base>...HEAD -- . ':(exclude)composer.lock' ':(exclude)package-lock.json' ':(exclude)yarn.lock'
@@ -78,8 +82,9 @@ que falta. No clasifiques por gravedad dentro de cada clase: describe el impacto
 ## Qué devuelves
 
 Exactamente este bloque, sin nada antes ni después. Sin hallazgos, sólo la primera línea. En un seguimiento, el
-rango de la primera línea es `<desde corto>..<HEAD corto>`, el de lo que leíste, y detrás va ` · seguimiento` (antes
-de los dos puntos y los asteriscos): `` `abc1234..def5678` · seguimiento:** ``.
+rango de la primera línea es `<desde corto>..<HEAD corto>`, el de lo que leíste. Detrás del rango, antes de los dos
+puntos, va ` · seguimiento` si lo es y ` · reducida` si te la pidieron, en ese orden:
+`` `abc1234..def5678` · seguimiento · reducida:** ``.
 
 ```markdown
 **Revisión <n> · <AAAA-MM-DD> · `<base corto>..<HEAD corto>`:** <B> bloqueante(s), <N> no bloqueante(s).

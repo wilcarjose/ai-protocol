@@ -24,7 +24,9 @@
 #                    código; una ESPERA_EVIDENCIA, de operación o validación
 #                    externa, con sólo casillas «[humano]» abiertas; una HECHA o
 #                    ESPERA_EVIDENCIA con «Revisión», revisada y sin bloqueantes
-#                    abiertos; cada evidencia que enlaza
+#                    abiertos, y una revisión «reducida» sólo si la fase es
+#                    ligera, de operación o de validación externa; cada
+#                    evidencia que enlaza
 #                    (`.ai/epics/<NN-slug>/evidence/…`) existe. Las secciones se
 #                    buscan por su nombre, con o sin número delante
 #                    («## 5. Criterios de éxito»).
@@ -422,6 +424,13 @@ for f in "$AI"/epics/*/phase-*.md; do
                 || bad "$r ($fs): «Revisión» no tiene ninguna revisión; la fase no pasó por /review"
             n=$(printf '%s\n' "$rev" | grep -c '^- \[ \] \*\*B[0-9]')
             [ "$n" -eq 0 ] || bad "$r ($fs): $n hallazgo(s) bloqueante(s) de «Revisión» sin resolver"
+            # La reducida (.claude/skills/review/SKILL.md) abre menos de .ai/project/: sólo la puede tener una fase
+            # que no toca contrato, migraciones ni dependencias (ligera) o que no cambia el producto (operación y
+            # validación externa). Una de código en modo normal se revisa entera.
+            if printf '%s\n' "$rev" | grep -q '^\*\*Revisión [0-9].* · reducida'; then
+                [ "$modo" = ligero ] || [ "$tipo" != código ] \
+                    || bad "$r ($fs): «Revisión» es reducida y la fase no es ligera ni de operación ni de validación externa"
+            fi
         fi ;;
     esac
 
