@@ -3,6 +3,15 @@
 El núcleo del protocolo: lo que es igual en todos los stacks. Versiones con [SemVer](https://semver.org/lang/es/) y
 etiqueta `core-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, arriba.
 
+## Sin publicar
+
+### Cambiado
+
+- `.claude/skills/review/SKILL.md` (paso 1 y 4) y `.claude/agents/reviewer.md §Qué devuelves`: `/review` resuelve la
+  base a un hash corto (`git rev-parse --short <arranque>^`) y se la pasa ya resuelta al revisor, que la escribe tal
+  cual en el rango. Una revisión salió con un rango cuya base no existía, porque el revisor recibió la expresión
+  `<arranque>^` y la resolvió él (#83).
+
 ## [2.10.0] — 2026-10-16
 
 ### Cambiado
