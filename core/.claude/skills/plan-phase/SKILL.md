@@ -149,7 +149,9 @@ supuestos dependen de la fase anterior. El ejecutor la revalida en el Paso A (`.
    - **Cada orden que piden el §3 y el §5, contra `.claude/settings.json`.** La que no encaja con su `allow` (la
      instalación de la dependencia que la fase autoriza, un build) se anota en el §2 con el permiso que hay que
      abrir, para que el Paso A la ponga en sus viñetas y la persona la abra antes del visto bueno, no a mitad de la
-     ejecución (`.claude/skills/phase/SKILL.md §Paso A`).
+     ejecución (`.claude/skills/phase/SKILL.md §Paso A`). Una orden con una variable delante (`VAR=valor orden`) no
+     encaja con un `allow` de la orden sola: si el entorno puede fijarse donde lo diga `.ai/rules/tests.md`, el §5 no
+     la escribe así.
    - **Las filas `diferido` de `.ai/BACKLOG.md`, de todas las áreas, contra lo que la fase construye.** La que su
      fase cumple (ya hay un consumidor) deja de estar diferida: entra en la fase o se nombra en lo que ésta deja
      fuera a propósito.

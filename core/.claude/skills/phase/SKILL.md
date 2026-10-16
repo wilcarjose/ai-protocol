@@ -53,6 +53,9 @@ build, cualquier otra del §3 o del §5), contrástalas con su `allow` y su `den
 caben, cada una con el permiso que hay que abrir. La herramienta la deniega aunque la persona la haya autorizado en
 el chat, y cada denegación a mitad de la ejecución la para. Una orden encadenada tampoco encaja
 (`.claude/skills/phase/cierre.md §Entrega`).
+La comparación es por lectura y no prueba nada. Una orden con una variable delante (`VAR=valor orden`) no encaja con
+un `allow` de la orden sola, salvo que la herramienta ignore esa variable, y la persona pudo abrir más permisos en su
+configuración. Lo que dudes se lista como «puede pedir permiso», no como «no cabe», y no avises de que fallará.
 
 Responde con tres viñetas de lo que vas a construir, los archivos que crearás y modificarás, lo que la fase da por
 hecho y ya no es cierto, y las preguntas abiertas. **Para y espera el visto bueno.** Lo que está en `.ai/DOMAIN.md`

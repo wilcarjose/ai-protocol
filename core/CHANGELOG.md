@@ -23,6 +23,12 @@ etiqueta `core-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, ar
   entrada se contrasta con los tests existentes de esa función, y el §2 nombra los que no pueden cambiar. Una fase
   redactada por adelantado mandaba leer todo con `readServerEnv()`, lo que rompía los tests de `clientIp`, que no
   definen `API_URL`; se vio en el Paso A y costó una corrección (#101).
+- `phase/SKILL.md §Paso A` y `plan-phase/SKILL.md §Antes de dar el plan por listo`: la comparación de las órdenes con
+  el `allow` es por lectura. Las que llevan una variable delante (`VAR=valor orden`) no encajan con un `allow` de la
+  orden sola, así que el plan no las escribe así si el entorno puede fijarse en la configuración del proyecto; y el
+  ejecutor lista lo dudoso como «puede pedir permiso», no como «no cabe». Un Paso A avisó de que una orden no cabía y
+  la orden corrió, porque la persona tenía más permisos que el `allow` del kit (#100). No se añade permiso al stack:
+  `nextjs/.ai/rules/tests.md §Tests` ya fija el entorno en `webServer.env`, para que la orden encaje.
 
 ## [2.11.0] — 2026-10-16
 
