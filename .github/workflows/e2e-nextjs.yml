@@ -1,0 +1,45 @@
+# El e2e del stack de Next.js: crea un proyecto nuevo de verdad, le instala el kit y corre su bin/verify.sh completo
+# (tests/e2e-nextjs.sh). Sólo corre si el PR toca algo que lo afecta: el núcleo, su stack, el instalador o sus pruebas.
+# Un push nuevo a la rama cancela la ejecución anterior.
+name: e2e-nextjs
+
+on:
+  pull_request:
+    paths:
+      - 'core/**'
+      - 'stacks/nextjs/**'
+      - 'install.sh'
+      - 'tests/lib.sh'
+      - 'tests/e2e-nextjs.sh'
+      - 'tests/fixtures/nextjs-e2e/**'
+      - 'tests/fixtures/stages/**'
+      - '.github/workflows/e2e-nextjs.yml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  e2e-nextjs:
+    runs-on: ubuntu-latest
+    env:
+      GITLEAKS_VERSION: 8.30.1
+      E2E_LIGHTHOUSE: 1
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # El gate «secretos» de verify.sh lo necesita, como en el workflow del stack.
+      - name: gitleaks
+        run: |
+          curl -sSfL "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" \
+            | sudo tar xz -C /usr/local/bin gitleaks
+
+      - name: e2e
+        run: sh tests/e2e-nextjs.sh

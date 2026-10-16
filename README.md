@@ -61,8 +61,8 @@ tests/                    Las pruebas del kit: structure.sh, run.sh, los e2e de 
 docs/                     Documentación del propio kit: la guía práctica, los modos de ejecución, los planes y, en
                           vps/, el doctor y la unidad de systemd del modo VPS.
 .claude/skills/           Las skills del repo del kit, que no se instalan: /kit-feedback aplica los issues de mejora.
-.github/                  La CI del kit (workflows/kit.yml) y las etiquetas de cada versión publicada (workflows/tag.yml
-                          con tag-versions.sh).
+.github/                  La CI del kit (workflows/kit.yml y un e2e-<stack>.yml por stack) y las etiquetas de cada
+                          versión publicada (workflows/tag.yml con tag-versions.sh).
 ```
 
 ### Lo que queda en el proyecto
@@ -509,14 +509,16 @@ separan igual, con `--path core/ --path install.sh`).
   son los de su `verify.sh`.
 - **Lo propio de un proyecto no entra en el kit:** va a `core/.ai/project/` como plantilla con `{{RELLENAR}}`, y las
   reglas lo citan.
-- **La CI del kit** (`.github/workflows/kit.yml`) corre en cada PR:
+- **La CI del kit** corre en los PRs, no al fusionar en `main` (ya probó el resultado de la fusión), y un push nuevo
+  a la rama cancela la ejecución anterior. `.github/workflows/kit.yml`, en cada PR:
   - `shellcheck -s sh` sobre los scripts y `actionlint` sobre sus workflows y los de cada stack.
   - `sh tests/structure.sh`, y `sh tests/run.sh` en el host y en Alpine (busybox, con git): instala cada stack con
     la épica de prueba, provoca cada fallo del guardián, prueba el instalador (también el upgrade de una instalación
     1.x sin tocar su memoria y el modo de proyecto nuevo), la protección del protocolo (también dentro de un git
     worktree), el contexto de arranque, `docs/vps/doctor.sh` con un `PATH` de stubs y que cada ruta que cita
     `docs/guia.md` existe.
-  - `e2e-laravel` y `e2e-nextjs` (`sh tests/e2e-<stack>.sh`): crean un proyecto nuevo de verdad, instalan el stack,
+  - `e2e-laravel` y `e2e-nextjs` (`.github/workflows/e2e-<stack>.yml`, `sh tests/e2e-<stack>.sh`), sólo si el PR
+    toca el núcleo, su stack, `install.sh` o sus pruebas y fixtures: crean un proyecto nuevo de verdad, instalan el stack,
     generan la épica de prueba desde el paquete `tests/fixtures/stages/E1.md`, pasan el guardián y `bin/verify.sh`
     completo (Laravel, con la suite contra PostgreSQL con PostGIS; Next.js, con `next build` y Lighthouse CI), y
     provocan los fallos propios del stack (capas o arquitectura y contrato) y todos los del guardián.

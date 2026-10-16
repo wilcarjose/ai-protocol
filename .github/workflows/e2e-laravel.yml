@@ -1,0 +1,62 @@
+# El e2e del stack de Laravel: crea un proyecto nuevo de verdad, le instala el kit y corre su bin/verify.sh completo
+# (tests/e2e-laravel.sh). Sólo corre si el PR toca algo que lo afecta: el núcleo, su stack, el instalador o sus pruebas.
+# Un push nuevo a la rama cancela la ejecución anterior.
+name: e2e-laravel
+
+on:
+  pull_request:
+    paths:
+      - 'core/**'
+      - 'stacks/laravel/**'
+      - 'install.sh'
+      - 'tests/lib.sh'
+      - 'tests/e2e-laravel.sh'
+      - 'tests/fixtures/laravel-e2e/**'
+      - 'tests/fixtures/stages/**'
+      - '.github/workflows/e2e-laravel.yml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  e2e-laravel:
+    runs-on: ubuntu-latest
+    env:
+      GITLEAKS_VERSION: 8.30.1
+    # La suite del proyecto corre contra PostgreSQL con PostGIS, como el workflow del stack.
+    services:
+      postgres:
+        image: postgis/postgis:17-3.5
+        env:
+          POSTGRES_DB: testing
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          tools: composer
+          extensions: pdo_pgsql
+          coverage: none
+
+      # El gate «secretos» de verify.sh lo necesita, como en el workflow del stack.
+      - name: gitleaks
+        run: |
+          curl -sSfL "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" \
+            | sudo tar xz -C /usr/local/bin gitleaks
+
+      - name: e2e
+        run: sh tests/e2e-laravel.sh
