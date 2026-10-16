@@ -124,6 +124,10 @@ supuestos dependen de la fase anterior. El ejecutor la revalida en el Paso A (`.
    - **Cada criterio de §5, ejecutado contra el árbol de hoy.** Lo que imprime ahora es lo que la fase tiene que
      mover: si ya da el resultado pedido, o imprime líneas que la fase no va a tocar, está mal escrito. Un `grep` se
      escribe contra la línea que se espera en **cada** archivo que busca.
+   - **Un criterio que afirma algo del contenido de la salida de una orden** (que incluye ciertos casos, que imprime
+     cierta línea) lleva la opción que la imprime, y se ejecuta una vez para ver que la salida lo muestra. El
+     reporter por defecto de Vitest sólo imprime el total («Tests  29 passed (29)») y no nombra ningún caso:
+     `--reporter=verbose` sí.
    - **Cada documento que cita el §2 existe y cubre lo que la fase le atribuye**: un `grep` de la API, la sección o
      el término por el que lo cita. Si no lo cubre, la fase escribe lo que falta (y lo lista en sus «Archivos») o
      el §2 deja de citarlo.

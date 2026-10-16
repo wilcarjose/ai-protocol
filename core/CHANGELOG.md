@@ -14,6 +14,10 @@ etiqueta `core-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, ar
 - `.claude/skills/review/SKILL.md` (paso 7): un seguimiento sin bloqueantes cierra la revisión, y sus no bloqueantes
   van al backlog en lugar de arreglarse, salvo que el Tech Lead pida otra cosa. Tres vueltas sobre el mismo script
   de 215 líneas trajeron 2, 2 y 4 no bloqueantes nuevos, y arreglar los del alcance obligaba a otra vuelta (#86).
+- `plan-phase/SKILL.md §Antes de dar el plan por listo`: un criterio que afirma algo del contenido de la salida de una
+  orden lleva la opción que la imprime y se ejecuta una vez para verlo. Un criterio pedía que «su salida incluye los
+  casos nuevos» con `npx vitest run`, cuyo reporter por defecto sólo imprime el total: no lo cumplía tal como estaba
+  escrito y costó una pregunta al cierre (#88).
 
 ### Añadido
 
