@@ -3,6 +3,15 @@
 El stack Next.js: lo que añade al núcleo. Versiones con [SemVer](https://semver.org/lang/es/) y etiqueta
 `nextjs-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, arriba.
 
+## Sin publicar
+
+### Cambiado
+
+- `.ai/rules/tests.md §Tests`: en un hermano Laravel, `up` lanza `php artisan serve --no-reload`. Sin la opción y con
+  un `.env` en el hermano, `ServeCommand::startProcess` (Laravel 13.17) pasa como `false` al `php -S` hijo cada clave de
+  `$_ENV` que no está en `$passthroughVariables`, así que las variables que `up` fija en la orden no llegan al
+  servidor, o llegan según el `variables_order` (#85).
+
 ## [3.8.0] — 2026-10-15
 
 Compatible con el núcleo `>=2.0.0 <3.0.0`.

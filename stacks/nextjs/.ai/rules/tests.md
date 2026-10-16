@@ -37,6 +37,10 @@
   (migrar, editar su `.env`) es de la persona (`CLAUDE.md §El otro repositorio`).
   - **`up` fija por variable de entorno todo lo que el E2E da por hecho** de la configuración de cada servicio (el
     idioma por defecto, el correo, las URL), sin depender de su `.env`, que no se puede leer y pudo quedarse viejo.
+    En un hermano Laravel lanza `php artisan serve --no-reload`: sin esa opción y con un `.env` presente,
+    `ServeCommand` quita del `php -S` hijo cada variable de `$_ENV` que no está en su lista de pasadas
+    (`$passthroughVariables`), y las que `up` fija no llegan al servidor o llegan según el `variables_order`. Con
+    ella, además, un `.env` editado no reinicia el servidor.
   - **`sh bin/e2e-services.sh check`, antes de cada `npx playwright test`**, sólo lee: la salud de cada servicio
     (`curl -s`) y la configuración efectiva que el E2E da por hecha (en un hermano Laravel,
     `php artisan config:show app.locale`) y, si aplica, que sus migraciones están al día. Falla con lo que no cuadra,
