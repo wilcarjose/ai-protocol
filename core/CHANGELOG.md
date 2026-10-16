@@ -26,6 +26,10 @@ etiqueta `core-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, ar
   cada una con el permiso que hay que abrir, antes del visto bueno. Una fase autorizaba `server-only@0.0.1` y pedía
   `npx next build` dos veces: la herramienta denegó ambas aunque la persona las autorizó en el chat, y cada
   denegación paró la fase (#91). El stack nextjs ya permite las dos órdenes; queda la regla general.
+- `plan-phase/SKILL.md §Antes de dar el plan por listo`: cada orden del §3 y del §5 se contrasta con
+  `.claude/settings.json` al planificar, y la que no encaja se anota en el §2 con el permiso que hay que abrir. En la
+  fase 03/07 de base-web la persona tuvo que intervenir varias veces (instalar la dependencia, correr `next build`
+  dos veces) por permisos que faltaban (#92).
 
 ### Añadido
 
