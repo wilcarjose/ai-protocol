@@ -3,7 +3,11 @@
 # un 3 % y avisa si baja más de un 3 %, para que se actualice aquí. Subir una línea es cambiarla en un PR que
 # explique por qué hace falta más contexto.
 #
+# 2026-10-16: el ejecutor sube a 57637 (laravel) y 59566 (nextjs). 1484 caracteres son de phase/SKILL.md: el Paso 0
+# (una sesión, una fase; ni ScheduleWakeup ni CronCreate; esperar al merge, #93) y el Paso A (las órdenes que
+# settings.json no permite, #91). El resto es lo que ya había subido en main desde la última línea base.
+#
 # <stack> <sesión> <caracteres>
 laravel cualquiera 4300
-laravel ejecutor 55206
-nextjs ejecutor 56860
+laravel ejecutor 57637
+nextjs ejecutor 59566
