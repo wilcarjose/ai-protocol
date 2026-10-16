@@ -15,6 +15,10 @@ etiqueta `core-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, ar
   pero si la persona no puede abrirla (trabaja desde el teléfono) y pide expresamente seguir en la misma, lanza
   `/compact` ella y, con el PR fusionado y `/sync-main` hecho, se abre la fase siguiente. La regla frenaba a una
   persona hasta que dio la excepción a mano (#98).
+- `agents/reviewer.md §Qué devuelves`: la revisión lleva siempre una línea «Comprobado» (entregables, criterios,
+  reglas y zonas sensibles que contrastó con el diff), también sin hallazgos, donde antes sólo devolvía la cabecera.
+  Una revisión limpia de 5 llamadas y 14 s no se distinguía de una superficial. Una línea, no una lista, para no
+  deshacer lo que abarató #95. `bin/check-docs.sh` no cambia (caso 2k de `tests/lib.sh`) (#99).
 
 ## [2.11.0] — 2026-10-16
 

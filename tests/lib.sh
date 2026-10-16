@@ -179,6 +179,9 @@ estropea() {
         2g|2m) n=3; [ "$1" = 2m ] && n=2
             l=$(printf '**Revisión %s · %s · `bbbbbbb..ccccccc`:** 0 bloqueantes, 0 no bloqueantes.' "$n" "$DATE")
             awk_edit .ai/epics/01-demo/phase-02.md "{ print } /^\\*\\*Revisión 1/ { print \"\"; print \"$l\" }" ;;
+        # La línea «Comprobado» de una revisión sin hallazgos (.claude/agents/reviewer.md §Qué devuelves) no estorba
+        # al guardián, ni suelta ni junto a un bloqueante.
+        2k) awk_edit .ai/epics/01-demo/phase-02.md '{ print } /^\*\*Revisión 1/ { print ""; print "Comprobado: entregables 1–2 · criterios 1–3 · reglas .ai/RULES.md · zonas sensibles ninguna en el diff." }' ;;
         # La revisión reducida sólo es de una fase ligera, de operación o de validación externa: en una de código en
         # modo normal se rechaza (2q) y en una de operación se acepta (2p).
         2q|2p) [ "$1" = 2p ] && edit .ai/epics/01-demo/phase-02.md 's/^> \*\*Tipo:\*\* .*/> **Tipo:** operación/'
@@ -303,6 +306,7 @@ guardian_cases() {
     provoke 2s 'fases: una HECHA sin revisar'                        'la fase no pasó por /review'
     provoke 2g 'fases: revisiones 1 y 3, sin la 2'                   'numera sus revisiones «1 3»'
     accept  2m 'fases: revisiones 1 y 2'
+    accept  2k 'fases: una revisión con su línea «Comprobado»'
     provoke 2q 'fases: una revisión reducida en una de código normal' 'es reducida y la fase no es ligera'
     accept  2p 'fases: una revisión reducida en una de operación'
     provoke 2n 'fases: una casilla sin marcar, con secciones sin número' 'casilla(s) de «Criterios de éxito» sin marcar'
