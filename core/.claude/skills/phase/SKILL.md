@@ -17,6 +17,10 @@ terminado. El cierre vive en `.claude/skills/phase/cierre.md` y se lee al llegar
 
 ## Paso 0 — Qué fase y en qué rama
 
+0. **Una sesión, una fase.** Si en esta conversación ya cerraste una fase (pasaste por el Paso C), no abras otra,
+   antes de leer nada más: di «fusiona el PR, `/sync-main` y abre una sesión nueva» y para. Y dentro de una fase no
+   programes que la sesión se reinicie (en Claude Code, `ScheduleWakeup` ni `CronCreate`): reinyectan un prompt,
+   p. ej. `/phase`, en una sesión que ya terminó. El subagente del revisor avisa solo al terminar.
 1. Lee `.ai/STATE.md`, ejecuta `sh bin/check-docs.sh --strict` y resuelve la fase (§Qué fase se ejecuta). Si el
    guardián falla, el puntero no es fiable: STOP & ASK (`.ai/WORKFLOW.md §Sin sentido lógico`).
 2. Ponte en su rama (§Rama de la fase) y vuelve a leer `.ai/STATE.md`: manda el de esa rama. Si sale otra fase,
@@ -93,7 +97,9 @@ código de esa rama.
   recta (la local tiene commits que el remoto no), STOP & ASK.
 - **Después, sin preguntar si la rama base vale:** si `git show <rama base>:.ai/STATE.md` apunta ya a esta fase,
   `git switch -c phase/<NN-slug>/<FF> <rama base>` y dilo en una línea. Si no apunta (la fase anterior sigue sin
-  fusionar), pregunta desde qué rama se crea, con la recomendada primero, entre la de la fase anterior y la actual.
+  fusionar), pregunta desde qué rama se crea, con la recomendada primero: **esperar al merge de la anterior**
+  (`/sync-main --wait` y una sesión nueva), porque apilar la fase sobre una sin fusionar duplica commits o da
+  conflictos al fusionar con squash; después, la de la fase anterior y la actual.
   **Sólo valen las ramas cuyo `.ai/STATE.md` apunta ya a esta fase.** Si no vale ninguna, dilo y para.
 
 Para crear la rama o cambiar a ella, el árbol tiene que estar limpio. Se empuja al cerrar, con su PR

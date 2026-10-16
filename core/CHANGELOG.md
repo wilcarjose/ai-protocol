@@ -5,6 +5,12 @@ etiqueta `core-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, ar
 
 ## Sin publicar
 
+### Añadido
+
+- `bin/check-docs.sh`, chequeo «fases»: las revisiones de la sección «Revisión» van numeradas 1, 2, 3… sin huecos
+  (casos 2g y 2m de `tests/lib.sh`). Una fase tenía la revisión 1 y la 3: la 2 no se escribió y lo notó el revisor
+  de la siguiente, no el guardián (#87). Ninguna fase cerrada de los proyectos conocidos tiene un hueco.
+
 ### Cambiado
 
 - `.claude/skills/review/SKILL.md` (paso 1 y 4) y `.claude/agents/reviewer.md §Qué devuelves`: `/review` resuelve la
@@ -36,17 +42,17 @@ etiqueta `core-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, ar
   funcionalidades aplazadas (sonner, `global-error.tsx`, estados vacíos…) se acercaban al umbral sin que hubiera nada
   que corregir. `bin/check-docs.sh` no cambia: no cuenta filas abiertas, y el caso 13f de `tests/lib.sh` comprueba
   que acepta la fila (#89).
+- `phase/SKILL.md §Paso 0` y `§Rama de la fase`: una sesión que ya cerró una fase no abre otra («fusiona el PR,
+  `/sync-main` y abre una sesión nueva»), y dentro de una fase no se programa un reinicio de la sesión
+  (`ScheduleWakeup`, `CronCreate`). Y si la fase anterior sigue sin fusionar, la opción recomendada para la rama es
+  esperar al merge; apilar sobre ella queda como segunda opción. Una sesión con la fase 03/08 cerrada y su PR abierto
+  recibió un segundo `/phase`, lanzado por la propia sesión con un `ScheduleWakeup` mientras esperaba al revisor, y
+  avanzó hacia la 04/01 recomendando la rama de la fase sin fusionar (#93).
 
 ### Al actualizar un proyecto
 
 - `.ai/BACKLOG.md` es de la memoria del proyecto y el upgrade no la toca: copia a mano a su comentario de cabecera
   la línea nueva de `· Estado:` (`diferido — <condición observable>`) si quieres usar el estado (#89).
-
-### Añadido
-
-- `bin/check-docs.sh`, chequeo «fases»: las revisiones de la sección «Revisión» van numeradas 1, 2, 3… sin huecos
-  (casos 2g y 2m de `tests/lib.sh`). Una fase tenía la revisión 1 y la 3: la 2 no se escribió y lo notó el revisor
-  de la siguiente, no el guardián (#87). Ninguna fase cerrada de los proyectos conocidos tiene un hueco.
 
 ## [2.10.0] — 2026-10-16
 
