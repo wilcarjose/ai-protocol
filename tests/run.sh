@@ -41,7 +41,8 @@
 #      bloqueante resuelto (2v), dos revisiones seguidas (2m), una revisión reducida en una
 #      fase de operación (2p), un epic-plan que cita una decisión archivada
 #      en .ai/archive/DOMAIN.md (3a), filas «propuesta» y «enviada» de
-#      .ai/PROTOCOL.md (13p, 13s) y su tabla de antes, sin «Alcance» (13v); y
+#      .ai/PROTOCOL.md (13p, 13s) y su tabla de antes, sin «Alcance» (13v), una fila
+#      diferida de .ai/BACKLOG.md (13f); y
 #      una fase que cambió .env.example con su nota del .env local (15n, 15v)
 #      o escrita antes de «Entorno local» (15a).
 #   El fallo 5 (migraciones) sólo existe si la plantilla de fase declara

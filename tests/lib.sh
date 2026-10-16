@@ -220,6 +220,8 @@ estropea() {
         13b) printf '| 2 | %s | fase 01/01 | Prueba. | núcleo | aplicada — kit v2.3 |\n' "$DATE" >> .ai/PROTOCOL.md ;;
         # La retro del cierre (.claude/skills/phase/cierre.md §Retro del protocolo): una fila de la persona, filas en
         # cada estado abierto (13s), un alcance que no existe (13k) y la tabla de antes, sin «Alcance» (13v).
+        # Una fila diferida es memoria vigente: se queda en BACKLOG.md y el guardián la acepta.
+        13f) printf '| 1 | %s | api | interno | — | Prueba. | — | diferido — cuando haya un consumidor |\n' "$DATE" >> .ai/BACKLOG.md ;;
         13p) printf '| 2 | %s | persona — fase 01/01 | Prueba. | proyecto | propuesta |\n' "$DATE" >> .ai/PROTOCOL.md ;;
         13s) printf '| 2 | %s | fase 01/01 | Prueba. **Propuesta:** otra. | stack | propuesta |\n' "$DATE" >> .ai/PROTOCOL.md
              printf '| 3 | %s | fase 01/01 | Prueba. | núcleo | enviada — ai-protocol#40 |\n' "$DATE" >> .ai/PROTOCOL.md ;;
@@ -337,6 +339,7 @@ guardian_cases() {
     provoke 13 'memoria: una fila cerrada sigue en BACKLOG.md'        'BACKLOG.md #1 está cerrada o descartada'
     provoke 13a 'memoria: 11 líneas en «Últimos movimientos»'       'tiene 11 líneas; el tope es 10'
     provoke 13b 'memoria: una mejora aplicada sigue en PROTOCOL.md'  'PROTOCOL.md #2 está aplicada o descartada'
+    accept  13f 'memoria: una fila diferida en BACKLOG.md'
     accept  13p 'memoria: una propuesta de la persona en PROTOCOL.md'
     accept  13s 'memoria: filas propuesta y enviada — ai-protocol#N en PROTOCOL.md'
     provoke 13k 'memoria: un alcance que no es núcleo, stack ni proyecto' 'PROTOCOL.md #2: el alcance es «todos»'

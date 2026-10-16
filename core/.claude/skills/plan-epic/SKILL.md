@@ -58,7 +58,9 @@ y el slug, kebab-case.
 - **Estado**: nace `SIN_EMPEZAR`; después lo mueve el ejecutor (`.claude/skills/phase/SKILL.md §Estado de una fase`).
 - **Triaje del backlog.** Al planificar una épica, revisa las filas abiertas de `.ai/BACKLOG.md` de su área y ponles
   `Destino` (la épica que las cerrará) o déjalas en `—` a sabiendas. Cuando las filas abiertas **sin** `Destino`
-  pasen de **25**, la siguiente épica que se planifique es de corrección.
+  pasen de **25**, la siguiente épica que se planifique es de corrección. Las filas `diferido — <condición>` no
+  cuentan para ese umbral, pero sí se contrastan: si el alcance de la épica cumple la condición de una (de cualquier
+  área), pasa a `Destino` de la épica o se nombra en su «Fuera de alcance».
 - Añade una fila por fase a `.ai/STATE.md §Mapa de fases`, en estado `SIN_PLANIFICAR` mientras no exista el archivo
   de la fase.
 

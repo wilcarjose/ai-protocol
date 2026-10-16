@@ -30,6 +30,17 @@ etiqueta `core-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, ar
   `.claude/settings.json` al planificar, y la que no encaja se anota en el §2 con el permiso que hay que abrir. En la
   fase 03/07 de base-web la persona tuvo que intervenir varias veces (instalar la dependencia, correr `next build`
   dos veces) por permisos que faltaban (#92).
+- `.ai/BACKLOG.md` (comentario de cabecera), `plan-epic/SKILL.md §Épica` y `plan-phase/SKILL.md §Antes de dar el plan
+  por listo`: un estado `diferido — <condición observable>` para lo que se deja fuera porque aún no tiene consumidor.
+  No cuenta para el umbral de 25 del triaje, y al planificar una épica o una fase se contrasta con su alcance. Ocho
+  funcionalidades aplazadas (sonner, `global-error.tsx`, estados vacíos…) se acercaban al umbral sin que hubiera nada
+  que corregir. `bin/check-docs.sh` no cambia: no cuenta filas abiertas, y el caso 13f de `tests/lib.sh` comprueba
+  que acepta la fila (#89).
+
+### Al actualizar un proyecto
+
+- `.ai/BACKLOG.md` es de la memoria del proyecto y el upgrade no la toca: copia a mano a su comentario de cabecera
+  la línea nueva de `· Estado:` (`diferido — <condición observable>`) si quieres usar el estado (#89).
 
 ### Añadido
 

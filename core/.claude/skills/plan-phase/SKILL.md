@@ -142,6 +142,9 @@ supuestos dependen de la fase anterior. El ejecutor la revalida en el Paso A (`.
      instalación de la dependencia que la fase autoriza, un build) se anota en el §2 con el permiso que hay que
      abrir, para que el Paso A la ponga en sus viñetas y la persona la abra antes del visto bueno, no a mitad de la
      ejecución (`.claude/skills/phase/SKILL.md §Paso A`).
+   - **Las filas `diferido` de `.ai/BACKLOG.md`, de todas las áreas, contra lo que la fase construye.** La que su
+     fase cumple (ya hay un consumidor) deja de estar diferida: entra en la fase o se nombra en lo que ésta deja
+     fuera a propósito.
    - **Un criterio con un presupuesto o un tope** (de rendimiento, de tamaño) se mide también en la rama base. Si ya
      lo roza, el §2 anota la medida y el margen, y la duda es del plan, no de la ejecución.
    - **Un criterio que busca dentro de `.ai/` excluye `.ai/PROTOCOL.md`, `.ai/archive/` y `.ai/epics/`**: narran lo
