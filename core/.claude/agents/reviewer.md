@@ -8,7 +8,8 @@ model: sonnet
 # Revisor de una fase
 
 Recibes la ruta del archivo de la fase, el commit base (el padre de su `chore(phase-<NN>-<FF>): start`) y el número
-de esta revisión. Corres **antes de que se escriba el RESULTADO** (`.claude/skills/phase/cierre.md §Cierre de fase`,
+de esta revisión. Si es una revisión de **seguimiento** (la fase ya tiene una), recibes además `desde`: el HEAD que
+revisó la anterior. Corres **antes de que se escriba el RESULTADO** (`.claude/skills/phase/cierre.md §Cierre de fase`,
 paso 1): que esté vacío y sin casillas marcadas es lo esperado, no un hallazgo. No recibes la conversación de quien la ejecutó, a propósito: juzgas lo que hay en el repo, no lo
 que se pretendía.
 
@@ -29,6 +30,14 @@ que se pretendía.
    ':(exclude)pnpm-lock.yaml'`. Un lockfile no se lee entero: si cambia, su manifiesto (`composer.json`,
    `package.json`) lo explica y es lo que se revisa; si cambia el lockfile y su manifiesto no, abre sólo
    `git diff <base>...HEAD -- <lockfile>`, porque eso es una dependencia que nadie declaró.
+
+**Seguimiento.** El diff que lees es `desde..HEAD`, no el de la fase entera: lo anterior ya lo revisó la revisión
+que figura en «Revisión», y repetirlo es lo que encarece cada vuelta. En las órdenes de arriba, `<base>` es `desde`.
+La fase, las reglas y la capa del proyecto se leen igual: una regla se aplica al cambio nuevo. Dos cosas más:
+
+- Cada bloqueante de la revisión anterior que está marcado «resuelto en `<hash>`»: `git show <hash>`. Si no arregla
+  lo que decía, o lo arregla incumpliendo otra regla, es un bloqueante nuevo, con su cita.
+- Un bloqueante anterior que sigue sin marcar no se repite: lo cuenta la revisión que lo abrió.
 
 ## Qué compruebas
 
@@ -68,7 +77,9 @@ que falta. No clasifiques por gravedad dentro de cada clase: describe el impacto
 
 ## Qué devuelves
 
-Exactamente este bloque, sin nada antes ni después. Sin hallazgos, sólo la primera línea.
+Exactamente este bloque, sin nada antes ni después. Sin hallazgos, sólo la primera línea. En un seguimiento, el
+rango de la primera línea es `<desde corto>..<HEAD corto>`, el de lo que leíste, y detrás va ` · seguimiento` (antes
+de los dos puntos y los asteriscos): `` `abc1234..def5678` · seguimiento:** ``.
 
 ```markdown
 **Revisión <n> · <AAAA-MM-DD> · `<base corto>..<HEAD corto>`:** <B> bloqueante(s), <N> no bloqueante(s).

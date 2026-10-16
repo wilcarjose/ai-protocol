@@ -13,6 +13,12 @@ etiqueta `core-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, ar
 - `.claude/agents/reviewer.md §Qué lees`: el diff se lee de lo barato a lo caro (`--stat` primero) y sin los
   lockfiles, que son lo más largo de un diff y no dicen nada que su manifiesto no diga; un lockfile que cambia sin
   su manifiesto sí se abre, porque es una dependencia sin declarar.
+- `.claude/skills/review/SKILL.md` (pasos 2, 3, 5 y 7) y `.claude/agents/reviewer.md §Qué lees`: la segunda
+  revisión de una fase es un **seguimiento** que sólo lee `desde..HEAD` (lo que entró desde la anterior) y comprueba
+  que cada bloqueante «resuelto en `<hash>`» lo está. Antes releía la fase entera en cada vuelta. Y el arreglo de un
+  no bloqueante que está en el alcance, toca sólo archivos ya revisados (ni tests existentes, contrato,
+  dependencias, migraciones ni zonas sensibles) y cambia 30 líneas o menos, pasa con `bin/verify.sh` en verde, sin
+  revisión nueva. Cualquier otro commit de código después de la última revisión sigue pidiendo la suya.
 
 ## [2.9.0] — 2026-10-15
 
