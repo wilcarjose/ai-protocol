@@ -138,6 +138,10 @@ supuestos dependen de la fase anterior. El ejecutor la revalida en el Paso A (`.
    - **Cada término del negocio que nombran el objetivo y los entregables**, buscado en `.ai/project/GLOSSARY.md`
      (`grep -i`). El que no está es una fila nueva con su nombre en el código, y §4 lista el archivo (§Coherencia
      interna, «Nombres»): el revisor marca como bloqueante un término nuevo sin su fila.
+   - **Una comprobación del §2 que escribe archivos** (un spec mínimo para probar un `webServer`, un prototipo) no es
+     del Paso A, que es sin escribir código (`.claude/skills/phase/SKILL.md §Paso A — Orientación`). La haces tú
+     ahora, fuera del repo, y el §2 anota lo que mediste; o es la primera fila del Plan de commits, con su criterio
+     en el §5.
    - **Cada orden que piden el §3 y el §5, contra `.claude/settings.json`.** La que no encaja con su `allow` (la
      instalación de la dependencia que la fase autoriza, un build) se anota en el §2 con el permiso que hay que
      abrir, para que el Paso A la ponga en sus viñetas y la persona la abra antes del visto bueno, no a mitad de la

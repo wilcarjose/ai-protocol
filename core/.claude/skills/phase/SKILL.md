@@ -41,6 +41,10 @@ sólo leyendo, con la orden que den `.ai/rules/tests.md` o el §2 de la fase. Si
 las viñetas y trae ya en ellas, listo para pegar, lo que toca a la persona o a una sesión del repo hermano: así va
 en paralelo con la ejecución, no al llegar al criterio.
 
+**Una comprobación del §2 que escribe archivos** no se hace en el Paso A: es el primer paso del Paso B, con los
+archivos reales de la fase. Si el Paso A necesita ya su resultado, pruébala en un directorio fuera del repo
+(`.claude/skills/plan-phase/SKILL.md §Antes de dar el plan por listo`).
+
 **Si la fase necesita una orden que `.claude/settings.json` no permite** (instalar la dependencia que autoriza, un
 build, cualquier otra del §3 o del §5), contrástalas con su `allow` y su `deny`, y lista en las viñetas las que no
 caben, cada una con el permiso que hay que abrir. La herramienta la deniega aunque la persona la haya autorizado en

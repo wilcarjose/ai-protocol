@@ -3,6 +3,15 @@
 El núcleo del protocolo: lo que es igual en todos los stacks. Versiones con [SemVer](https://semver.org/lang/es/) y
 etiqueta `core-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, arriba.
 
+## Sin publicar
+
+### Cambiado
+
+- `plan-phase/SKILL.md §Antes de dar el plan por listo` y `phase/SKILL.md §Paso A`: una comprobación del §2 que
+  escribe archivos (un spec mínimo para probar un segundo `webServer`) no se pone «en el Paso A», que es sin escribir
+  código. La mide quien planifica, fuera del repo, o es la primera fila del Plan de commits; el ejecutor que se la
+  encuentra la hace como primer paso del Paso B (#97).
+
 ## [2.11.0] — 2026-10-16
 
 ### Añadido
