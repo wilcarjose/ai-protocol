@@ -131,6 +131,10 @@ supuestos dependen de la fase anterior. El ejecutor la revalida en el Paso A (`.
      cierta línea) lleva la opción que la imprime, y se ejecuta una vez para ver que la salida lo muestra. El
      reporter por defecto de Vitest sólo imprime el total («Tests  29 passed (29)») y no nombra ningún caso:
      `--reporter=verbose` sí.
+   - **Un entregable que cambia de dónde o cómo una función lee su entrada** (otra variable de entorno, otra validación,
+     otro origen) se contrasta con los tests que ya tiene esa función (`grep` de su nombre en los tests): los que no
+     definen lo nuevo fallarían, y un test no se modifica para que pase un cambio (`CLAUDE.md §Cosas que no se
+     hacen`). El §2 nombra los que no pueden cambiar y el entregable se escribe para cumplirlos.
    - **Cada documento que cita el §2 existe y cubre lo que la fase le atribuye**: un `grep` de la API, la sección o
      el término por el que lo cita. Si no lo cubre, la fase escribe lo que falta (y lo lista en sus «Archivos») o
      el §2 deja de citarlo.
@@ -138,10 +142,16 @@ supuestos dependen de la fase anterior. El ejecutor la revalida en el Paso A (`.
    - **Cada término del negocio que nombran el objetivo y los entregables**, buscado en `.ai/project/GLOSSARY.md`
      (`grep -i`). El que no está es una fila nueva con su nombre en el código, y §4 lista el archivo (§Coherencia
      interna, «Nombres»): el revisor marca como bloqueante un término nuevo sin su fila.
+   - **Una comprobación del §2 que escribe archivos** (un spec mínimo para probar un `webServer`, un prototipo) no es
+     del Paso A, que es sin escribir código (`.claude/skills/phase/SKILL.md §Paso A — Orientación`). La haces tú
+     ahora, fuera del repo, y el §2 anota lo que mediste; o es la primera fila del Plan de commits, con su criterio
+     en el §5.
    - **Cada orden que piden el §3 y el §5, contra `.claude/settings.json`.** La que no encaja con su `allow` (la
      instalación de la dependencia que la fase autoriza, un build) se anota en el §2 con el permiso que hay que
      abrir, para que el Paso A la ponga en sus viñetas y la persona la abra antes del visto bueno, no a mitad de la
-     ejecución (`.claude/skills/phase/SKILL.md §Paso A`).
+     ejecución (`.claude/skills/phase/SKILL.md §Paso A`). Una orden con una variable delante (`VAR=valor orden`) no
+     encaja con un `allow` de la orden sola: si el entorno puede fijarse donde lo diga `.ai/rules/tests.md`, el §5 no
+     la escribe así.
    - **Las filas `diferido` de `.ai/BACKLOG.md`, de todas las áreas, contra lo que la fase construye.** La que su
      fase cumple (ya hay un consumidor) deja de estar diferida: entra en la fase o se nombra en lo que ésta deja
      fuera a propósito.

@@ -3,6 +3,33 @@
 El núcleo del protocolo: lo que es igual en todos los stacks. Versiones con [SemVer](https://semver.org/lang/es/) y
 etiqueta `core-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, arriba.
 
+## [2.12.0] — 2026-10-16
+
+### Cambiado
+
+- `plan-phase/SKILL.md §Antes de dar el plan por listo` y `phase/SKILL.md §Paso A`: una comprobación del §2 que
+  escribe archivos (un spec mínimo para probar un segundo `webServer`) no se pone «en el Paso A», que es sin escribir
+  código. La mide quien planifica, fuera del repo, o es la primera fila del Plan de commits; el ejecutor que se la
+  encuentra la hace como primer paso del Paso B (#97).
+- `phase/SKILL.md §Paso 0` (punto 0) y `CLAUDE.md §Qué hace cada sesión`: la sesión nueva sigue siendo lo primero,
+  pero si la persona no puede abrirla (trabaja desde el teléfono) y pide expresamente seguir en la misma, lanza
+  `/compact` ella y, con el PR fusionado y `/sync-main` hecho, se abre la fase siguiente. La regla frenaba a una
+  persona hasta que dio la excepción a mano (#98).
+- `agents/reviewer.md §Qué devuelves`: la revisión lleva siempre una línea «Comprobado» (entregables, criterios,
+  reglas y zonas sensibles que contrastó con el diff), también sin hallazgos, donde antes sólo devolvía la cabecera.
+  Una revisión limpia de 5 llamadas y 14 s no se distinguía de una superficial. Una línea, no una lista, para no
+  deshacer lo que abarató #95. `bin/check-docs.sh` no cambia (caso 2k de `tests/lib.sh`) (#99).
+- `plan-phase/SKILL.md §Antes de dar el plan por listo`: un entregable que cambia de dónde o cómo una función lee su
+  entrada se contrasta con los tests existentes de esa función, y el §2 nombra los que no pueden cambiar. Una fase
+  redactada por adelantado mandaba leer todo con `readServerEnv()`, lo que rompía los tests de `clientIp`, que no
+  definen `API_URL`; se vio en el Paso A y costó una corrección (#101).
+- `phase/SKILL.md §Paso A` y `plan-phase/SKILL.md §Antes de dar el plan por listo`: la comparación de las órdenes con
+  el `allow` es por lectura. Las que llevan una variable delante (`VAR=valor orden`) no encajan con un `allow` de la
+  orden sola, así que el plan no las escribe así si el entorno puede fijarse en la configuración del proyecto; y el
+  ejecutor lista lo dudoso como «puede pedir permiso», no como «no cabe». Un Paso A avisó de que una orden no cabía y
+  la orden corrió, porque la persona tenía más permisos que el `allow` del kit (#100). No se añade permiso al stack:
+  `nextjs/.ai/rules/tests.md §Tests` ya fija el entorno en `webServer.env`, para que la orden encaje.
+
 ## [2.11.0] — 2026-10-16
 
 ### Añadido

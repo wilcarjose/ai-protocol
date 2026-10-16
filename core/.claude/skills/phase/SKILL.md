@@ -18,9 +18,12 @@ terminado. El cierre vive en `.claude/skills/phase/cierre.md` y se lee al llegar
 ## Paso 0 — Qué fase y en qué rama
 
 0. **Una sesión, una fase.** Si en esta conversación ya cerraste una fase (pasaste por el Paso C), no abras otra,
-   antes de leer nada más: di «fusiona el PR, `/sync-main` y abre una sesión nueva» y para. Y dentro de una fase no
-   programes que la sesión se reinicie (en Claude Code, `ScheduleWakeup` ni `CronCreate`): reinyectan un prompt,
-   p. ej. `/phase`, en una sesión que ya terminó. El subagente del revisor avisa solo al terminar.
+   antes de leer nada más: di «fusiona el PR, `/sync-main` y abre una sesión nueva» y para. **Excepción:** si la
+   persona no puede abrir una (trabaja desde el teléfono) y pide expresamente seguir en esta, pídele que lance
+   `/compact` (tú no puedes) y, con el PR fusionado y `/sync-main` hecho, abre la fase siguiente. No la ofrezcas tú.
+   Y dentro de una fase no programes que la sesión se reinicie (en Claude Code, `ScheduleWakeup` ni `CronCreate`):
+   reinyectan un prompt, p. ej. `/phase`, en una sesión que ya terminó. El subagente del revisor avisa solo al
+   terminar.
 1. Lee `.ai/STATE.md`, ejecuta `sh bin/check-docs.sh --strict` y resuelve la fase (§Qué fase se ejecuta). Si el
    guardián falla, el puntero no es fiable: STOP & ASK (`.ai/WORKFLOW.md §Sin sentido lógico`).
 2. Ponte en su rama (§Rama de la fase) y vuelve a leer `.ai/STATE.md`: manda el de esa rama. Si sale otra fase,
@@ -41,11 +44,18 @@ sólo leyendo, con la orden que den `.ai/rules/tests.md` o el §2 de la fase. Si
 las viñetas y trae ya en ellas, listo para pegar, lo que toca a la persona o a una sesión del repo hermano: así va
 en paralelo con la ejecución, no al llegar al criterio.
 
+**Una comprobación del §2 que escribe archivos** no se hace en el Paso A: es el primer paso del Paso B, con los
+archivos reales de la fase. Si el Paso A necesita ya su resultado, pruébala en un directorio fuera del repo
+(`.claude/skills/plan-phase/SKILL.md §Antes de dar el plan por listo`).
+
 **Si la fase necesita una orden que `.claude/settings.json` no permite** (instalar la dependencia que autoriza, un
 build, cualquier otra del §3 o del §5), contrástalas con su `allow` y su `deny`, y lista en las viñetas las que no
 caben, cada una con el permiso que hay que abrir. La herramienta la deniega aunque la persona la haya autorizado en
 el chat, y cada denegación a mitad de la ejecución la para. Una orden encadenada tampoco encaja
 (`.claude/skills/phase/cierre.md §Entrega`).
+La comparación es por lectura y no prueba nada. Una orden con una variable delante (`VAR=valor orden`) no encaja con
+un `allow` de la orden sola, salvo que la herramienta ignore esa variable, y la persona pudo abrir más permisos en su
+configuración. Lo que dudes se lista como «puede pedir permiso», no como «no cabe», y no avises de que fallará.
 
 Responde con tres viñetas de lo que vas a construir, los archivos que crearás y modificarás, lo que la fase da por
 hecho y ya no es cierto, y las preguntas abiertas. **Para y espera el visto bueno.** Lo que está en `.ai/DOMAIN.md`

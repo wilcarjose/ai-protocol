@@ -32,7 +32,8 @@
 | Subir el protocolo, entre fases | `/protocol-upgrade` | `.claude/skills/protocol-upgrade/SKILL.md` |
 | Volver a main tras un merge | `/sync-main` | `.claude/skills/sync-main/SKILL.md` |
 
-«Ejecuta la siguiente fase» equivale a `/phase` sin argumentos. Una sesión, una fase.
+«Ejecuta la siguiente fase» equivale a `/phase` sin argumentos. Una sesión, una fase
+(la excepción, en `.claude/skills/phase/SKILL.md §Paso 0`).
 
 ## Alcance
 

@@ -82,13 +82,19 @@ que falta. No clasifiques por gravedad dentro de cada clase: describe el impacto
 ## Qué devuelves
 
 Exactamente este bloque, sin nada antes ni después. En el rango de la primera línea, la base es el hash que
-recibiste, tal cual: no lo recalcules ni lo deduzcas de `HEAD`. Sin hallazgos, sólo la primera línea. En un seguimiento, el
-rango de la primera línea es `<desde corto>..<HEAD corto>`, el de lo que leíste. Detrás del rango, antes de los dos
-puntos, va ` · seguimiento` si lo es y ` · reducida` si te la pidieron, en ese orden:
-`` `abc1234..def5678` · seguimiento · reducida:** ``.
+recibiste, tal cual: no lo recalcules ni lo deduzcas de `HEAD`. En un seguimiento, el rango es
+`<desde corto>..<HEAD corto>`, el de lo que leíste. Detrás del rango, antes de los dos puntos, va ` · seguimiento` si
+lo es y ` · reducida` si te la pidieron, en ese orden: `` `abc1234..def5678` · seguimiento · reducida:** ``.
+
+La línea «Comprobado» va **siempre**, también sin hallazgos: es lo que deja distinguir una revisión limpia de una
+superficial. Una línea, con lo que de verdad contrastaste con el diff: los entregables del §3 y los criterios del §5
+por su número, los archivos de reglas y los temas de `.ai/rules/` que aplicaste y las zonas sensibles que miraste
+(o «ninguna en el diff»). En un seguimiento, lo del diff nuevo. No cites lo que no leíste.
 
 ```markdown
 **Revisión <n> · <AAAA-MM-DD> · `<base corto>..<HEAD corto>`:** <B> bloqueante(s), <N> no bloqueante(s).
+
+Comprobado: entregables <1–4> · criterios <1–6> · reglas <.ai/RULES.md, .ai/rules/tests.md> · zonas sensibles <cuáles o ninguna en el diff>.
 
 - [ ] **B1** · `<archivo>` — <qué incumple, en una frase> (`<archivo de la regla> §<sección>`). Evidencia: <fragmento o comando>.
 - **N1** · `<archivo>` — <qué mejorarías y por qué>.
