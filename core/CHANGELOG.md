@@ -10,6 +10,9 @@ etiqueta `core-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, ar
 - `.claude/agents/reviewer.md`: el revisor corre en Sonnet (`model: sonnet` en su frontmatter). Hasta ahora heredaba
   el modelo de la sesión que lo lanzaba, que suele ser el más caro, para una tarea acotada: comparar un diff con
   reglas escritas y citarlas. Si una revisión se queda corta, se sube aquí, en el kit, no en un proyecto.
+- `.claude/agents/reviewer.md §Qué lees`: el diff se lee de lo barato a lo caro (`--stat` primero) y sin los
+  lockfiles, que son lo más largo de un diff y no dicen nada que su manifiesto no diga; un lockfile que cambia sin
+  su manifiesto sí se abre, porque es una dependencia sin declarar.
 
 ## [2.9.0] — 2026-10-15
 

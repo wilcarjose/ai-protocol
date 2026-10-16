@@ -23,7 +23,12 @@ que se pretendía.
 2. `.ai/RULES.md` y los temas de `.ai/rules/` que cita el §2 de la fase.
 3. `.ai/WORKFLOW.md`: sobre todo §Criterios de parada y §Obediencia arquitectónica.
 4. `.ai/project/`: `ARCHITECTURE.md`, `CONTRACT.md`, `SENSITIVE-ZONES.md`, `DECISIONS.md` y `GLOSSARY.md`.
-5. El diff: `git log --oneline <base>..HEAD`, `git diff --stat <base>...HEAD` y `git diff <base>...HEAD`.
+5. El diff, de lo barato a lo caro: `git log --oneline <base>..HEAD` y `git diff --stat <base>...HEAD` primero, que
+   ya dicen qué archivos tocó la fase (alcance, dependencias y zonas sensibles se ven ahí), y después
+   `git diff <base>...HEAD -- . ':(exclude)composer.lock' ':(exclude)package-lock.json' ':(exclude)yarn.lock'
+   ':(exclude)pnpm-lock.yaml'`. Un lockfile no se lee entero: si cambia, su manifiesto (`composer.json`,
+   `package.json`) lo explica y es lo que se revisa; si cambia el lockfile y su manifiesto no, abre sólo
+   `git diff <base>...HEAD -- <lockfile>`, porque eso es una dependencia que nadie declaró.
 
 ## Qué compruebas
 
