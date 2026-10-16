@@ -11,6 +11,9 @@ etiqueta `core-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, ar
   base a un hash corto (`git rev-parse --short <arranque>^`) y se la pasa ya resuelta al revisor, que la escribe tal
   cual en el rango. Una revisión salió con un rango cuya base no existía, porque el revisor recibió la expresión
   `<arranque>^` y la resolvió él (#83).
+- `.claude/skills/review/SKILL.md` (paso 7): un seguimiento sin bloqueantes cierra la revisión, y sus no bloqueantes
+  van al backlog en lugar de arreglarse, salvo que el Tech Lead pida otra cosa. Tres vueltas sobre el mismo script
+  de 215 líneas trajeron 2, 2 y 4 no bloqueantes nuevos, y arreglar los del alcance obligaba a otra vuelta (#86).
 
 ## [2.10.0] — 2026-10-16
 

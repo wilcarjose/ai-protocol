@@ -39,7 +39,9 @@ la memoria que el cierre ya escribió (o una revisión anterior) no es parte del
      Sólo el Tech Lead lo descarta, y la casilla se marca con `— descartado por el Tech Lead (<fecha>): <motivo>`.
    - Si el seguimiento sigue con bloqueantes: STOP & ASK.
 7. **Los no bloqueantes** no se arreglan en la fase salvo que estén en su alcance; lo de otra parte va a
-   `.ai/BACKLOG.md` (`CLAUDE.md §Alcance`).
+   `.ai/BACKLOG.md` (`CLAUDE.md §Alcance`). **Un seguimiento sin bloqueantes cierra la revisión:** sus no bloqueantes
+   y los que quedaran de antes van a `.ai/BACKLOG.md` en lugar de arreglarse, salvo que el Tech Lead pida otra
+   cosa. Si no, cada arreglo abre otra vuelta con hallazgos nuevos y el ciclo no tiene fin.
 8. **Lo que se cierra está revisado.** Si después de la última revisión entra un commit de código, `bash
    bin/verify.sh` vuelve a pasar, y además:
    - **Por regla general, un seguimiento:** un arreglo puede introducir lo que ninguna revisión vio. Cuesta poco,
