@@ -11,6 +11,10 @@ etiqueta `core-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, ar
   escribe archivos (un spec mínimo para probar un segundo `webServer`) no se pone «en el Paso A», que es sin escribir
   código. La mide quien planifica, fuera del repo, o es la primera fila del Plan de commits; el ejecutor que se la
   encuentra la hace como primer paso del Paso B (#97).
+- `phase/SKILL.md §Paso 0` (punto 0) y `CLAUDE.md §Qué hace cada sesión`: la sesión nueva sigue siendo lo primero,
+  pero si la persona no puede abrirla (trabaja desde el teléfono) y pide expresamente seguir en la misma, lanza
+  `/compact` ella y, con el PR fusionado y `/sync-main` hecho, se abre la fase siguiente. La regla frenaba a una
+  persona hasta que dio la excepción a mano (#98).
 
 ## [2.11.0] — 2026-10-16
 

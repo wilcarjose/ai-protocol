@@ -18,9 +18,12 @@ terminado. El cierre vive en `.claude/skills/phase/cierre.md` y se lee al llegar
 ## Paso 0 — Qué fase y en qué rama
 
 0. **Una sesión, una fase.** Si en esta conversación ya cerraste una fase (pasaste por el Paso C), no abras otra,
-   antes de leer nada más: di «fusiona el PR, `/sync-main` y abre una sesión nueva» y para. Y dentro de una fase no
-   programes que la sesión se reinicie (en Claude Code, `ScheduleWakeup` ni `CronCreate`): reinyectan un prompt,
-   p. ej. `/phase`, en una sesión que ya terminó. El subagente del revisor avisa solo al terminar.
+   antes de leer nada más: di «fusiona el PR, `/sync-main` y abre una sesión nueva» y para. **Excepción:** si la
+   persona no puede abrir una (trabaja desde el teléfono) y pide expresamente seguir en esta, pídele que lance
+   `/compact` (tú no puedes) y, con el PR fusionado y `/sync-main` hecho, abre la fase siguiente. No la ofrezcas tú.
+   Y dentro de una fase no programes que la sesión se reinicie (en Claude Code, `ScheduleWakeup` ni `CronCreate`):
+   reinyectan un prompt, p. ej. `/phase`, en una sesión que ya terminó. El subagente del revisor avisa solo al
+   terminar.
 1. Lee `.ai/STATE.md`, ejecuta `sh bin/check-docs.sh --strict` y resuelve la fase (§Qué fase se ejecuta). Si el
    guardián falla, el puntero no es fiable: STOP & ASK (`.ai/WORKFLOW.md §Sin sentido lógico`).
 2. Ponte en su rama (§Rama de la fase) y vuelve a leer `.ai/STATE.md`: manda el de esa rama. Si sale otra fase,
