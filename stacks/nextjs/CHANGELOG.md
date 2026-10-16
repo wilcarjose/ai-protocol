@@ -14,6 +14,9 @@ El stack Next.js: lo que añade al núcleo. Versiones con [SemVer](https://semve
 - `.ai/rules/tests.md §Tests`: `check` lee la configuración efectiva de lo que el servidor responde y comprueba que el
   proceso es el que arrancó `up`, no con `php artisan config:show app.locale`, que relee el `.env` en un proceso
   nuevo. En la fase 01/05 de base-web el `.env` local tenía `en` y el servidor corría con `es` (#84).
+- `.ai/rules/tests.md §Tests`: si una fase mueve una variable a `webServer.env`, el criterio se corre sin los `.env*`
+  locales que la definen, o la fase dice en su §6 que no lo distingue. «Todos los E2E pasan sin nada delante de la
+  orden» habría pasado sin el cambio, porque el `.env.local` de la persona definía la misma variable (#82).
 
 ## [3.8.0] — 2026-10-15
 

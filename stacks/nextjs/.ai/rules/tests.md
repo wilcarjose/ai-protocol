@@ -26,7 +26,10 @@
   levantado, así que `bin/verify.sh` sólo comprueba que cargan: se corren con `npx playwright test` si la fase lo
   pide. Lo que necesitan del entorno (la URL de la API…) lo fija el proyecto en un solo sitio que la orden lee sola,
   `webServer.env` de `playwright.config.ts`, y no delante de la orden: así `npx playwright test` es la misma en el
-  §5 de una fase y en el criterio de cierre de su épica, y encaja con su permiso. Si Playwright pide otro navegador
+  §5 de una fase y en el criterio de cierre de su épica, y encaja con su permiso. Cuando una fase mueve una variable
+  ahí desde un `.env*`, el criterio que lo comprueba se corre sin los `.env*` locales que la definen (Next los carga
+  en `build` y en `start`, así que el criterio pasaría aunque `webServer.env` no pusiera la variable). La persona los
+  aparta mientras dura, porque la IA no puede leerlos; o la fase dice en su §6 que ese criterio no lo distingue. Si Playwright pide otro navegador
   tras subir `@playwright/test`, se instala con `npx playwright install chromium`.
 - **Los servicios de un E2E** (el servidor de desarrollo del repo hermano, un buzón de correo de pruebas en un
   contenedor) los levanta y los para quien ejecuta la fase, sólo con `sh bin/e2e-services.sh up` y
