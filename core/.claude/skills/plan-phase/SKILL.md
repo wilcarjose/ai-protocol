@@ -131,6 +131,10 @@ supuestos dependen de la fase anterior. El ejecutor la revalida en el Paso A (`.
      cierta línea) lleva la opción que la imprime, y se ejecuta una vez para ver que la salida lo muestra. El
      reporter por defecto de Vitest sólo imprime el total («Tests  29 passed (29)») y no nombra ningún caso:
      `--reporter=verbose` sí.
+   - **Un entregable que cambia de dónde o cómo una función lee su entrada** (otra variable de entorno, otra validación,
+     otro origen) se contrasta con los tests que ya tiene esa función (`grep` de su nombre en los tests): los que no
+     definen lo nuevo fallarían, y un test no se modifica para que pase un cambio (`CLAUDE.md §Cosas que no se
+     hacen`). El §2 nombra los que no pueden cambiar y el entregable se escribe para cumplirlos.
    - **Cada documento que cita el §2 existe y cubre lo que la fase le atribuye**: un `grep` de la API, la sección o
      el término por el que lo cita. Si no lo cubre, la fase escribe lo que falta (y lo lista en sus «Archivos») o
      el §2 deja de citarlo.

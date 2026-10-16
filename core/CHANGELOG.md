@@ -19,6 +19,10 @@ etiqueta `core-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, ar
   reglas y zonas sensibles que contrastó con el diff), también sin hallazgos, donde antes sólo devolvía la cabecera.
   Una revisión limpia de 5 llamadas y 14 s no se distinguía de una superficial. Una línea, no una lista, para no
   deshacer lo que abarató #95. `bin/check-docs.sh` no cambia (caso 2k de `tests/lib.sh`) (#99).
+- `plan-phase/SKILL.md §Antes de dar el plan por listo`: un entregable que cambia de dónde o cómo una función lee su
+  entrada se contrasta con los tests existentes de esa función, y el §2 nombra los que no pueden cambiar. Una fase
+  redactada por adelantado mandaba leer todo con `readServerEnv()`, lo que rompía los tests de `clientIp`, que no
+  definen `API_URL`; se vio en el Paso A y costó una corrección (#101).
 
 ## [2.11.0] — 2026-10-16
 
