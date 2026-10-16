@@ -24,7 +24,8 @@
 #                    código; una ESPERA_EVIDENCIA, de operación o validación
 #                    externa, con sólo casillas «[humano]» abiertas; una HECHA o
 #                    ESPERA_EVIDENCIA con «Revisión», revisada y sin bloqueantes
-#                    abiertos, y una revisión «reducida» sólo si la fase es
+#                    abiertos, con sus revisiones numeradas 1, 2, 3… sin
+#                    huecos, y una revisión «reducida» sólo si la fase es
 #                    ligera, de operación o de validación externa; cada
 #                    evidencia que enlaza
 #                    (`.ai/epics/<NN-slug>/evidence/…`) existe. Las secciones se
@@ -422,6 +423,10 @@ for f in "$AI"/epics/*/phase-*.md; do
             rev=$(printf '%s\n' "$rev" | strip_comments -)
             printf '%s\n' "$rev" | grep -q '^\*\*Revisión [0-9]' \
                 || bad "$r ($fs): «Revisión» no tiene ninguna revisión; la fase no pasó por /review"
+            # Las revisiones se numeran 1, 2, 3… en el orden en que se escriben: un hueco es una que no se escribió.
+            nums=$(printf '%s\n' "$rev" | sed -n 's/^\*\*Revisión \([0-9][0-9]*\).*/\1/p')
+            printf '%s\n' "$nums" | awk '$1 != NR { r = 1 } END { exit r }' \
+                || bad "$r ($fs): «Revisión» numera sus revisiones «$(printf '%s' "$nums" | tr '\n' ' ' | sed 's/ $//')»; tienen que ser 1, 2, 3… sin huecos"
             n=$(printf '%s\n' "$rev" | grep -c '^- \[ \] \*\*B[0-9]')
             [ "$n" -eq 0 ] || bad "$r ($fs): $n hallazgo(s) bloqueante(s) de «Revisión» sin resolver"
             # La reducida (.claude/skills/review/SKILL.md) abre menos de .ai/project/: sólo la puede tener una fase

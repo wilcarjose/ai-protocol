@@ -3,6 +3,23 @@
 El stack Next.js: lo que añade al núcleo. Versiones con [SemVer](https://semver.org/lang/es/) y etiqueta
 `nextjs-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, arriba.
 
+## [3.9.0] — 2026-10-16
+
+Compatible con el núcleo `>=2.0.0 <3.0.0`.
+
+### Cambiado
+
+- `.ai/rules/tests.md §Tests`: en un hermano Laravel, `up` lanza `php artisan serve --no-reload`. Sin la opción y con
+  un `.env` en el hermano, `ServeCommand::startProcess` (Laravel 13.17) pasa como `false` al `php -S` hijo cada clave de
+  `$_ENV` que no está en `$passthroughVariables`, así que las variables que `up` fija en la orden no llegan al
+  servidor, o llegan según el `variables_order` (#85).
+- `.ai/rules/tests.md §Tests`: `check` lee la configuración efectiva de lo que el servidor responde y comprueba que el
+  proceso es el que arrancó `up`, no con `php artisan config:show app.locale`, que relee el `.env` en un proceso
+  nuevo. En la fase 01/05 de base-web el `.env` local tenía `en` y el servidor corría con `es` (#84).
+- `.ai/rules/tests.md §Tests`: si una fase mueve una variable a `webServer.env`, el criterio se corre sin los `.env*`
+  locales que la definen, o la fase dice en su §6 que no lo distingue. «Todos los E2E pasan sin nada delante de la
+  orden» habría pasado sin el cambio, porque el `.env.local` de la persona definía la misma variable (#82).
+
 ## [3.8.0] — 2026-10-15
 
 Compatible con el núcleo `>=2.0.0 <3.0.0`.

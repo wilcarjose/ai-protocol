@@ -121,9 +121,16 @@ supuestos dependen de la fase anterior. El ejecutor la revalida en el Paso A (`.
 ## Antes de dar el plan por listo
 
 1. **Mide lo que el plan da por hecho**, que es de donde salen las preguntas del Paso A:
-   - **Cada criterio de §5, ejecutado contra el árbol de hoy.** Lo que imprime ahora es lo que la fase tiene que
+   - **Cada criterio de §5, ejecutado contra el árbol de hoy,** tal como está escrito y en el shell de la persona
+     (zsh en muchas máquinas). Una orden no usa nombres que un shell reserva (`status` y `path` en zsh, `pwd`, `0`…):
+     `status=$?` revienta con «read-only variable», la orden copiada literal no se puede ejecutar y deja lo que
+     creó a medias. Usa `rc`, o escríbela para `bash -c`. Lo que imprime ahora es lo que la fase tiene que
      mover: si ya da el resultado pedido, o imprime líneas que la fase no va a tocar, está mal escrito. Un `grep` se
      escribe contra la línea que se espera en **cada** archivo que busca.
+   - **Un criterio que afirma algo del contenido de la salida de una orden** (que incluye ciertos casos, que imprime
+     cierta línea) lleva la opción que la imprime, y se ejecuta una vez para ver que la salida lo muestra. El
+     reporter por defecto de Vitest sólo imprime el total («Tests  29 passed (29)») y no nombra ningún caso:
+     `--reporter=verbose` sí.
    - **Cada documento que cita el §2 existe y cubre lo que la fase le atribuye**: un `grep` de la API, la sección o
      el término por el que lo cita. Si no lo cubre, la fase escribe lo que falta (y lo lista en sus «Archivos») o
      el §2 deja de citarlo.
@@ -131,6 +138,13 @@ supuestos dependen de la fase anterior. El ejecutor la revalida en el Paso A (`.
    - **Cada término del negocio que nombran el objetivo y los entregables**, buscado en `.ai/project/GLOSSARY.md`
      (`grep -i`). El que no está es una fila nueva con su nombre en el código, y §4 lista el archivo (§Coherencia
      interna, «Nombres»): el revisor marca como bloqueante un término nuevo sin su fila.
+   - **Cada orden que piden el §3 y el §5, contra `.claude/settings.json`.** La que no encaja con su `allow` (la
+     instalación de la dependencia que la fase autoriza, un build) se anota en el §2 con el permiso que hay que
+     abrir, para que el Paso A la ponga en sus viñetas y la persona la abra antes del visto bueno, no a mitad de la
+     ejecución (`.claude/skills/phase/SKILL.md §Paso A`).
+   - **Las filas `diferido` de `.ai/BACKLOG.md`, de todas las áreas, contra lo que la fase construye.** La que su
+     fase cumple (ya hay un consumidor) deja de estar diferida: entra en la fase o se nombra en lo que ésta deja
+     fuera a propósito.
    - **Un criterio con un presupuesto o un tope** (de rendimiento, de tamaño) se mide también en la rama base. Si ya
      lo roza, el §2 anota la medida y el margen, y la duda es del plan, no de la ejecución.
    - **Un criterio que busca dentro de `.ai/` excluye `.ai/PROTOCOL.md`, `.ai/archive/` y `.ai/epics/`**: narran lo

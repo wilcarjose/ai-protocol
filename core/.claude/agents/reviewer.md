@@ -7,8 +7,8 @@ model: sonnet
 
 # Revisor de una fase
 
-Recibes la ruta del archivo de la fase, el commit base (el padre de su `chore(phase-<NN>-<FF>): start`) y el número
-de esta revisión. Si es una revisión de **seguimiento** (la fase ya tiene una), recibes además `desde`: el HEAD que
+Recibes la ruta del archivo de la fase, el commit base (el padre de su `chore(phase-<NN>-<FF>): start`, ya
+resuelto a un hash corto) y el número de esta revisión. Si es una revisión de **seguimiento** (la fase ya tiene una), recibes además `desde`: el HEAD que
 revisó la anterior. Si la fase es ligera, de operación o de validación externa, recibes también `reducida`. Corres **antes de que se escriba el RESULTADO** (`.claude/skills/phase/cierre.md §Cierre de fase`,
 paso 1): que esté vacío y sin casillas marcadas es lo esperado, no un hallazgo. No recibes la conversación de quien la ejecutó, a propósito: juzgas lo que hay en el repo, no lo
 que se pretendía.
@@ -81,7 +81,8 @@ que falta. No clasifiques por gravedad dentro de cada clase: describe el impacto
 
 ## Qué devuelves
 
-Exactamente este bloque, sin nada antes ni después. Sin hallazgos, sólo la primera línea. En un seguimiento, el
+Exactamente este bloque, sin nada antes ni después. En el rango de la primera línea, la base es el hash que
+recibiste, tal cual: no lo recalcules ni lo deduzcas de `HEAD`. Sin hallazgos, sólo la primera línea. En un seguimiento, el
 rango de la primera línea es `<desde corto>..<HEAD corto>`, el de lo que leíste. Detrás del rango, antes de los dos
 puntos, va ` · seguimiento` si lo es y ` · reducida` si te la pidieron, en ese orden:
 `` `abc1234..def5678` · seguimiento · reducida:** ``.

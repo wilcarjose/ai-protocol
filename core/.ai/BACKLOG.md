@@ -23,7 +23,10 @@
        **Cambio:** (qué hacer allí), **Origen:** (fase NN/FF y commit) y, si condiciona el despliegue,
        **Despliegue:** (CLAUDE.md §El otro repositorio).
      · Cerrado por: la fase o el commit que lo cerró, o «—».
-     · Estado: abierto · planificado — NN/FF · cerrado — NN/FF · descartado — <motivo>.
+     · Estado: abierto · planificado — NN/FF · diferido — <condición observable> · cerrado — NN/FF · descartado —
+       <motivo>. «diferido» es lo que se deja fuera a propósito porque aún no tiene consumidor (una librería que nadie
+       usa, un estado sin pantalla): la condición dice cuándo deja de estarlo. No cuenta para el umbral del triaje
+       (.claude/skills/plan-epic/SKILL.md §Épica), y al planificar se contrasta con el alcance de la épica.
 
      Aquí sólo viven las filas abiertas o planificadas. Al cerrar o descartar una, la fase que lo hace la pasa
      entera a .ai/archive/BACKLOG.md (.claude/skills/phase/cierre.md §Archivo de la memoria); bin/check-docs.sh lo

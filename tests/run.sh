@@ -29,7 +29,7 @@
 #      casos con letra): el puntero en una fase que espera evidencia (1e), una
 #      fase con las secciones sin número (2n), una evidencia enlazada que no
 #      existe (2e), los campos de la cabecera de una fase y la evidencia humana
-#      (2t, 2h, 2w, 2x, 2l, 2c), su revisión (2r, 2s, 2q), un id D<n> que no existe
+#      (2t, 2h, 2w, 2x, 2l, 2c), su revisión (2r, 2s, 2g, 2q), un id D<n> que no existe
 #      en ningún sitio (3n), §Esperando evidencia desfasada (7e), un paquete de
 #      RULES.md sin versión en .ai/project/DECISIONS.md (9n), una cita de
 #      sección por su número (12n), cada tope de la memoria (13a…13e), un
@@ -38,10 +38,11 @@
 #      caso tiene que fallar con el mensaje de su chequeo, no con cualquier
 #      otro. Y al revés, casos que tienen que pasar: una evidencia que sí existe
 #      (2f), una fase sin «Tipo» (2a, como las de antes de los tipos), un
-#      bloqueante resuelto (2v), una revisión reducida en una fase de operación
-#      (2p), un epic-plan que cita una decisión archivada
+#      bloqueante resuelto (2v), dos revisiones seguidas (2m), una revisión reducida en una
+#      fase de operación (2p), un epic-plan que cita una decisión archivada
 #      en .ai/archive/DOMAIN.md (3a), filas «propuesta» y «enviada» de
-#      .ai/PROTOCOL.md (13p, 13s) y su tabla de antes, sin «Alcance» (13v); y
+#      .ai/PROTOCOL.md (13p, 13s) y su tabla de antes, sin «Alcance» (13v), una fila
+#      diferida de .ai/BACKLOG.md (13f); y
 #      una fase que cambió .env.example con su nota del .env local (15n, 15v)
 #      o escrita antes de «Entorno local» (15a).
 #   El fallo 5 (migraciones) sólo existe si la plantilla de fase declara

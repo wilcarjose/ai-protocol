@@ -3,6 +3,57 @@
 El núcleo del protocolo: lo que es igual en todos los stacks. Versiones con [SemVer](https://semver.org/lang/es/) y
 etiqueta `core-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, arriba.
 
+## [2.11.0] — 2026-10-16
+
+### Añadido
+
+- `bin/check-docs.sh`, chequeo «fases»: las revisiones de la sección «Revisión» van numeradas 1, 2, 3… sin huecos
+  (casos 2g y 2m de `tests/lib.sh`). Una fase tenía la revisión 1 y la 3: la 2 no se escribió y lo notó el revisor
+  de la siguiente, no el guardián (#87). Ninguna fase cerrada de los proyectos conocidos tiene un hueco.
+
+### Cambiado
+
+- `.claude/skills/review/SKILL.md` (paso 1 y 4) y `.claude/agents/reviewer.md §Qué devuelves`: `/review` resuelve la
+  base a un hash corto (`git rev-parse --short <arranque>^`) y se la pasa ya resuelta al revisor, que la escribe tal
+  cual en el rango. Una revisión salió con un rango cuya base no existía, porque el revisor recibió la expresión
+  `<arranque>^` y la resolvió él (#83).
+- `.claude/skills/review/SKILL.md` (paso 7): un seguimiento sin bloqueantes cierra la revisión, y sus no bloqueantes
+  van al backlog en lugar de arreglarse, salvo que el Tech Lead pida otra cosa. Tres vueltas sobre el mismo script
+  de 215 líneas trajeron 2, 2 y 4 no bloqueantes nuevos, y arreglar los del alcance obligaba a otra vuelta (#86).
+- `plan-phase/SKILL.md §Antes de dar el plan por listo`: un criterio que afirma algo del contenido de la salida de una
+  orden lleva la opción que la imprime y se ejecuta una vez para verlo. Un criterio pedía que «su salida incluye los
+  casos nuevos» con `npx vitest run`, cuyo reporter por defecto sólo imprime el total: no lo cumplía tal como estaba
+  escrito y costó una pregunta al cierre (#88).
+- `plan-phase/SKILL.md §Antes de dar el plan por listo`: el criterio se ejecuta tal como está escrito y en el shell
+  de la persona, y no usa nombres que un shell reserva (`status`, `path` en zsh). La prueba de un build usaba
+  `status=$?`, que en zsh es de sólo lectura: la orden no se pudo ejecutar, dejó una página temporal sin borrar y
+  costó un turno con la persona (#90).
+- `phase/SKILL.md §Paso A`: las viñetas listan las órdenes del §3 y del §5 que `.claude/settings.json` no permite,
+  cada una con el permiso que hay que abrir, antes del visto bueno. Una fase autorizaba `server-only@0.0.1` y pedía
+  `npx next build` dos veces: la herramienta denegó ambas aunque la persona las autorizó en el chat, y cada
+  denegación paró la fase (#91). El stack nextjs ya permite las dos órdenes; queda la regla general.
+- `plan-phase/SKILL.md §Antes de dar el plan por listo`: cada orden del §3 y del §5 se contrasta con
+  `.claude/settings.json` al planificar, y la que no encaja se anota en el §2 con el permiso que hay que abrir. En la
+  fase 03/07 de base-web la persona tuvo que intervenir varias veces (instalar la dependencia, correr `next build`
+  dos veces) por permisos que faltaban (#92).
+- `.ai/BACKLOG.md` (comentario de cabecera), `plan-epic/SKILL.md §Épica` y `plan-phase/SKILL.md §Antes de dar el plan
+  por listo`: un estado `diferido — <condición observable>` para lo que se deja fuera porque aún no tiene consumidor.
+  No cuenta para el umbral de 25 del triaje, y al planificar una épica o una fase se contrasta con su alcance. Ocho
+  funcionalidades aplazadas (sonner, `global-error.tsx`, estados vacíos…) se acercaban al umbral sin que hubiera nada
+  que corregir. `bin/check-docs.sh` no cambia: no cuenta filas abiertas, y el caso 13f de `tests/lib.sh` comprueba
+  que acepta la fila (#89).
+- `phase/SKILL.md §Paso 0` y `§Rama de la fase`: una sesión que ya cerró una fase no abre otra («fusiona el PR,
+  `/sync-main` y abre una sesión nueva»), y dentro de una fase no se programa un reinicio de la sesión
+  (`ScheduleWakeup`, `CronCreate`). Y si la fase anterior sigue sin fusionar, la opción recomendada para la rama es
+  esperar al merge; apilar sobre ella queda como segunda opción. Una sesión con la fase 03/08 cerrada y su PR abierto
+  recibió un segundo `/phase`, lanzado por la propia sesión con un `ScheduleWakeup` mientras esperaba al revisor, y
+  avanzó hacia la 04/01 recomendando la rama de la fase sin fusionar (#93).
+
+### Al actualizar un proyecto
+
+- `.ai/BACKLOG.md` es de la memoria del proyecto y el upgrade no la toca: copia a mano a su comentario de cabecera
+  la línea nueva de `· Estado:` (`diferido — <condición observable>`) si quieres usar el estado (#89).
+
 ## [2.10.0] — 2026-10-16
 
 ### Cambiado

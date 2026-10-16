@@ -175,6 +175,10 @@ estropea() {
         2r|2v) b='- [ ] **B1** · `composer.json` — Prueba.'; [ "$1" = 2v ] && b='- [x] **B1** · `composer.json` — Prueba. Resuelto en `ccccccc`.'
             awk_edit .ai/epics/01-demo/phase-02.md "{ print } /^\\*\\*Revisión 1/ { print \"\"; print \"$b\" }" ;;
         2s) edit .ai/epics/01-demo/phase-02.md 's/^\*\*Revisión 1 .*/Sin revisar./' ;;
+        # Las revisiones se numeran sin huecos: la 1 y la 3 (2g) falla; la 1 y la 2 (2m) pasa.
+        2g|2m) n=3; [ "$1" = 2m ] && n=2
+            l=$(printf '**Revisión %s · %s · `bbbbbbb..ccccccc`:** 0 bloqueantes, 0 no bloqueantes.' "$n" "$DATE")
+            awk_edit .ai/epics/01-demo/phase-02.md "{ print } /^\\*\\*Revisión 1/ { print \"\"; print \"$l\" }" ;;
         # La revisión reducida sólo es de una fase ligera, de operación o de validación externa: en una de código en
         # modo normal se rechaza (2q) y en una de operación se acepta (2p).
         2q|2p) [ "$1" = 2p ] && edit .ai/epics/01-demo/phase-02.md 's/^> \*\*Tipo:\*\* .*/> **Tipo:** operación/'
@@ -216,6 +220,8 @@ estropea() {
         13b) printf '| 2 | %s | fase 01/01 | Prueba. | núcleo | aplicada — kit v2.3 |\n' "$DATE" >> .ai/PROTOCOL.md ;;
         # La retro del cierre (.claude/skills/phase/cierre.md §Retro del protocolo): una fila de la persona, filas en
         # cada estado abierto (13s), un alcance que no existe (13k) y la tabla de antes, sin «Alcance» (13v).
+        # Una fila diferida es memoria vigente: se queda en BACKLOG.md y el guardián la acepta.
+        13f) printf '| 1 | %s | api | interno | — | Prueba. | — | diferido — cuando haya un consumidor |\n' "$DATE" >> .ai/BACKLOG.md ;;
         13p) printf '| 2 | %s | persona — fase 01/01 | Prueba. | proyecto | propuesta |\n' "$DATE" >> .ai/PROTOCOL.md ;;
         13s) printf '| 2 | %s | fase 01/01 | Prueba. **Propuesta:** otra. | stack | propuesta |\n' "$DATE" >> .ai/PROTOCOL.md
              printf '| 3 | %s | fase 01/01 | Prueba. | núcleo | enviada — ai-protocol#40 |\n' "$DATE" >> .ai/PROTOCOL.md ;;
@@ -295,6 +301,8 @@ guardian_cases() {
     provoke 2r 'fases: una HECHA con un bloqueante abierto'          '1 hallazgo(s) bloqueante(s) de «Revisión» sin resolver'
     accept  2v 'fases: una HECHA con su bloqueante resuelto'
     provoke 2s 'fases: una HECHA sin revisar'                        'la fase no pasó por /review'
+    provoke 2g 'fases: revisiones 1 y 3, sin la 2'                   'numera sus revisiones «1 3»'
+    accept  2m 'fases: revisiones 1 y 2'
     provoke 2q 'fases: una revisión reducida en una de código normal' 'es reducida y la fase no es ligera'
     accept  2p 'fases: una revisión reducida en una de operación'
     provoke 2n 'fases: una casilla sin marcar, con secciones sin número' 'casilla(s) de «Criterios de éxito» sin marcar'
@@ -331,6 +339,7 @@ guardian_cases() {
     provoke 13 'memoria: una fila cerrada sigue en BACKLOG.md'        'BACKLOG.md #1 está cerrada o descartada'
     provoke 13a 'memoria: 11 líneas en «Últimos movimientos»'       'tiene 11 líneas; el tope es 10'
     provoke 13b 'memoria: una mejora aplicada sigue en PROTOCOL.md'  'PROTOCOL.md #2 está aplicada o descartada'
+    accept  13f 'memoria: una fila diferida en BACKLOG.md'
     accept  13p 'memoria: una propuesta de la persona en PROTOCOL.md'
     accept  13s 'memoria: filas propuesta y enviada — ai-protocol#N en PROTOCOL.md'
     provoke 13k 'memoria: un alcance que no es núcleo, stack ni proyecto' 'PROTOCOL.md #2: el alcance es «todos»'

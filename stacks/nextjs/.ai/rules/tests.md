@@ -26,7 +26,10 @@
   levantado, así que `bin/verify.sh` sólo comprueba que cargan: se corren con `npx playwright test` si la fase lo
   pide. Lo que necesitan del entorno (la URL de la API…) lo fija el proyecto en un solo sitio que la orden lee sola,
   `webServer.env` de `playwright.config.ts`, y no delante de la orden: así `npx playwright test` es la misma en el
-  §5 de una fase y en el criterio de cierre de su épica, y encaja con su permiso. Si Playwright pide otro navegador
+  §5 de una fase y en el criterio de cierre de su épica, y encaja con su permiso. Cuando una fase mueve una variable
+  ahí desde un `.env*`, el criterio que lo comprueba se corre sin los `.env*` locales que la definen (Next los carga
+  en `build` y en `start`, así que el criterio pasaría aunque `webServer.env` no pusiera la variable). La persona los
+  aparta mientras dura, porque la IA no puede leerlos; o la fase dice en su §6 que ese criterio no lo distingue. Si Playwright pide otro navegador
   tras subir `@playwright/test`, se instala con `npx playwright install chromium`.
 - **Los servicios de un E2E** (el servidor de desarrollo del repo hermano, un buzón de correo de pruebas en un
   contenedor) los levanta y los para quien ejecuta la fase, sólo con `sh bin/e2e-services.sh up` y
@@ -37,10 +40,17 @@
   (migrar, editar su `.env`) es de la persona (`CLAUDE.md §El otro repositorio`).
   - **`up` fija por variable de entorno todo lo que el E2E da por hecho** de la configuración de cada servicio (el
     idioma por defecto, el correo, las URL), sin depender de su `.env`, que no se puede leer y pudo quedarse viejo.
+    En un hermano Laravel lanza `php artisan serve --no-reload`: sin esa opción y con un `.env` presente,
+    `ServeCommand` quita del `php -S` hijo cada variable de `$_ENV` que no está en su lista de pasadas
+    (`$passthroughVariables`), y las que `up` fija no llegan al servidor o llegan según el `variables_order`. Con
+    ella, además, un `.env` editado no reinicia el servidor.
   - **`sh bin/e2e-services.sh check`, antes de cada `npx playwright test`**, sólo lee: la salud de cada servicio
-    (`curl -s`) y la configuración efectiva que el E2E da por hecha (en un hermano Laravel,
-    `php artisan config:show app.locale`) y, si aplica, que sus migraciones están al día. Falla con lo que no cuadra,
-    para que un entorno mal configurado se vea como tal y no como un test en rojo.
+    (`curl -s`) y la configuración efectiva que el E2E da por hecha, y, si aplica, que sus migraciones están al día.
+    Falla con lo que no cuadra, para que un entorno mal configurado se vea como tal y no como un test en rojo. La
+    configuración efectiva se lee **de lo que el servidor responde** (en un hermano Laravel, el idioma de un mensaje
+    de error sin `Accept-Language`) y se comprueba que el proceso es el que arrancó `up`; no con una orden que relee
+    el `.env` en un proceso nuevo, como `php artisan config:show app.locale`, que puede dar otro valor que el del
+    servidor levantado.
 - **Rendimiento con Lighthouse CI**: el job `lighthouse` de `.github/workflows/verify.yml` construye la app y la mide
   contra `.ai/project/lighthouse.json`, que es del proyecto: las URL y los presupuestos de
   `.ai/project/CROSS-CUTTING.md §Rendimiento`. Un presupuesto sólo se relaja con una decisión en `.ai/DOMAIN.md`.
