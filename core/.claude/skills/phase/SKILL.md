@@ -37,6 +37,12 @@ sólo leyendo, con la orden que den `.ai/rules/tests.md` o el §2 de la fase. Si
 las viñetas y trae ya en ellas, listo para pegar, lo que toca a la persona o a una sesión del repo hermano: así va
 en paralelo con la ejecución, no al llegar al criterio.
 
+**Si la fase necesita una orden que `.claude/settings.json` no permite** (instalar la dependencia que autoriza, un
+build, cualquier otra del §3 o del §5), contrástalas con su `allow` y su `deny`, y lista en las viñetas las que no
+caben, cada una con el permiso que hay que abrir. La herramienta la deniega aunque la persona la haya autorizado en
+el chat, y cada denegación a mitad de la ejecución la para. Una orden encadenada tampoco encaja
+(`.claude/skills/phase/cierre.md §Entrega`).
+
 Responde con tres viñetas de lo que vas a construir, los archivos que crearás y modificarás, lo que la fase da por
 hecho y ya no es cierto, y las preguntas abiertas. **Para y espera el visto bueno.** Lo que está en `.ai/DOMAIN.md`
 ya está decidido; lo que no determinan ni el código ni `DOMAIN.md` no se inventa: STOP & ASK

@@ -22,6 +22,10 @@ etiqueta `core-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, ar
   de la persona, y no usa nombres que un shell reserva (`status`, `path` en zsh). La prueba de un build usaba
   `status=$?`, que en zsh es de sólo lectura: la orden no se pudo ejecutar, dejó una página temporal sin borrar y
   costó un turno con la persona (#90).
+- `phase/SKILL.md §Paso A`: las viñetas listan las órdenes del §3 y del §5 que `.claude/settings.json` no permite,
+  cada una con el permiso que hay que abrir, antes del visto bueno. Una fase autorizaba `server-only@0.0.1` y pedía
+  `npx next build` dos veces: la herramienta denegó ambas aunque la persona las autorizó en el chat, y cada
+  denegación paró la fase (#91). El stack nextjs ya permite las dos órdenes; queda la regla general.
 
 ### Añadido
 
