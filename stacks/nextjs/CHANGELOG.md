@@ -2,7 +2,7 @@
 
 El stack Next.js: lo que añade al núcleo. Versiones con [SemVer](https://semver.org/lang/es/) y etiqueta
 `nextjs-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, arriba.
-## Sin publicar
+## [3.10.0] — 2026-10-16
 
 Compatible con el núcleo `>=2.0.0 <3.0.0`.
 
