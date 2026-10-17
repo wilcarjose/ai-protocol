@@ -3,6 +3,33 @@
 El núcleo del protocolo: lo que es igual en todos los stacks. Versiones con [SemVer](https://semver.org/lang/es/) y
 etiqueta `core-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, arriba.
 
+## [2.13.0] — 2026-10-16
+
+### Cambiado
+
+- `plan-phase/SKILL.md §Antes de dar el plan por listo`: el valor concreto que una fase da a una variable que ya valida
+  código de una fase anterior se pasa por esa validación al planificar. Una fase mandó `SITE_URL=http://localhost:3000`
+  en el E2E, Lighthouse y el README, pero la fase anterior lo validaba con `z.httpUrl()` y lo rechazaba: el E2E salió
+  en rojo en el Paso B y hizo falta preguntar por tocar un archivo de «No tocar» (#103).
+- `plan-phase/SKILL.md §Antes de dar el plan por listo` y `phase/SKILL.md §Paso A`: montar fuera del repo la copia
+  para una comprobación que escribe archivos (`mkdir`, `rsync`, `du`, `df`) pide órdenes que el `allow` no trae, y se
+  denegó. Si no se puede montar con las órdenes permitidas, la medición es la primera fila del Plan de commits (o el
+  primer paso del Paso B) y las viñetas lo dicen, en vez de medir en el árbol con un cambio temporal. No se añade
+  permiso a ningún stack (#104).
+- `plan-phase/SKILL.md §Coherencia interna` («Plan de commits»): si una fase activa una regla de linter (o un gate) y
+  arregla lo que marca, la fila del arreglo va antes que la de la regla. Una fase ponía primero la que activa las reglas
+  recomendadas de `jsx-a11y` y después la de los dos avisos que dan; con `verify --fast` obligatorio por fila, la
+  primera no podía pasar sola y se invirtió el orden al ejecutar (#105).
+- `plan-phase/SKILL.md §Antes de dar el plan por listo`: un entregable que es un test que recorre estados (un menú o un
+  diálogo abierto, un error) mide también esos estados al planificar, y el §2 pone el resultado. Una fase midió las
+  pantallas cerradas y el entregable pedía además el menú del tema abierto: el análisis de accesibilidad falló en el
+  Paso B (`aria-hidden-focus`), con la restricción 6 prohibiendo desactivar reglas, y hizo falta una pregunta (#106).
+- `plan-phase/SKILL.md §Antes de dar el plan por listo` (misma viñeta que #106): los estados que se miden incluyen la
+  pantalla que pide sesión, con un usuario registrado contra el otro repositorio, levantado como diga
+  `.ai/rules/tests.md`. Una fase pedía que el panel pasara axe y ni el plan ni el Paso A lo midieron; falló en el
+  Paso B (`color-contrast`, 4,34:1) y el arreglo (`src/app/globals.css`) no estaba en los «Archivos», así que hizo
+  falta otra pregunta (#107).
+
 ## [2.12.0] — 2026-10-16
 
 ### Cambiado

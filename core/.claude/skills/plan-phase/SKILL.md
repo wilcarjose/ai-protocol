@@ -90,8 +90,11 @@ plantilla lo pide, «Migraciones: ninguna».
   el `**Despliegue:**` del traspaso (`.claude/skills/phase/cierre.md §Traspaso al otro repo`).
 - **Plan de commits (§9).** Cada entregable que cambia archivos se mapea a una fila; una fila puede cubrir varios
   entregables relacionados; los que no cambian archivos no llevan fila. **Excepción:** un entregable que ningún
-  gate ve va en su fila propia; agrupado, no tiene dónde aterrizar y se pierde sin que falle nada. Los commits de
-  arranque y de cierre no van en §9 (`.claude/skills/phase/SKILL.md §Commits durante la fase`).
+  gate ve va en su fila propia; agrupado, no tiene dónde aterrizar y se pierde sin que falle nada. **Orden:** cada
+  fila pasa `bash bin/verify.sh --fast` sola. Si la fase activa una regla de linter (o un gate) y arregla lo que ésta
+  marca, la fila del arreglo va antes que la de la regla; al revés, la regla deja el árbol en rojo y la fila no puede
+  commitearse. Los commits de arranque y de cierre no van en §9
+  (`.claude/skills/phase/SKILL.md §Commits durante la fase`).
 - **Referencias** a clases, métodos o secciones, nunca a números de línea (`.ai/WORKFLOW.md §Documentación`).
 - **Contexto que debes leer antes (§2).** Rutas concretas: siempre `sh bin/handoff.sh` de la fase anterior, los
   temas de `.ai/rules/` que toca la fase (el índice está en `.ai/RULES.md`) y las filas de
@@ -135,6 +138,18 @@ supuestos dependen de la fase anterior. El ejecutor la revalida en el Paso A (`.
      otro origen) se contrasta con los tests que ya tiene esa función (`grep` de su nombre en los tests): los que no
      definen lo nuevo fallarían, y un test no se modifica para que pase un cambio (`CLAUDE.md §Cosas que no se
      hacen`). El §2 nombra los que no pueden cambiar y el entregable se escribe para cumplirlos.
+   - **Un entregable que es un test que recorre estados** (un menú o un diálogo abierto, un error, una pantalla que
+     pide sesión) mide también esos estados, no sólo las pantallas cerradas, y el §2 pone el resultado. Una pantalla
+     que pide sesión se mide con un usuario registrado contra el otro repositorio, levantado como diga
+     `.ai/rules/tests.md`. Se hace como la «comprobación que escribe archivos» (más abajo). Dos fases midieron sólo
+     lo cerrado: el test pedía además el menú del tema abierto, y otro, que el panel (con sesión) pasara el mismo
+     análisis. Fallaron en el Paso B (`aria-hidden-focus`, y `color-contrast` a 4,34:1) con una restricción que
+     prohibía desactivar reglas y un arreglo fuera de los «Archivos»: cada una costó una pregunta al Tech Lead.
+   - **Un valor concreto que la fase da a una variable que ya valida código de una fase anterior** (un `SITE_URL`
+     en el E2E, Lighthouse y el README) se pasa por esa validación. La fase anterior probó sus propios valores, no
+     el de ésta: una que exigía `https` rechazaba `http://localhost:3000` y dejó el E2E en rojo. Se ejecuta como la
+     «comprobación que escribe archivos» (más abajo) y el §2 anota el resultado; si no se puede ejecutar, el §2 dice
+     qué validación lee y a quién le toca el archivo si el valor no pasa.
    - **Cada documento que cita el §2 existe y cubre lo que la fase le atribuye**: un `grep` de la API, la sección o
      el término por el que lo cita. Si no lo cubre, la fase escribe lo que falta (y lo lista en sus «Archivos») o
      el §2 deja de citarlo.
@@ -145,7 +160,10 @@ supuestos dependen de la fase anterior. El ejecutor la revalida en el Paso A (`.
    - **Una comprobación del §2 que escribe archivos** (un spec mínimo para probar un `webServer`, un prototipo) no es
      del Paso A, que es sin escribir código (`.claude/skills/phase/SKILL.md §Paso A — Orientación`). La haces tú
      ahora, fuera del repo, y el §2 anota lo que mediste; o es la primera fila del Plan de commits, con su criterio
-     en el §5.
+     en el §5. Montar la copia (`mkdir`, `cp`, `rsync`, `du`) pide órdenes que el `allow` de `.claude/settings.json`
+     no trae, y la herramienta las deniega: si es el caso, no la montes encadenando órdenes ni la ejecutes en el
+     árbol con un cambio temporal; es la primera fila del Plan de commits, y el §2 lo dice para que las viñetas del
+     Paso A también.
    - **Cada orden que piden el §3 y el §5, contra `.claude/settings.json`.** La que no encaja con su `allow` (la
      instalación de la dependencia que la fase autoriza, un build) se anota en el §2 con el permiso que hay que
      abrir, para que el Paso A la ponga en sus viñetas y la persona la abra antes del visto bueno, no a mitad de la
