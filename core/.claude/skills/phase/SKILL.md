@@ -90,6 +90,7 @@ ligera sin preguntas ni supuestos rotos no espera: da las viñetas y sigue.
 | `EN_CURSO` | Otra sesión la dejó a medias: no la retomes; remite a `/close`. |
 | `BLOQUEADA` o `VERIFICACION_ROJA` | Si el motivo es una pregunta suya sin respuesta en `.ai/DOMAIN.md`, muéstrala y para. Si no, **reanúdala**. |
 | `ESPERA_EVIDENCIA` | Con argumentos: `.claude/skills/phase/cierre.md §Evidencia humana`. |
+| `POSPUESTA` | Con argumentos, la persona la reactiva (§Estado de una fase). Sin ellos el puntero ya la saltó. |
 | `HECHA` | El puntero no avanzó al cerrarla: STOP & ASK. |
 | `—` | Nada listo: di qué épica sigue en el mapa y que hay que planificarla (`/plan-epic`). |
 
@@ -120,7 +121,7 @@ Para crear la rama o cambiar a ella, el árbol tiene que estar limpio. Se empuja
 ## Estado de una fase
 
 `SIN_PLANIFICAR` · `LISTA_PARA_EJECUTAR` · `EN_CURSO` · `BLOQUEADA` · `VERIFICACION_ROJA` · `ESPERA_EVIDENCIA` ·
-`HECHA`. Vive en la cabecera `> **Estado:**` de la fase y en su fila de `.ai/STATE.md §Mapa de fases`, que se
+`POSPUESTA` · `HECHA`. Vive en la cabecera `> **Estado:**` de la fase y en su fila de `.ai/STATE.md §Mapa de fases`, que se
 escriben siempre juntas.
 
 - **Al iniciar:** `EN_CURSO` y la fecha en `Última actualización`. Con la primera fase de la épica, su epic-plan
@@ -130,8 +131,16 @@ escriben siempre juntas.
   el estado: la pregunta y la respuesta van a las «Preguntas abiertas» de la fase.
 - **Al cerrar:** `HECHA`, `ESPERA_EVIDENCIA` (sólo quedan casillas `[humano]`), `BLOQUEADA` o `VERIFICACION_ROJA`,
   con la fecha en `Cerrada`.
-- **El puntero** (`Épica activa`, `Fase activa`, `Archivo de la fase`) es la **primera fila sin `HECHA` ni
-  `ESPERA_EVIDENCIA` del mapa**, aunque sea de otra épica. Si está `SIN_PLANIFICAR`, las dos últimas quedan en `—`;
+- **Al posponer** (la persona decide no hacerla todavía; sólo desde `LISTA_PARA_EJECUTAR`, que ya tiene archivo):
+  `POSPUESTA`, la línea `> **Pospuesta:** AAAA-MM-DD — <motivo>` en la cabecera tras `Estado:`, su fila del mapa y
+  `§Pospuestas`, el puntero a la siguiente fila pendiente y una línea en `§Últimos movimientos`, en un commit
+  `chore(planning)`. Si una fase posterior de la épica la cita en «Depende de», dilo: su Paso A parará mientras siga
+  pospuesta (`bin/check-docs.sh` lo avisa).
+- **Al reactivar** (`/phase <epica> <FF>`, sólo si ninguna otra fase está `EN_CURSO`): `LISTA_PARA_EJECUTAR`, sin la
+  línea `Pospuesta:` ni su entrada de `§Pospuestas`, y el puntero a la primera fila pendiente, que puede ser ella.
+  Sigue por el Paso A, que la revalida como cualquier fase redactada por adelantado.
+- **El puntero** (`Épica activa`, `Fase activa`, `Archivo de la fase`) es la **primera fila sin `HECHA`,
+  `ESPERA_EVIDENCIA` ni `POSPUESTA` del mapa**, aunque sea de otra épica. Si está `SIN_PLANIFICAR`, las dos últimas quedan en `—`;
   sin filas pendientes, las tres.
 - **La épica** pasa a `CERRADA` sólo por `.claude/skills/phase/cierre.md §Cierre de épica`.
 
@@ -151,6 +160,8 @@ idempotente, y el chequeo «contadores» de `bin/check-docs.sh` las recalcula ig
   `.ai/BACKLOG.md` cuya Área es un repo hermano; `M`, las que llevan `**Despliegue:**`.
 - **`§Esperando evidencia`.** Las fases `ESPERA_EVIDENCIA`, con `NN-slug/FF` y lo que falta; si no hay,
   `**Ninguna.**`
+- **`§Pospuestas`.** Las fases `POSPUESTA`, con `NN-slug/FF`, desde cuándo y por qué; si no hay, `**Ninguna.**`
+  Un proyecto anterior a este estado no tiene la sección: se añade con la primera fase que se pospone.
 
 ## Commits durante la fase
 

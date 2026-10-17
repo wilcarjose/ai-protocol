@@ -29,8 +29,8 @@
 ## Mapa de fases
 
 <!-- Una fila por fase. El orden de las filas es el orden de ejecución. Estados: SIN_PLANIFICAR ·
-     LISTA_PARA_EJECUTAR · EN_CURSO · BLOQUEADA · VERIFICACION_ROJA · ESPERA_EVIDENCIA · HECHA. «Cerrada» lleva la fecha del cierre,
-     sea cual sea el estado final, o «—». -->
+     LISTA_PARA_EJECUTAR · EN_CURSO · BLOQUEADA · VERIFICACION_ROJA · ESPERA_EVIDENCIA · POSPUESTA · HECHA. «Cerrada» lleva la
+     fecha del cierre, sea cual sea el estado final, o «—». -->
 
 | Épica | Fase | Estado | Cerrada |
 |---|---|---|---|
@@ -38,6 +38,12 @@
 ## Esperando evidencia
 
 <!-- Derivada del mapa: las fases en ESPERA_EVIDENCIA, que el puntero salta, con su NN-slug/FF y lo que falta. -->
+
+**Ninguna.**
+
+## Pospuestas
+
+<!-- Derivada del mapa: las fases en POSPUESTA, que el puntero salta, con su NN-slug/FF, desde cuándo y por qué. -->
 
 **Ninguna.**
 

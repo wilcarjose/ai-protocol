@@ -93,7 +93,8 @@ El chequeo «memoria» de `bin/check-docs.sh` falla si queda algo por archivar.
 
 Lo hace quien deja en `HECHA` la última fase de la épica que no lo estaba, en su mismo commit: al cerrarla o al
 completar su evidencia (§Evidencia humana). Mientras una fase de la épica no esté `HECHA`, no hay cierre de épica:
-sigue `EN_CURSO`.
+sigue `EN_CURSO`. Una fase `POSPUESTA` cuenta como no hecha: la épica no se cierra hasta que se reactive y se haga, o
+la persona la saque de la épica (es planificar).
 
 1. **Comprueba cada casilla del «Criterio de cierre»** del epic-plan igual que las de una fase, con su salida en
    «Verificación» del RESULTADO de esta última fase.

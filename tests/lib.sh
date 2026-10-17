@@ -100,6 +100,18 @@ header() { awk_edit "$1" "{ print } /^> \\*\\*Tipo:\\*\\*/ { print \"$2\" }"; }
 # criterion <fase> <línea>: una casilla más al final de «Criterios de éxito».
 criterion() { awk_edit "$1" "/^## [0-9]+\\. Restricciones/ { print \"$2\"; print \"\" } { print }"; }
 
+# pospone <épica> <FF> <motivo>: la fase LISTA_PARA_EJECUTAR pasa a POSPUESTA como dice
+# .claude/skills/phase/SKILL.md §Estado de una fase: su estado, su línea «Pospuesta:», su fila del mapa y su entrada
+# de STATE.md §Pospuestas. El puntero no se toca.
+pospone() {
+    f=".ai/epics/$1/phase-$2.md"
+    edit "$f" 's/^> \*\*Estado:\*\* .*/> **Estado:** POSPUESTA/'
+    header "$f" "> **Pospuesta:** $DATE — $3"
+    edit .ai/STATE.md "s/^| $1 | $2 | LISTA_PARA_EJECUTAR |/| $1 | $2 | POSPUESTA |/"
+    awk_edit .ai/STATE.md "/^## Pospuestas/ { w = 1 } /^## Bloqueo activo/ { w = 0 }
+        w && /^\\*\\*Ninguna\\.\\*\\*\$/ { print \"- $1/$2 — $DATE — $3\"; next } { print }"
+}
+
 # task <fase> <ID> <casilla> <comando>: la fase sale de esa tarea del paquete E1, con su criterio literal en §5
 # seguido del comando que lo prueba.
 task() {
@@ -142,7 +154,7 @@ make_test_epics() {
             print \"| 02-paquete | 01 | HECHA | $DATE |\"
             print \"| 02-paquete | 02 | ESPERA_EVIDENCIA | $DATE |\"
             print \"| 02-paquete | 03 | LISTA_PARA_EJECUTAR | — |\" }"
-    awk_edit .ai/STATE.md '/^## Esperando evidencia/ { w = 1 } /^## Bloqueo activo/ { w = 0 }
+    awk_edit .ai/STATE.md '/^## Esperando evidencia/ { w = 1 } /^## (Pospuestas|Bloqueo activo)/ { w = 0 }
         w && /^\*\*Ninguna\.\*\*$/ { print "- 02-paquete/02 — la evidencia [humano] de E1-02."; next } { print }'
     edit .ai/STATE.md "s/^- \*\*Épica activa:\*\* .*/- **Épica activa:** 02-paquete/
         s/^- \*\*Fase activa:\*\* .*/- **Fase activa:** 03/
@@ -249,6 +261,30 @@ estropea() {
                 15a) edit $f '/^### Entorno local$/d' ;;
                 15) awk_edit $f '{ print } /^### Entorno local$/ { print ""; print "—" }' ;;
             esac ;;
+        # POSPUESTA (.claude/skills/phase/SKILL.md §Estado de una fase): pospuesta la 02-paquete/03, el puntero deja de
+        # apuntarle (po, que se acepta), sigue en ella (1p), la fase pierde su línea «Pospuesta:» (2o), otra fase
+        # que no está pospuesta la lleva (2b), §Pospuestas no la nombra (7o), una pendiente depende de ella (2d) o
+        # es la única de una épica sin empezar (3o, que se acepta).
+        po|1p|2o|7o|2d)
+            pospone 02-paquete 03 'sin tiempo esta semana'
+            [ "$1" = 1p ] || edit .ai/STATE.md 's/^- \*\*Épica activa:\*\* .*/- **Épica activa:** —/
+                s/^- \*\*Fase activa:\*\* .*/- **Fase activa:** —/
+                s#^- \*\*Archivo de la fase:\*\* .*#- **Archivo de la fase:** —#'
+            [ "$1" != 2o ] || edit .ai/epics/02-paquete/phase-03.md '/^> \*\*Pospuesta:\*\*/d'
+            [ "$1" != 7o ] || edit .ai/STATE.md '/^- 02-paquete\/03 — /d'
+            if [ "$1" = 2d ]; then
+                make_phase 02-paquete 04 LISTA_PARA_EJECUTAR 'fase 03'
+                awk_edit .ai/epics/02-paquete/epic-plan.md '/^\| 03 \|/ { print; print "| 04 | Demo | — |"; next } { print }'
+                awk_edit .ai/STATE.md '{ print } /^\| 02-paquete \| 03 \|/ { print "| 02-paquete | 04 | LISTA_PARA_EJECUTAR | — |" }'
+                edit .ai/STATE.md 's/^- \*\*Épica activa:\*\* .*/- **Épica activa:** 02-paquete/
+                    s/^- \*\*Fase activa:\*\* .*/- **Fase activa:** 04/
+                    s#^- \*\*Archivo de la fase:\*\* .*#- **Archivo de la fase:** `.ai/epics/02-paquete/phase-04.md`#'
+            fi ;;
+        2b) header .ai/epics/02-paquete/phase-03.md "> **Pospuesta:** $DATE — prueba" ;;
+        3o) make_epic 03-aparte SIN_EMPEZAR 01
+            make_phase 03-aparte 01 LISTA_PARA_EJECUTAR '—'
+            awk_edit .ai/STATE.md '{ print } /^\| 02-paquete \| 03 \|/ { print "| 03-aparte | 01 | LISTA_PARA_EJECUTAR | — |" }'
+            pospone 03-aparte 01 'sin tiempo esta semana' ;;
         *)  return 1 ;;
     esac
 }
@@ -332,6 +368,13 @@ guardian_cases() {
     accept  6a 'traspaso: la fila del traspaso, cerrada y archivada'
     provoke 7  'contadores: «Decisiones abiertas» sube sin DOMAIN'   'la cabecera dice «Decisiones abiertas: 1'
     provoke 7e 'contadores: §Esperando evidencia no nombra la que espera' 'STATE.md §Esperando evidencia nombra'
+    accept  po 'pospuestas: una fase pospuesta, con su línea, el mapa, §Pospuestas y el puntero al día'
+    provoke 1p 'pospuestas: el puntero sigue en la pospuesta'        'la cabecera apunta a'
+    provoke 2o 'pospuestas: POSPUESTA sin su línea «Pospuesta:»'     'la cabecera no tiene «> **Pospuesta:**'
+    provoke 2b 'pospuestas: «Pospuesta:» en una fase que no lo está' 'tiene «Pospuesta:» y está LISTA_PARA_EJECUTAR'
+    provoke 7o 'pospuestas: §Pospuestas no nombra la pospuesta'      'STATE.md §Pospuestas nombra'
+    provoke 2d 'pospuestas: una pendiente depende de la pospuesta'   'cita la fase 03, que está POSPUESTA'
+    accept  3o 'pospuestas: una épica sin empezar con su única fase pospuesta'
     provoke 8  'destinos: «99» en la columna Destino'                '«Destino» es 99'
     provoke 9  'stack: otra versión en DECISIONS.md §Stack'          'dice 0.0.0 y el manifiesto dice'
     provoke 9n 'stack: un paquete de RULES.md sin versión'         '(de RULES.md §Stack) no tiene versión'

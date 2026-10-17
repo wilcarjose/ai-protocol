@@ -11,8 +11,8 @@ etiqueta `core-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, ar
   la regla activa (un `--fix` automático), regla y arreglo van en la misma fila. El #109 pedía lo mismo que #105
   (el arreglo antes que la regla) y este caso, en el que ese orden no se puede cumplir (#109).
 - `plan-phase/SKILL.md §Coherencia interna` («Archivos»): una fase que instala una dependencia lista
-  `.ai/project/DECISIONS.md` en «Modificar». `WORKFLOW.md §Dependencia nueva` manda la fila, pero la fase no listaba el archivo y
-  costó una pregunta en el Paso A (#110).
+  `.ai/project/DECISIONS.md` en «Modificar». `WORKFLOW.md §Dependencia nueva` manda la fila, pero la fase no listaba
+  el archivo y costó una pregunta en el Paso A (#110).
 - `plan-phase/SKILL.md §Antes de dar el plan por listo`: lo que la fase sube como artefacto de una herramienta en la CI
   se mide ejecutándola con `CI=true`, y la fase dice qué archivos produce allí y con qué opción. Una fase pedía
   `npx playwright test` en la CI y subir su informe, pero en la CI la herramienta usa el reporter `dot`, sin informe,
@@ -21,6 +21,18 @@ etiqueta `core-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, ar
   proyecto van en inglés (`RULES.md §Lista negra`, regla 11); el runbook y el README, en el idioma de la documentación.
   Una fase de operación copió el idioma del `verify.yml` del kit, que va en español, y la revisión lo marcó como
   bloqueante (#112).
+
+### Añadido
+
+- Estado `POSPUESTA` para una fase que la persona decide no hacer todavía (`phase/SKILL.md §Estado de una fase` y
+  `§Qué fase se ejecuta`). Sólo desde `LISTA_PARA_EJECUTAR`; la cabecera lleva `> **Pospuesta:** AAAA-MM-DD — <motivo>`
+  y el puntero la salta como salta `ESPERA_EVIDENCIA`. `/phase <epica> <FF>` la reactiva y sigue por el Paso A. La
+  épica no se cierra mientras tenga una (`cierre.md §Cierre de épica`). Antes había que reordenar a mano las filas del
+  mapa y del epic-plan, y volver a moverlas al reactivarla. `bin/check-docs.sh` acepta el estado, exige la línea
+  `Pospuesta:` (y sólo en ella), que el puntero la salte y que `STATE.md §Pospuestas` coincida con el mapa, y avisa
+  si una fase pendiente la cita en «Depende de» (chequeo 16). Una épica sin empezar no cuenta como empezada por tener
+  una pospuesta. `.ai/STATE.md` (semilla) trae la sección y `close/SKILL.md` la nombra. Casos `po`, `1p`, `2o`,
+  `2b`, `7o`, `2d` y `3o` en `tests/lib.sh` (#113).
 
 ## [2.13.0] — 2026-10-16
 

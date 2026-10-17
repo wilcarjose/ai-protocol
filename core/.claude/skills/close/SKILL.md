@@ -11,7 +11,7 @@ Argumentos: `$ARGUMENTS`. Sin argumentos, la fase activa de `.ai/STATE.md`; con 
 carpeta) y `<FF>` (`01`, `03b`).
 
 La fase tiene que estar `EN_CURSO`, `BLOQUEADA` o `VERIFICACION_ROJA` en `.ai/STATE.md §Mapa de fases`. Si está
-`HECHA`, `ESPERA_EVIDENCIA` o `LISTA_PARA_EJECUTAR`, dilo y para: no hay nada que rescatar.
+`HECHA`, `ESPERA_EVIDENCIA`, `POSPUESTA` o `LISTA_PARA_EJECUTAR`, dilo y para: no hay nada que rescatar.
 
 **`/close` no implementa nada.** Averigua y documenta qué pasó de verdad, no qué se pretendía. Para retomar el
 trabajo está `/phase`, que reanuda una fase `BLOQUEADA` o `VERIFICACION_ROJA`.
