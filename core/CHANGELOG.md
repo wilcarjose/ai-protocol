@@ -3,6 +3,15 @@
 El núcleo del protocolo: lo que es igual en todos los stacks. Versiones con [SemVer](https://semver.org/lang/es/) y
 etiqueta `core-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, arriba.
 
+## Sin publicar
+
+### Cambiado
+
+- `plan-phase/SKILL.md §Antes de dar el plan por listo`: el valor concreto que una fase da a una variable que ya valida
+  código de una fase anterior se pasa por esa validación al planificar. Una fase mandó `SITE_URL=http://localhost:3000`
+  en el E2E, Lighthouse y el README, pero la fase anterior lo validaba con `z.httpUrl()` y lo rechazaba: el E2E salió
+  en rojo en el Paso B y hizo falta preguntar por tocar un archivo de «No tocar» (#103).
+
 ## [2.12.0] — 2026-10-16
 
 ### Cambiado

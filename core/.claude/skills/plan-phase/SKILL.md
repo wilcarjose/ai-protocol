@@ -135,6 +135,11 @@ supuestos dependen de la fase anterior. El ejecutor la revalida en el Paso A (`.
      otro origen) se contrasta con los tests que ya tiene esa función (`grep` de su nombre en los tests): los que no
      definen lo nuevo fallarían, y un test no se modifica para que pase un cambio (`CLAUDE.md §Cosas que no se
      hacen`). El §2 nombra los que no pueden cambiar y el entregable se escribe para cumplirlos.
+   - **Un valor concreto que la fase da a una variable que ya valida código de una fase anterior** (un `SITE_URL`
+     en el E2E, Lighthouse y el README) se pasa por esa validación. La fase anterior probó sus propios valores, no
+     el de ésta: una que exigía `https` rechazaba `http://localhost:3000` y dejó el E2E en rojo. Se ejecuta como la
+     «comprobación que escribe archivos» (más abajo) y el §2 anota el resultado; si no se puede ejecutar, el §2 dice
+     qué validación lee y a quién le toca el archivo si el valor no pasa.
    - **Cada documento que cita el §2 existe y cubre lo que la fase le atribuye**: un `grep` de la API, la sección o
      el término por el que lo cita. Si no lo cubre, la fase escribe lo que falta (y lo lista en sus «Archivos») o
      el §2 deja de citarlo.
