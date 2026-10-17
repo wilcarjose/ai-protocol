@@ -6,7 +6,7 @@
 #   0. instalación — no queda ningún «{{RELLENAR» en los documentos normativos
 #                    ni en la capa del proyecto (.ai/project/).
 #   1. puntero     — la cabecera de .ai/STATE.md apunta a la primera fila sin
-#                    HECHA ni ESPERA_EVIDENCIA del mapa
+#                    HECHA, ESPERA_EVIDENCIA ni POSPUESTA del mapa
 #                    (.claude/skills/phase/SKILL.md §Estado de una fase); sus
 #                    seis claves aparecen una vez y sin notas detrás; sólo la
 #                    fase activa está EN_CURSO; las filas de cada épica, en
@@ -22,7 +22,9 @@
 #                    plantilla; una HECHA, con todas las casillas de «Criterios
 #                    de éxito» marcadas; casillas «[humano]» sólo fuera del tipo
 #                    código; una ESPERA_EVIDENCIA, de operación o validación
-#                    externa, con sólo casillas «[humano]» abiertas; una HECHA o
+#                    externa, con sólo casillas «[humano]» abiertas; una POSPUESTA,
+#                    con «> **Pospuesta:** AAAA-MM-DD — <motivo>» (y sólo ella);
+#                    una HECHA o
 #                    ESPERA_EVIDENCIA con «Revisión», revisada y sin bloqueantes
 #                    abiertos, con sus revisiones numeradas 1, 2, 3… sin
 #                    huecos, y una revisión «reducida» sólo si la fase es
@@ -48,7 +50,7 @@
 #                    o «> **Traspaso:** ninguno — <motivo>».
 #   7. contadores  — la cabecera de STATE.md, §Bloqueo activo y §Pendientes en
 #                    otros repos cuadran con DOMAIN.md y BACKLOG.md, y
-#                    §Esperando evidencia con el mapa
+#                    §Esperando evidencia y §Pospuestas con el mapa
 #                    (.claude/skills/phase/SKILL.md §Sincronización
 #                    post-lectura).
 #   8. destinos    — todo «Destino» de BACKLOG.md nombra una épica que existe.
@@ -78,9 +80,11 @@
 #                    realmente» dice en «Entorno local» qué cambia la persona
 #                    en su `.env` (o «ninguno — <motivo>»). Sólo las fases que
 #                    ya tienen ese encabezado: las de antes son historia.
+#  16. pospuestas  — ninguna fase pendiente cita en «Depende de» una fase
+#                    POSPUESTA de su épica: su Paso A pararía.
 #
-#   11 y 12 son heurísticos (sacan rutas y secciones de la prosa): avisan, y
-#   sólo bloquean con --strict. El resto son comparaciones exactas y bloquean
+#   11, 12 y 16 avisan (los dos primeros sacan rutas y secciones de la prosa),
+#   y sólo bloquean con --strict. El resto son comparaciones exactas y bloquean
 #   siempre. bin/verify.sh lo ejecuta con --strict.
 #
 # ◆ CÓMO PROVOCAR CADA FALLO
@@ -108,6 +112,9 @@
 #   14. pon «> **Tarea externa:** T9-99» en la cabecera de una fase.
 #   15. escribe «.env.example | 2 +-» en «Archivos tocados realmente» de una
 #       fase HECHA y deja «Entorno local» vacío.
+#   16. pospón una fase (estado, línea «Pospuesta:», mapa, §Pospuestas y
+#       puntero) y deja otra pendiente con «Depende de» sobre ella; o deja el
+#       puntero en la pospuesta, o quítale su línea «Pospuesta:».
 #
 # ◆ PORTABILIDAD
 #   POSIX sh y awk/sed/grep sin extensiones GNU: corre igual en el host que en
@@ -267,7 +274,7 @@ done
 report fail 'no queda nada por rellenar' 'la instalación del protocolo no está terminada:'
 
 # ── 1. Puntero de STATE.md ──────────────────────────────────────────────────
-printf '◆ puntero de STATE.md (la fase activa es la primera fila sin HECHA ni ESPERA_EVIDENCIA del mapa)\n'
+printf '◆ puntero de STATE.md (la fase activa es la primera fila sin HECHA, ESPERA_EVIDENCIA ni POSPUESTA del mapa)\n'
 
 for key in 'Épica activa' 'Fase activa' 'Archivo de la fase' 'Decisiones abiertas' 'Pendientes en otros repos' 'Última actualización'; do
     n=$(grep -c "^- \*\*$key:\*\*" "$STATE")
@@ -279,7 +286,7 @@ grep -qE '^- \*\*(Épica activa|Fase activa):\*\* *[^ ]+ +[^ ]' "$STATE" \
 grep -qE '^- \*\*Archivo de la fase:\*\* *(`[^`]+`|—) *$' "$STATE" \
     || bad 'STATE.md: «Archivo de la fase» lleva algo más que la ruta entre comillas invertidas (o «—»)'
 
-awk '$3 !~ /^(SIN_PLANIFICAR|LISTA_PARA_EJECUTAR|EN_CURSO|BLOQUEADA|VERIFICACION_ROJA|ESPERA_EVIDENCIA|HECHA)$/ { print $1 "/" $2 " " $3 }' "$MAP" \
+awk '$3 !~ /^(SIN_PLANIFICAR|LISTA_PARA_EJECUTAR|EN_CURSO|BLOQUEADA|VERIFICACION_ROJA|ESPERA_EVIDENCIA|POSPUESTA|HECHA)$/ { print $1 "/" $2 " " $3 }' "$MAP" \
     | while read -r r s; do bad "STATE.md §Mapa de fases: $r tiene un estado que no existe («$s»)"; done
 
 while read -r e p s; do
@@ -287,8 +294,9 @@ while read -r e p s; do
         || bad "STATE.md §Mapa de fases: $e/$p está $s, pero no existe .ai/epics/$e/phase-$p.md"
 done < "$MAP"
 
-# Una fase que espera la evidencia de la persona no retiene el puntero: lo que depende de ella para en su Paso A.
-NEXT=$(awk '$3 != "HECHA" && $3 != "ESPERA_EVIDENCIA" { print; exit }' "$MAP")
+# Una fase que espera la evidencia de la persona, o que la persona pospuso, no retiene el puntero: lo que depende
+# de ella para en su Paso A.
+NEXT=$(awk '$3 != "HECHA" && $3 != "ESPERA_EVIDENCIA" && $3 != "POSPUESTA" { print; exit }' "$MAP")
 if [ -z "$NEXT" ]; then
     want_e='—'; want_p='—'; want_f='—'
 else
@@ -325,10 +333,20 @@ for f in "$AI"/epics/*/phase-*.md; do
     p=$(basename "$f" .md); p=${p#phase-}
     fs=$(phase_state "$f")
     case "$fs" in
-        SIN_PLANIFICAR|LISTA_PARA_EJECUTAR|EN_CURSO|BLOQUEADA|VERIFICACION_ROJA|ESPERA_EVIDENCIA|HECHA) ;;
+        SIN_PLANIFICAR|LISTA_PARA_EJECUTAR|EN_CURSO|BLOQUEADA|VERIFICACION_ROJA|ESPERA_EVIDENCIA|POSPUESTA|HECHA) ;;
         *) bad "$r: la cabecera no tiene un «> **Estado:**» válido"; continue ;;
     esac
     grep -qE '^> \*\*Estado:\*\* *[A-Z_]+ *$' "$f" || bad "$r: «Estado:» lleva algo más que el estado"
+
+    # Una POSPUESTA dice desde cuándo y por qué (.claude/skills/phase/SKILL.md §Estado de una fase); la línea se
+    # quita al reactivarla, así que ninguna otra la lleva.
+    pl=$(sed -n 's/^> \*\*Pospuesta:\*\* *//p' "$f" | head -n 1)
+    if [ "$fs" = POSPUESTA ]; then
+        printf '%s\n' "$pl" | grep -qE '^[0-9]{4}-[0-9]{2}-[0-9]{2} — .+' \
+            || bad "$r (POSPUESTA): la cabecera no tiene «> **Pospuesta:** AAAA-MM-DD — <motivo>»"
+    elif [ -n "$pl" ]; then
+        bad "$r: tiene «Pospuesta:» y está $fs; la línea se quita al reactivarla"
+    fi
 
     ms=$(awk -v e="$e" -v p="$p" '$1 == e && $2 == p { print $3; exit }' "$MAP")
     if [ -z "$ms" ]; then
@@ -385,7 +403,7 @@ for f in "$AI"/epics/*/phase-*.md; do
     done
     fecha=$(printf '%s\n' "$body" | sed -n 's/^\*\*Fecha:\*\* *//p' | head -n 1)
     case "$fs" in
-        SIN_PLANIFICAR|LISTA_PARA_EJECUTAR)
+        SIN_PLANIFICAR|LISTA_PARA_EJECUTAR|POSPUESTA)
             [ -z "$fecha" ] || bad "$r ($fs): el RESULTADO tiene «Fecha:»; una fase que no ha empezado lo deja vacío"
             txt=$(printf '%s\n' "$body" | awk '/^## RESULTADO DE LA EJECUCI/ { s = 1; next }
                 s && /^### / { h = 1; next } s && h && NF > 0 { print; exit }')
@@ -476,7 +494,7 @@ for d in "$AI"/epics/*/; do
     grep -F '**Estado:**' "$plan" | head -n 1 | grep -qE '\*\*Estado:\*\* *(SIN_EMPEZAR|EN_CURSO|CERRADA) *$' \
         || bad "$r: «Estado:» tiene que ser SIN_EMPEZAR, EN_CURSO o CERRADA, sin nada detrás"
     rows=$(awk -v e="$e" '$1 == e { print $3 }' "$MAP")
-    started=$(printf '%s\n' "$rows" | grep -cvE '^(SIN_PLANIFICAR|LISTA_PARA_EJECUTAR)?$')
+    started=$(printf '%s\n' "$rows" | grep -cvE '^(SIN_PLANIFICAR|LISTA_PARA_EJECUTAR|POSPUESTA)?$')
     unfinished=$(printf '%s\n' "$rows" | grep -cvE '^(HECHA)?$')
     [ "$est" = CERRADA ] || OPEN=$((OPEN + 1))
     case "$est" in
@@ -509,6 +527,21 @@ if [ -n "$NN_ACT" ] && [ -f "$AI/epics/$ACT_EPIC/epic-plan.md" ] && [ "$OPEN" -g
     bad "STATE.md: «Épica activa» es $ACT_EPIC, que está CERRADA, y quedan épicas abiertas"
 fi
 report fail 'el estado de cada épica cuadra con el mapa' 'problemas en las épicas:'
+
+# ── 3b. Pospuestas ──────────────────────────────────────────────────────────
+printf '◆ pospuestas (ninguna fase pendiente depende de una pospuesta)\n'
+
+for f in "$AI"/epics/*/phase-*.md; do
+    [ -f "$f" ] || continue
+    e=$(basename "$(dirname "$f")")
+    case "$(phase_state "$f")" in HECHA|POSPUESTA) continue ;; esac
+    for dep in $(sed -n 's/.*\*\*Depende de:\*\* *//p' "$f" | head -n 1 \
+                 | sed 's#[0-9][0-9]/[0-9][0-9][a-z]*##g' | grep -oE '[0-9][0-9][a-z]?'); do
+        [ "$(awk -v e="$e" -v p="$dep" '$1 == e && $2 == p { print $3 }' "$MAP")" = POSPUESTA ] \
+            && bad "$(rel "$f"): «Depende de» cita la fase $dep, que está POSPUESTA; su Paso A parará hasta que se reactive o se cambie la dependencia"
+    done
+done
+report warn 'ninguna fase pendiente depende de una pospuesta' 'fases pendientes que dependen de una POSPUESTA:'
 
 # ── 4. Referencias a fases ──────────────────────────────────────────────────
 printf '◆ referencias a fases (existen en la tabla de su épica; las fases no se renumeran)\n'
@@ -663,6 +696,19 @@ if grep -q '^## Esperando evidencia' "$STATE"; then
         || bad 'STATE.md §Esperando evidencia: ninguna fase espera evidencia y la sección no dice «**Ninguna.**»'
 elif [ -n "$want_w" ]; then
     bad "STATE.md no tiene §Esperando evidencia y el mapa tiene fases en ESPERA_EVIDENCIA ($(inline "$want_w"))"
+fi
+# Las que la persona pospuso: el puntero también las salta, así que STATE.md las nombra. Una instalación anterior a
+# POSPUESTA no tiene la sección: sólo hace falta cuando hay alguna.
+want_s=$(awk '$3 == "POSPUESTA" { print $1 "/" $2 }' "$MAP" | sort -u)
+if grep -q '^## Pospuestas' "$STATE"; then
+    pos=$(strip_comments "$STATE" | awk 'index($0, "## Pospuestas") == 1 { f = 1; next } f && /^## / { exit } f')
+    have_s=$(printf '%s\n' "$pos" | grep -oE '[0-9][0-9]-[a-z0-9-]+/[0-9][0-9][a-z]?' | sort -u)
+    [ "$have_s" = "$want_s" ] \
+        || bad "STATE.md §Pospuestas nombra «$(inline "$have_s")» y las fases POSPUESTA del mapa son «$(inline "$want_s")»"
+    [ -n "$want_s" ] || printf '%s\n' "$pos" | grep -q 'Ninguna' \
+        || bad 'STATE.md §Pospuestas: ninguna fase está pospuesta y la sección no dice «**Ninguna.**»'
+elif [ -n "$want_s" ]; then
+    bad "STATE.md no tiene §Pospuestas y el mapa tiene fases POSPUESTA ($(inline "$want_s"))"
 fi
 report fail "contadores al día (decisiones: $d_n/$d_m · otros repos: $x_n/$x_m)" 'STATE.md no está sincronizado (.claude/skills/phase/SKILL.md §Sincronización post-lectura):'
 

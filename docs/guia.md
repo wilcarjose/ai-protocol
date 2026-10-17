@@ -110,7 +110,8 @@ vez ([`docs/modos.md` §VPS](modos.md#vps)).
 5. **Siguiente fase.** Con el PR fusionado, `/sync-main` (o `sh bin/sync-main.sh`) te deja en `main`, al día y sin
    la rama de la fase; con `--wait`, espera a que lo fusiones. `main` ya apunta a la siguiente: otra sesión nueva y
    `/phase`. Una fase de operación que espera algo que sólo tú puedes comprobar cierra en `ESPERA_EVIDENCIA`, y el
-   puntero la salta; cuando tengas la evidencia, `/phase <epica> <FF>` y pégala.
+   puntero la salta; cuando tengas la evidencia, `/phase <epica> <FF>` y pégala. Si decides no hacer una fase todavía, pídele
+   que la pospongas (`POSPUESTA`): el puntero pasa a la siguiente y, cuando quieras hacerla, `/phase <epica> <FF>`.
 6. **Cierre de la épica.** Lo hace la fase que deja `HECHA` la última de la épica, en su mismo cierre: comprueba el
    criterio de cierre de su epic-plan y la marca `CERRADA`. Después, la siguiente épica, desde el paso 1.
 

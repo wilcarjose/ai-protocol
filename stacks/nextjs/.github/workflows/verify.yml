@@ -6,6 +6,12 @@
 #
 # «lighthouse» construye la app, la arranca y la mide contra los presupuestos de .ai/project/lighthouse.json, que son
 # del proyecto. Va aparte de verify.sh: necesita Chrome, que el runner trae.
+#
+# «changes» dice si el PR toca algo más que documentos, y «lighthouse» sólo corre si es así: un PR que cambia
+# STATE.md o un runbook no puede cambiar lo que mide. Un job saltado cuenta como superado, así que sigue valiendo si
+# algún día es obligatorio. «verify» corre siempre: lleva los gates del protocolo y de secretos, que sí leen los
+# documentos. La lista es corta y de rutas que la app no lee; todo lo demás, incluido .ai/project/lighthouse.json,
+# cuenta como código.
 name: verify
 
 on:
@@ -48,7 +54,30 @@ jobs:
       - name: verify
         run: sh bin/verify.sh
 
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      code: ${{ steps.diff.outputs.code }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: diff
+        id: diff
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+        run: |
+          git diff --name-only "$BASE" HEAD > "$RUNNER_TEMP/changed.txt"
+          if grep -qvE '^(\.ai/(epics|handoffs|archive)/|docs/|\.claude/)|^\.ai/.*\.md$|^[^/]*\.md$' "$RUNNER_TEMP/changed.txt"; then
+            echo "code=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "code=false" >> "$GITHUB_OUTPUT"
+          fi
+
   lighthouse:
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7

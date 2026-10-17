@@ -54,6 +54,13 @@
 - **Rendimiento con Lighthouse CI**: el job `lighthouse` de `.github/workflows/verify.yml` construye la app y la mide
   contra `.ai/project/lighthouse.json`, que es del proyecto: las URL y los presupuestos de
   `.ai/project/CROSS-CUTTING.md §Rendimiento`. Un presupuesto sólo se relaja con una decisión en `.ai/DOMAIN.md`.
+  El job `changes` del mismo workflow lo salta cuando el PR sólo toca documentos (`.ai/**/*.md`, `.ai/epics/`,
+  `.ai/handoffs/`, `.ai/archive/`, `docs/`, `.claude/` y los `.md` de la raíz): un job saltado cuenta como superado.
+  `verify` corre siempre, porque lleva los gates del protocolo y de secretos. Un workflow propio del proyecto (un
+  `e2e.yml`) se filtra igual: un job `changes` con esa lista, y los jobs caros con `needs: changes` e
+  `if: needs.changes.outputs.code == 'true'`. La lista sólo lleva rutas que ningún job lee: lo que lee la app o un
+  gate (`.ai/project/lighthouse.json`, `package.json`, otro workflow) es código, y una regla de más hace pasar sin
+  comprobar.
 - **No se modifica un test existente para que pase un cambio**: si falla, el cambio está mal o es una decisión del
   Tech Lead (`.ai/WORKFLOW.md §Un test existente tendría que cambiar`). Nunca `test.skip()` condicional; para
   retirar cobertura, `test.fixme()` con el motivo, y se nombra en el reporte.

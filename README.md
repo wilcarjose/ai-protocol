@@ -371,7 +371,8 @@ con una instalación 1.x real, `tests/fixtures/kit-1x/`). Después, en un commit
 
 Las fases escritas con la plantilla 1.x siguen pasando el guardián: sin «Tipo» cuentan como de código, y sin
 «Revisión» no se les exige. `.ai/STATE.md` no necesita `§Esperando evidencia` hasta que una fase quede en
-`ESPERA_EVIDENCIA`.
+`ESPERA_EVIDENCIA`, ni `§Pospuestas` hasta que la persona pospone una (`POSPUESTA`: el puntero la salta y la épica no
+se cierra mientras siga así).
 
 ## Roles
 

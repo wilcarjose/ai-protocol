@@ -72,7 +72,9 @@ plantilla lo pide, «Migraciones: ninguna».
   (un elemento que pasa a un desplegable), busca con `grep` sus usos en el código **y en los tests**: cada archivo
   que lo usa entra en la fase, y ninguno puede quedar en «No tocar». Antes de cerrar el §4, contrástalo con los
   supuestos que ya no valen del traspaso de la fase anterior (`sh bin/handoff.sh`) y con todo lo que el §2 o el §3
-  mandan escribir (una nota, un test, una fila): cada archivo que nombran está en el §4.
+  mandan escribir (una nota, un test, una fila): cada archivo que nombran está en el §4. Una fase que instala una
+  dependencia lista `.ai/project/DECISIONS.md` en «Modificar»: la dependencia entra con su fila
+  (`.ai/WORKFLOW.md §Dependencia nueva`).
 - **Tests donde puedan ejecutarse.** Cada test va en la suite que puede ejecutarlo (`.ai/rules/tests.md`). Nunca
   expresiones regulares sobre el código fuente (`.ai/WORKFLOW.md §Obediencia arquitectónica`).
 - **Criterios de éxito (§5).** Cada uno es un comando, y todos pueden cumplirse a la vez: no pidas «sin modificar el
@@ -93,7 +95,8 @@ plantilla lo pide, «Migraciones: ninguna».
   gate ve va en su fila propia; agrupado, no tiene dónde aterrizar y se pierde sin que falle nada. **Orden:** cada
   fila pasa `bash bin/verify.sh --fast` sola. Si la fase activa una regla de linter (o un gate) y arregla lo que ésta
   marca, la fila del arreglo va antes que la de la regla; al revés, la regla deja el árbol en rojo y la fila no puede
-  commitearse. Los commits de arranque y de cierre no van en §9
+  commitearse. Si el arreglo sólo sale con la regla activa (un `--fix` automático), regla y arreglo van en la misma
+  fila. Los commits de arranque y de cierre no van en §9
   (`.claude/skills/phase/SKILL.md §Commits durante la fase`).
 - **Referencias** a clases, métodos o secciones, nunca a números de línea (`.ai/WORKFLOW.md §Documentación`).
 - **Contexto que debes leer antes (§2).** Rutas concretas: siempre `sh bin/handoff.sh` de la fase anterior, los
@@ -107,6 +110,8 @@ plantilla lo pide, «Migraciones: ninguna».
   nombra en inglés con los términos de `.ai/project/GLOSSARY.md` (`.ai/RULES.md §Lista negra`). Un término nuevo es
   una fila más, y §4 lista ese archivo; los textos para el usuario van en las traducciones, en el idioma de
   `.ai/project/CROSS-CUTTING.md §Idiomas`.
+  Los comentarios y los nombres de un workflow o un script del proyecto también van en inglés; el runbook y el
+  README, en el idioma de la documentación. No copies el idioma del `verify.yml` del kit: es del kit.
 - **No tocar (§4).** Sólo exclusiones específicas de esta fase. Los mínimos del proyecto viven en
   `.ai/RULES.md §Alcance` y en `CLAUDE.md §Cosas que no se hacen`; no los repitas.
 - **Restricciones (§6).** Sólo las de esta fase; las generales no se copian.
@@ -180,6 +185,10 @@ supuestos dependen de la fase anterior. El ejecutor la revalida en el Paso A (`.
    - **Un criterio sobre lo que hace un proceso** (arrancar, instalar, desplegar, fallar) se ejecuta, no se deduce
      leyendo el código del framework. Si no se puede ejecutar sin el cambio, el §2 lo dice para que el Paso A lo
      mida lo primero.
+   - **Lo que la fase sube como artefacto de una herramienta en la CI** (un informe, capturas, trazas) se mide
+     ejecutándola con `CI=true`: muchas herramientas cambian de reporter o dejan de escribir archivos en la CI, y
+     sin eso el paso de subida no encuentra nada. El §3 o el §6 dicen qué archivos produce allí y con qué opción,
+     sobre todo si el archivo de configuración es de «No tocar».
    - **Un criterio sobre el texto de una respuesta** (un error, un mensaje traducido) se mide con una petición real
      contra la aplicación, igual: muchos textos los pone el framework, a veces con datos de la petición (un 404 del
      router lleva la ruta), y no salen del código propio.
