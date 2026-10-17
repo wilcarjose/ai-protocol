@@ -93,7 +93,8 @@ plantilla lo pide, «Migraciones: ninguna».
   gate ve va en su fila propia; agrupado, no tiene dónde aterrizar y se pierde sin que falle nada. **Orden:** cada
   fila pasa `bash bin/verify.sh --fast` sola. Si la fase activa una regla de linter (o un gate) y arregla lo que ésta
   marca, la fila del arreglo va antes que la de la regla; al revés, la regla deja el árbol en rojo y la fila no puede
-  commitearse. Los commits de arranque y de cierre no van en §9
+  commitearse. Si el arreglo sólo sale con la regla activa (un `--fix` automático), regla y arreglo van en la misma
+  fila. Los commits de arranque y de cierre no van en §9
   (`.claude/skills/phase/SKILL.md §Commits durante la fase`).
 - **Referencias** a clases, métodos o secciones, nunca a números de línea (`.ai/WORKFLOW.md §Documentación`).
 - **Contexto que debes leer antes (§2).** Rutas concretas: siempre `sh bin/handoff.sh` de la fase anterior, los

@@ -3,6 +3,14 @@
 El núcleo del protocolo: lo que es igual en todos los stacks. Versiones con [SemVer](https://semver.org/lang/es/) y
 etiqueta `core-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, arriba.
 
+## Sin publicar
+
+### Cambiado
+
+- `plan-phase/SKILL.md §Coherencia interna` («Plan de commits»): si el arreglo de lo que marca una regla sólo sale con
+  la regla activa (un `--fix` automático), regla y arreglo van en la misma fila. El #109 pedía lo mismo que #105
+  (el arreglo antes que la regla) y este caso, en el que ese orden no se puede cumplir (#109).
+
 ## [2.13.0] — 2026-10-16
 
 ### Cambiado
