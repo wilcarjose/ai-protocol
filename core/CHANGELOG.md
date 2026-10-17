@@ -24,6 +24,11 @@ etiqueta `core-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, ar
   diálogo abierto, un error) mide también esos estados al planificar, y el §2 pone el resultado. Una fase midió las
   pantallas cerradas y el entregable pedía además el menú del tema abierto: el análisis de accesibilidad falló en el
   Paso B (`aria-hidden-focus`), con la restricción 6 prohibiendo desactivar reglas, y hizo falta una pregunta (#106).
+- `plan-phase/SKILL.md §Antes de dar el plan por listo` (misma viñeta que #106): los estados que se miden incluyen la
+  pantalla que pide sesión, con un usuario registrado contra el otro repositorio, levantado como diga
+  `.ai/rules/tests.md`. Una fase pedía que el panel pasara axe y ni el plan ni el Paso A lo midieron; falló en el
+  Paso B (`color-contrast`, 4,34:1) y el arreglo (`src/app/globals.css`) no estaba en los «Archivos», así que hizo
+  falta otra pregunta (#107).
 
 ## [2.12.0] — 2026-10-16
 
