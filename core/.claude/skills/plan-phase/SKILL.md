@@ -140,9 +140,13 @@ supuestos dependen de la fase anterior. El ejecutor la revalida en el Paso A (`.
      reporter por defecto de Vitest sólo imprime el total («Tests  29 passed (29)») y no nombra ningún caso:
      `--reporter=verbose` sí.
    - **Un entregable que cambia de dónde o cómo una función lee su entrada** (otra variable de entorno, otra validación,
-     otro origen) se contrasta con los tests que ya tiene esa función (`grep` de su nombre en los tests): los que no
-     definen lo nuevo fallarían, y un test no se modifica para que pase un cambio (`CLAUDE.md §Cosas que no se
-     hacen`). El §2 nombra los que no pueden cambiar y el entregable se escribe para cumplirlos.
+     otro origen), **lo que devuelve** (un campo nuevo en un objeto que un test compara con `toEqual`) **o el entorno de
+     los tests** (`test.env`, un archivo de preparación) se contrasta con los tests que ya tiene esa función (`grep` de
+     su nombre en los tests): los que no definen lo nuevo, o comparan el resultado entero, fallarían, y un test no se
+     modifica para que pase un cambio (`CLAUDE.md §Cosas que no se hacen`). El §2 nombra los que no pueden cambiar y
+     el entregable se escribe para cumplirlos. Si no se puede (el campo nuevo es el entregable), un test que tendría
+     que cambiar lo decide el Tech Lead (`.ai/WORKFLOW.md §Un test existente tendría que cambiar`): se le pregunta
+     ahora, no en el Paso A; si acepta, el §7 cita qué test cambia y cómo, y el §4 lo lista en «Modificar».
    - **Un entregable que es un test que recorre estados** (un menú o un diálogo abierto, un error, una pantalla que
      pide sesión) mide también esos estados, no sólo las pantallas cerradas, y el §2 pone el resultado. Una pantalla
      que pide sesión se mide con un usuario registrado contra el otro repositorio, levantado como diga
