@@ -17,6 +17,10 @@ etiqueta `core-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, ar
   se mide ejecutándola con `CI=true`, y la fase dice qué archivos produce allí y con qué opción. Una fase pedía
   `npx playwright test` en la CI y subir su informe, pero en la CI la herramienta usa el reporter `dot`, sin informe,
   y la configuración era de «No tocar»; se interpretó en el arranque (#111).
+- `plan-phase/SKILL.md §Coherencia interna` («Nombres»): los comentarios y los nombres de un workflow o un script del
+  proyecto van en inglés (`RULES.md §Lista negra`, regla 11); el runbook y el README, en el idioma de la documentación.
+  Una fase de operación copió el idioma del `verify.yml` del kit, que va en español, y la revisión lo marcó como
+  bloqueante (#112).
 
 ## [2.13.0] — 2026-10-16
 

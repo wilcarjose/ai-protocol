@@ -110,6 +110,8 @@ plantilla lo pide, «Migraciones: ninguna».
   nombra en inglés con los términos de `.ai/project/GLOSSARY.md` (`.ai/RULES.md §Lista negra`). Un término nuevo es
   una fila más, y §4 lista ese archivo; los textos para el usuario van en las traducciones, en el idioma de
   `.ai/project/CROSS-CUTTING.md §Idiomas`.
+  Los comentarios y los nombres de un workflow o un script del proyecto también van en inglés; el runbook y el
+  README, en el idioma de la documentación. No copies el idioma del `verify.yml` del kit: es del kit.
 - **No tocar (§4).** Sólo exclusiones específicas de esta fase. Los mínimos del proyecto viven en
   `.ai/RULES.md §Alcance` y en `CLAUDE.md §Cosas que no se hacen`; no los repitas.
 - **Restricciones (§6).** Sólo las de esta fase; las generales no se copian.
