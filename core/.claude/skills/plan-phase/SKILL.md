@@ -90,8 +90,11 @@ plantilla lo pide, «Migraciones: ninguna».
   el `**Despliegue:**` del traspaso (`.claude/skills/phase/cierre.md §Traspaso al otro repo`).
 - **Plan de commits (§9).** Cada entregable que cambia archivos se mapea a una fila; una fila puede cubrir varios
   entregables relacionados; los que no cambian archivos no llevan fila. **Excepción:** un entregable que ningún
-  gate ve va en su fila propia; agrupado, no tiene dónde aterrizar y se pierde sin que falle nada. Los commits de
-  arranque y de cierre no van en §9 (`.claude/skills/phase/SKILL.md §Commits durante la fase`).
+  gate ve va en su fila propia; agrupado, no tiene dónde aterrizar y se pierde sin que falle nada. **Orden:** cada
+  fila pasa `bash bin/verify.sh --fast` sola. Si la fase activa una regla de linter (o un gate) y arregla lo que ésta
+  marca, la fila del arreglo va antes que la de la regla; al revés, la regla deja el árbol en rojo y la fila no puede
+  commitearse. Los commits de arranque y de cierre no van en §9
+  (`.claude/skills/phase/SKILL.md §Commits durante la fase`).
 - **Referencias** a clases, métodos o secciones, nunca a números de línea (`.ai/WORKFLOW.md §Documentación`).
 - **Contexto que debes leer antes (§2).** Rutas concretas: siempre `sh bin/handoff.sh` de la fase anterior, los
   temas de `.ai/rules/` que toca la fase (el índice está en `.ai/RULES.md`) y las filas de

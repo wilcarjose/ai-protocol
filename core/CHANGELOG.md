@@ -16,6 +16,10 @@ etiqueta `core-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, ar
   denegó. Si no se puede montar con las órdenes permitidas, la medición es la primera fila del Plan de commits (o el
   primer paso del Paso B) y las viñetas lo dicen, en vez de medir en el árbol con un cambio temporal. No se añade
   permiso a ningún stack (#104).
+- `plan-phase/SKILL.md §Coherencia interna` («Plan de commits»): si una fase activa una regla de linter (o un gate) y
+  arregla lo que marca, la fila del arreglo va antes que la de la regla. Una fase ponía primero la que activa las reglas
+  recomendadas de `jsx-a11y` y después la de los dos avisos que dan; con `verify --fast` obligatorio por fila, la
+  primera no podía pasar sola y se invirtió el orden al ejecutar (#105).
 
 ## [2.12.0] — 2026-10-16
 
