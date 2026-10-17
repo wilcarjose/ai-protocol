@@ -20,6 +20,10 @@ etiqueta `core-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, ar
   arregla lo que marca, la fila del arreglo va antes que la de la regla. Una fase ponía primero la que activa las reglas
   recomendadas de `jsx-a11y` y después la de los dos avisos que dan; con `verify --fast` obligatorio por fila, la
   primera no podía pasar sola y se invirtió el orden al ejecutar (#105).
+- `plan-phase/SKILL.md §Antes de dar el plan por listo`: un entregable que es un test que recorre estados (un menú o un
+  diálogo abierto, un error) mide también esos estados al planificar, y el §2 pone el resultado. Una fase midió las
+  pantallas cerradas y el entregable pedía además el menú del tema abierto: el análisis de accesibilidad falló en el
+  Paso B (`aria-hidden-focus`), con la restricción 6 prohibiendo desactivar reglas, y hizo falta una pregunta (#106).
 
 ## [2.12.0] — 2026-10-16
 

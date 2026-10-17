@@ -138,6 +138,10 @@ supuestos dependen de la fase anterior. El ejecutor la revalida en el Paso A (`.
      otro origen) se contrasta con los tests que ya tiene esa función (`grep` de su nombre en los tests): los que no
      definen lo nuevo fallarían, y un test no se modifica para que pase un cambio (`CLAUDE.md §Cosas que no se
      hacen`). El §2 nombra los que no pueden cambiar y el entregable se escribe para cumplirlos.
+   - **Un entregable que es un test que recorre estados** (un menú o un diálogo abierto, un error) mide también esos
+     estados, no sólo las pantallas cerradas, y el §2 pone el resultado. Se hace como la «comprobación que escribe
+     archivos» (más abajo). Una fase midió las pantallas cerradas y el test pedía además el menú abierto: falló en el
+     Paso B, con una restricción que prohibía desactivar reglas, y hizo falta una pregunta al Tech Lead.
    - **Un valor concreto que la fase da a una variable que ya valida código de una fase anterior** (un `SITE_URL`
      en el E2E, Lighthouse y el README) se pasa por esa validación. La fase anterior probó sus propios valores, no
      el de ésta: una que exigía `https` rechazaba `http://localhost:3000` y dejó el E2E en rojo. Se ejecuta como la
