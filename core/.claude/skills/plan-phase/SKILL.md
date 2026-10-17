@@ -72,7 +72,9 @@ plantilla lo pide, «Migraciones: ninguna».
   (un elemento que pasa a un desplegable), busca con `grep` sus usos en el código **y en los tests**: cada archivo
   que lo usa entra en la fase, y ninguno puede quedar en «No tocar». Antes de cerrar el §4, contrástalo con los
   supuestos que ya no valen del traspaso de la fase anterior (`sh bin/handoff.sh`) y con todo lo que el §2 o el §3
-  mandan escribir (una nota, un test, una fila): cada archivo que nombran está en el §4.
+  mandan escribir (una nota, un test, una fila): cada archivo que nombran está en el §4. Una fase que instala una
+  dependencia lista `.ai/project/DECISIONS.md` en «Modificar»: la dependencia entra con su fila
+  (`.ai/WORKFLOW.md §Dependencia nueva`).
 - **Tests donde puedan ejecutarse.** Cada test va en la suite que puede ejecutarlo (`.ai/rules/tests.md`). Nunca
   expresiones regulares sobre el código fuente (`.ai/WORKFLOW.md §Obediencia arquitectónica`).
 - **Criterios de éxito (§5).** Cada uno es un comando, y todos pueden cumplirse a la vez: no pidas «sin modificar el

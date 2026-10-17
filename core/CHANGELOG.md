@@ -10,6 +10,9 @@ etiqueta `core-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, ar
 - `plan-phase/SKILL.md §Coherencia interna` («Plan de commits»): si el arreglo de lo que marca una regla sólo sale con
   la regla activa (un `--fix` automático), regla y arreglo van en la misma fila. El #109 pedía lo mismo que #105
   (el arreglo antes que la regla) y este caso, en el que ese orden no se puede cumplir (#109).
+- `plan-phase/SKILL.md §Coherencia interna` («Archivos»): una fase que instala una dependencia lista
+  `.ai/project/DECISIONS.md` en «Modificar». `WORKFLOW.md §Dependencia nueva` manda la fila, pero la fase no listaba el archivo y
+  costó una pregunta en el Paso A (#110).
 
 ## [2.13.0] — 2026-10-16
 
