@@ -45,7 +45,9 @@ las viñetas y trae ya en ellas, listo para pegar, lo que toca a la persona o a 
 en paralelo con la ejecución, no al llegar al criterio.
 
 **Una comprobación del §2 que escribe archivos** no se hace en el Paso A: es el primer paso del Paso B, con los
-archivos reales de la fase. Si el Paso A necesita ya su resultado, pruébala en un directorio fuera del repo
+archivos reales de la fase. Si el Paso A necesita ya su resultado, pruébala en un directorio fuera del repo, **si las
+órdenes permitidas dejan montarlo** (`mkdir`, `cp` o `rsync` suelen no estar en el `allow`). Si no, no la sustituyas
+por una medición en el árbol con un cambio temporal: dilo en las viñetas, con la fila del Paso B que la hace primero
 (`.claude/skills/plan-phase/SKILL.md §Antes de dar el plan por listo`).
 
 **Si la fase necesita una orden que `.claude/settings.json` no permite** (instalar la dependencia que autoriza, un

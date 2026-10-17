@@ -11,6 +11,11 @@ etiqueta `core-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, ar
   código de una fase anterior se pasa por esa validación al planificar. Una fase mandó `SITE_URL=http://localhost:3000`
   en el E2E, Lighthouse y el README, pero la fase anterior lo validaba con `z.httpUrl()` y lo rechazaba: el E2E salió
   en rojo en el Paso B y hizo falta preguntar por tocar un archivo de «No tocar» (#103).
+- `plan-phase/SKILL.md §Antes de dar el plan por listo` y `phase/SKILL.md §Paso A`: montar fuera del repo la copia
+  para una comprobación que escribe archivos (`mkdir`, `rsync`, `du`, `df`) pide órdenes que el `allow` no trae, y se
+  denegó. Si no se puede montar con las órdenes permitidas, la medición es la primera fila del Plan de commits (o el
+  primer paso del Paso B) y las viñetas lo dicen, en vez de medir en el árbol con un cambio temporal. No se añade
+  permiso a ningún stack (#104).
 
 ## [2.12.0] — 2026-10-16
 
