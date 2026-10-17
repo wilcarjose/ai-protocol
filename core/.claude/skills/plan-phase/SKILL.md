@@ -183,6 +183,10 @@ supuestos dependen de la fase anterior. El ejecutor la revalida en el Paso A (`.
    - **Un criterio sobre lo que hace un proceso** (arrancar, instalar, desplegar, fallar) se ejecuta, no se deduce
      leyendo el código del framework. Si no se puede ejecutar sin el cambio, el §2 lo dice para que el Paso A lo
      mida lo primero.
+   - **Lo que la fase sube como artefacto de una herramienta en la CI** (un informe, capturas, trazas) se mide
+     ejecutándola con `CI=true`: muchas herramientas cambian de reporter o dejan de escribir archivos en la CI, y
+     sin eso el paso de subida no encuentra nada. El §3 o el §6 dicen qué archivos produce allí y con qué opción,
+     sobre todo si el archivo de configuración es de «No tocar».
    - **Un criterio sobre el texto de una respuesta** (un error, un mensaje traducido) se mide con una petición real
      contra la aplicación, igual: muchos textos los pone el framework, a veces con datos de la petición (un 404 del
      router lleva la ruta), y no salen del código propio.

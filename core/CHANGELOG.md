@@ -13,6 +13,10 @@ etiqueta `core-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, ar
 - `plan-phase/SKILL.md §Coherencia interna` («Archivos»): una fase que instala una dependencia lista
   `.ai/project/DECISIONS.md` en «Modificar». `WORKFLOW.md §Dependencia nueva` manda la fila, pero la fase no listaba el archivo y
   costó una pregunta en el Paso A (#110).
+- `plan-phase/SKILL.md §Antes de dar el plan por listo`: lo que la fase sube como artefacto de una herramienta en la CI
+  se mide ejecutándola con `CI=true`, y la fase dice qué archivos produce allí y con qué opción. Una fase pedía
+  `npx playwright test` en la CI y subir su informe, pero en la CI la herramienta usa el reporter `dot`, sin informe,
+  y la configuración era de «No tocar»; se interpretó en el arranque (#111).
 
 ## [2.13.0] — 2026-10-16
 
