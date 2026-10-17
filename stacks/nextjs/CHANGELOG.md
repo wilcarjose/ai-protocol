@@ -2,6 +2,19 @@
 
 El stack Next.js: lo que añade al núcleo. Versiones con [SemVer](https://semver.org/lang/es/) y etiqueta
 `nextjs-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, arriba.
+## Sin publicar
+
+Compatible con el núcleo `>=2.0.0 <3.0.0`.
+
+### Cambiado
+
+- `.github/workflows/verify.yml`: un job `changes` calcula si el PR toca algo más que documentos y `lighthouse` sólo
+  corre si es así (`needs: changes` e `if`). Un PR que sólo cambia `STATE.md` o `PROTOCOL.md` (el PR #62 de base-web)
+  corría `lighthouse` entero: `npm ci`, `next build` y la medición. `verify` no se filtra: lleva los gates del
+  protocolo y de secretos. Sin acción de terceros (`git diff` contra la base del PR). «Sólo documentos» es corto y de
+  rutas que la app no lee: `.ai/project/lighthouse.json` y el resto de `.ai/project/` cuentan como código. Un job
+  saltado cuenta como superado, así que sigue valiendo si un día es obligatorio (#114).
+- `.ai/rules/tests.md §Tests`: cómo filtra un proyecto sus workflows propios con la misma lista (#114).
 
 ## [3.9.0] — 2026-10-16
 
