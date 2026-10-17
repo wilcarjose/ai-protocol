@@ -3,6 +3,17 @@
 El núcleo del protocolo: lo que es igual en todos los stacks. Versiones con [SemVer](https://semver.org/lang/es/) y
 etiqueta `core-vX.Y.Z` (README.md §Versiones y etiquetas). Lo más reciente, arriba.
 
+## Sin publicar
+
+### Cambiado
+
+- `plan-phase/SKILL.md §Antes de dar el plan por listo`: la viñeta de #101 (una función que cambia de dónde lee su
+  entrada) cubre también lo que la función devuelve y el entorno de los tests (`test.env`). Si un test existente
+  tendría que cambiar, se le pregunta al Tech Lead al planificar (`WORKFLOW.md §Un test existente tendría que
+  cambiar`), y la respuesta va al §7 y al §4. Una fase decía de `env.test.ts` «casos nuevos; los que hay no
+  cambian», pero añadir `LOG_LEVEL` a `serverEnvSchema` y a `test.env` hacía que `readServerEnv()` devolviera ese
+  campo y rompía un `toEqual`; se vio en el Paso A y costó una pregunta (#116).
+
 ## [2.14.0] — 2026-10-16
 
 ### Cambiado
